@@ -1,0 +1,9 @@
+sqmusic:
+  uploadPath: /sqmusic/upload/music/
+  imagePath: E:\\testmc\\images
+  tempPath: E:\\testmc
+  musicPath: E:\\testmc\\vvv
+  mvPath: /sqmusic/mv/
+  musicScanPath: /scan
+  audiobooksPath: E:\\testmc\\audiobooks
+  audiobooksTempPath: E:\\audiobook

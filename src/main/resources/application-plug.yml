@@ -1,0 +1,30 @@
+kw:
+  id: kw-v1
+  #  名称
+  name: 酷我
+  #  搜索歌曲
+  SearchUrl: http://search.kuwo.cn/r.s?client=kt&encoding=utf8&rformat=json&mobi=1&vipver=1&pn=#{pn}&rn=#{pagesize}&correct=1&all=#{searchKey}&ft=#{searchType}
+  #  榜单
+  BangMenuUrl: http://m.kuwo.cn/newh5app/api/mobile/v1/typelist/rank
+  #  榜单详情
+  BangInfoUrl : http://kbangserver.kuwo.cn/ksong.s?from=pc&fmt=json&pn=#{pn}&rn=#{pagesize}&type=bang&data=content&id=#{BangMenuId}&show_copyright_off=0&pcmp4=1&isbang=1
+  #   下载
+  downloadurl: http://nmobi.kuwo.cn/mobi.s?f=kuwo&q=
+  #  歌曲详情以及歌词
+  SongInfoUrl: http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=#{musicId}
+  #  歌曲封面前缀
+  SongCoverUrl: https://img3.kuwo.cn/star/albumcover/
+  # 歌手信息
+  ArtistInfoUrl: https://search.kuwo.cn/r.s?stype=artistinfo&encoding=utf8&artistid=#{artistid}&pcjson=1;
+  # 专辑列表
+  AlbumListUrl: https://search.kuwo.cn/r.s?pn=0&rn=1000&artistid=#{artistid}&stype=albumlist&sortby=1&alflac=1&show_copyright_off=1&pcmp4=1&encoding=utf8&plat=pc&thost=search.kuwo.cn&vipver=MUSIC_9.1.1.2_BCS2&devid=38668888&pcjson=1
+  # 专辑信息
+  AlbumInfoUrl: https://search.kuwo.cn/r.s?pn=0&rn=1000&albumid=#{albumid}&stype=albuminfo&show_copyright_off=1&alflac=1&pcmp4=1&encoding=utf8&plat=pc&vipver=MUSIC_9.1.1.2_BCS2&devid=38668888&newver=1&pcjson=1
+  #专辑列表
+  ArtistAlbumListUrl: https://search.kuwo.cn/r.s?pn=0&rn=1000&artistid=#{artistid}&stype=albumlist&sortby=1&alflac=1&show_copyright_off=1&pcmp4=1&encoding=utf8&plat=pc&thost=search.kuwo.cn&vipver=MUSIC_9.1.1.2_BCS2&devid=38668888&pcjson=1
+
+lastfm:
+  key: 9e4238358011d77c634aabf0b0b084ba
+  secret: 59013f519a5834659e0d26182151e785
+  user: a13087635768
+  password: 1qaz@WSX
