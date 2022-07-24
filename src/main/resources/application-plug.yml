@@ -14,6 +14,8 @@ kw:
   SongInfoUrl: http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=#{musicId}
   #  歌曲封面前缀
   SongCoverUrl: https://img3.kuwo.cn/star/albumcover/
+  # 歌手封面前缀
+  Starheads: https://star.kuwo.cn/star/starheads/
   # 歌手信息
   ArtistInfoUrl: https://search.kuwo.cn/r.s?stype=artistinfo&encoding=utf8&artistid=#{artistid}&pcjson=1;
   # 专辑列表
@@ -22,9 +24,3 @@ kw:
   AlbumInfoUrl: https://search.kuwo.cn/r.s?pn=0&rn=1000&albumid=#{albumid}&stype=albuminfo&show_copyright_off=1&alflac=1&pcmp4=1&encoding=utf8&plat=pc&vipver=MUSIC_9.1.1.2_BCS2&devid=38668888&newver=1&pcjson=1
   #专辑列表
   ArtistAlbumListUrl: https://search.kuwo.cn/r.s?pn=0&rn=1000&artistid=#{artistid}&stype=albumlist&sortby=1&alflac=1&show_copyright_off=1&pcmp4=1&encoding=utf8&plat=pc&thost=search.kuwo.cn&vipver=MUSIC_9.1.1.2_BCS2&devid=38668888&pcjson=1
-
-lastfm:
-  key: 9e4238358011d77c634aabf0b0b084ba
-  secret: 59013f519a5834659e0d26182151e785
-  user: a13087635768
-  password: 1qaz@WSX

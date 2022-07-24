@@ -1,10 +1,12 @@
 package com.sqmusicplus.plug.utils;
 
+import cn.hutool.extra.spring.SpringUtil;
 import com.sqmusicplus.music.entity.Music;
 import com.sqmusicplus.plug.kw.hander.KWSearchHander;
 import com.sqmusicplus.utils.DownloadUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -21,7 +23,7 @@ import java.util.List;
  */
 @Data
 @Slf4j
-@Component
+//@Component
 public class DownloadPool {
 
 //    //下载对象
@@ -36,7 +38,7 @@ public class DownloadPool {
 
     public  HashMap<String,Integer> record  = new HashMap<>();
 
-    public KWSearchHander searchHander;
+    public KWSearchHander searchHander = SpringUtil.getBean(KWSearchHander.class);
 
 
 

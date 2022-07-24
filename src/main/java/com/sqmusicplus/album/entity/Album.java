@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.sqmusicplus.common.utils.webconfig.shell.RequesrShell;
+import com.sqmusicplus.config.webconfig.shell.RequesrShell;
 import com.sqmusicplus.music.entity.Music;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -32,7 +32,7 @@ public class Album extends RequesrShell implements Serializable {
      * 主键
      */
     @TableId(type= IdType.ASSIGN_UUID)
-    private String uuid;
+    private Integer id;
 
     /**
      * 专辑名称

@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.sqmusicplus.common.utils.webconfig.shell.RequesrShell;
+import com.sqmusicplus.config.webconfig.shell.RequesrShell;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.ibatis.type.JdbcType;
@@ -27,7 +27,7 @@ public class Artists extends RequesrShell implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(type= IdType.ASSIGN_UUID)
-    private String uuid;
+    private Integer id;
 
     /**
      * 艺术家名称

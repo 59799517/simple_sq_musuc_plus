@@ -24,6 +24,7 @@ public class KwConfig {
     private String downloadurl;
     private String SongInfoUrl;
     private String SongCoverUrl;
+    private String Starheads;
     private String ArtistInfoUrl;
     private String AlbumListUrl;
     private String AlbumInfoUrl;
