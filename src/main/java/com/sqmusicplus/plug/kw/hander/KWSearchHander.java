@@ -485,8 +485,12 @@ public class KWSearchHander {
                 String downliadpath =   musicConfig.getMusicPath()+File.separator+artists.getMusicArtistsName();
               DownloadUtils.download(downloadurl, downliadpath,onSuccess ->{
 //                        String imagename =SecureUtil.md5(onSuccess) +SecureUtil.sha1(onSuccess)+"."+FileUtil.getSuffix(onSuccess);
-                        FileUtil.rename(onSuccess, "cover", true, false);
-                        artists.setMusicArtistsPhoto("cover");
+                  try {
+                      FileUtil.rename(onSuccess, "cover", true, true);
+                  } catch (Exception e) {
+
+                  }
+                  artists.setMusicArtistsPhoto("cover");
                     });
 //                    artistsService.save(artists);
                     artistsid = artists.getId();

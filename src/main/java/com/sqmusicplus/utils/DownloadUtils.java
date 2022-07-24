@@ -39,7 +39,7 @@ public class DownloadUtils {
             body.setOnProcess(onProcess);
         }
        Download download;
-        if(fileName == null){
+        if(fileName != null){
             download= body.toFile(path + fileName);
         }else{
             download = body.toFolder(path);
@@ -92,8 +92,6 @@ public class DownloadUtils {
     }
 
 
-//    downloadImage(){
-//
-//    }
+
 
 }

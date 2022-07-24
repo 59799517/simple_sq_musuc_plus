@@ -7,6 +7,7 @@ import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.info.MultimediaInfo;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,6 +23,12 @@ class SimpleSqMusucPlusApplicationTests {
         for (String string : strings) {
             System.out.println("key:  "+string  +"----->"+metadata.get(string));
         }
+        HashMap<String, String> objectObjectHashMap = new HashMap<>();
+        objectObjectHashMap.put("title","13212321");
+        info.setMetadata(objectObjectHashMap);
+
+
+
     }
 
 }
