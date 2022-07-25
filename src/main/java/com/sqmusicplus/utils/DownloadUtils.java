@@ -61,9 +61,8 @@ public class DownloadUtils {
                     builder.readTimeout(7, TimeUnit.DAYS);
                 })
                 .build();
-       HttpResult.Body body = http.async(url)
+       HttpResult.Body body = http.sync(url)
                 .get()
-                .getResult()
                 .getBody();
         if (onProcess != null) {
             body.setOnProcess(onProcess);

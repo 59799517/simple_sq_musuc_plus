@@ -66,7 +66,7 @@ public class ALLcontroller {
 
     /**
      * 下载单曲到服务器
-     * @param br 码率
+     * @param br 码率 156498
      * @return
      */
     @PostMapping("/musicDownload/{id}/{br}")

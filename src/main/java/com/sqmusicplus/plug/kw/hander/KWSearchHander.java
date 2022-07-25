@@ -6,6 +6,8 @@ import cn.hutool.crypto.SecureUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ejlchina.okhttps.OkHttps;
+import com.mpatric.mp3agic.InvalidDataException;
+import com.mpatric.mp3agic.UnsupportedTagException;
 import com.sqmusicplus.album.entity.Album;
 import com.sqmusicplus.album.service.IAlbumService;
 import com.sqmusicplus.artists.entity.Artists;
@@ -20,18 +22,23 @@ import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.enums.KwSearchType;
 import com.sqmusicplus.plug.utils.*;
 import com.sqmusicplus.utils.DownloadUtils;
-import com.sqmusicplus.utils.FileUtils;
 import com.sqmusicplus.utils.MusicUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.TagException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -455,27 +462,26 @@ public class KWSearchHander {
      */
         public String savetodb(File file,Music music){
             try {
-                String suffix = FileUtil.getSuffix(file);
-
-                String md5 = SecureUtil.sha1(file);
-                String sha1 = SecureUtil.md5(file);
-                //查找是否存在
-                Music dbmusic = musicService.getOne(new QueryWrapper<Music>().eq("md5", md5).eq("sha1", sha1));
-                if (dbmusic !=null ) {
-                    FileUtil.del(file);
-                  return null;
-                }
+//                String suffix = FileUtil.getSuffix(file);
+//
+//                String md5 = SecureUtil.sha1(file);
+//                String sha1 = SecureUtil.md5(file);
+//                //查找是否存在
+//                Music dbmusic = musicService.getOne(new QueryWrapper<Music>().eq("md5", md5).eq("sha1", sha1));
+//                if (dbmusic !=null ) {
+//                  return null;
+//                }
                 Integer albumID = music.getAlbumId();
                 Integer artistsID = music.getArtistsId();
-                String s = music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() ;
-                File newFile = FileUtil.rename(file, s, true, true);
+//                String s = music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() ;
+//                File newFile = FileUtil.rename(file, s, true, true);
                 //移动文件
-                String toDBFilePath= File.separator + music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
+//                String toDBFilePath= File.separator + music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
                 //查看艺术家是否存在
-                QueryWrapper<Artists> music_artists_name = new QueryWrapper<Artists>().eq("music_artists_name", music.getMusicArtists());
+//                QueryWrapper<Artists> music_artists_name = new QueryWrapper<Artists>().eq("music_artists_name", music.getMusicArtists());
 //                Artists dbartists = artistsService.getOne(music_artists_name);
-                Integer artistsid = null;
-                Integer albumid = null;
+//                Integer artistsid = null;
+//                Integer albumid = null;
                 //判断是否拥有cover文件
 //                if (dbartists ==null) {
                     Artists artists = autoQueryArtist(artistsID);
@@ -493,7 +499,7 @@ public class KWSearchHander {
                   artists.setMusicArtistsPhoto("cover");
                     });
 //                    artistsService.save(artists);
-                    artistsid = artists.getId();
+//                    artistsid = artists.getId();
 //                }else{
 //                    artistsid=dbartists.getId();
 //                }
@@ -505,24 +511,31 @@ public class KWSearchHander {
                     String imagePath = musicConfig.getMusicPath()+File.separator + music.getMusicArtists() + File.separator + music.getMusicAlbum();
                     DownloadUtils.download(albumImg,imagePath,onSuccess ->{
 //                        String imagename =SecureUtil.md5(onSuccess) +SecureUtil.sha1(onSuccess)+"."+FileUtil.getSuffix(onSuccess);
-                         FileUtil.rename(onSuccess, "cover", true, true);
+                        File cover = FileUtil.rename(onSuccess, "cover", true, true);
+                        String name =  FileUtil.getPrefix(file);
                         album.setAlbumImg("cover");
-                            });
+                        FileUtil.writeBytes(music.getMusicLyric().getBytes(),cover.getParentFile()+File.separator+name+".lrc");
+                        try {
+                            MusicUtils.setMediaFileInfo(file,music.getMusicName(),music.getMusicAlbum(),music.getMusicArtists(),"SqMusic",music.getMusicLyric(), cover);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    });
 //                    albumService.save(album);
-                    albumid  = album.getId();
+//                    albumid  = album.getId();
 //                }else{
 //                    albumid= dbalbum.getId();
 //                }
                 //保存到music库中
-                MusicUtils.setMediaFileInfo(newFile,music.getMusicName(),music.getMusicAlbum(),music.getMusicArtists(),"SqMusic",music.getMusicLyric());
                 //转码加写入
-                music.setMusicFormat(suffix);
-                music.setOther(JSONObject.parseObject(JSONObject.toJSONString(music.getOther())));
-                music.setAlbumId(albumid);
-                music.setArtistsId(artistsid);
-                music.setMd5(md5);
-                music.setSha1(sha1);
-                musicService.save(music);
+//                music.setMusicFormat(suffix);
+//                music.setOther(JSONObject.parseObject(JSONObject.toJSONString(music.getOther())));
+//                music.setAlbumId(albumid);
+//                music.setArtistsId(artistsid);
+//                music.setMd5(md5);
+//                music.setSha1(sha1);
+//                musicService.save(music);
                 //暂时不转码
                 //将查询的信息写入到文件标签中
 
@@ -547,7 +560,7 @@ public class KWSearchHander {
                 return null;
             }
 
-            return music.getId().toString();
+            return null;
 
         }
 
@@ -620,7 +633,7 @@ public class KWSearchHander {
        String musicPath = musicConfig.getMusicPath();
        File file = new File(musicPath);
        String basepath = music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
-       File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + " - " + IdUtil.simpleUUID() + "." + stringStringHashMap.get("type"));
+       File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + "." + stringStringHashMap.get("type"));
        type.getParentFile().mkdirs();
        DownloadPool downloadPool = new DownloadPool();
 //       downloadPool.setSearchHander(searchHander);
