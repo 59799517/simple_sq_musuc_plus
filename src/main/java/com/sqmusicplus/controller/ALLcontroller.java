@@ -131,7 +131,7 @@ public class ALLcontroller {
      * @return
      */
     @PostMapping("/ArtistDownload/{id}/{br}")
-    public AjaxResult ArtistDownload(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br,@RequestBody Music music){
+    public AjaxResult ArtistDownload(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br){
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
         if(br!=null){

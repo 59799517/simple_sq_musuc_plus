@@ -5,6 +5,8 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.ejlchina.okhttps.HTTP;
+import com.ejlchina.okhttps.HttpUtils;
 import com.ejlchina.okhttps.OkHttps;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.UnsupportedTagException;
@@ -24,6 +26,7 @@ import com.sqmusicplus.plug.utils.*;
 import com.sqmusicplus.utils.DownloadUtils;
 import com.sqmusicplus.utils.MusicUtils;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 import org.jaudiotagger.audio.exceptions.CannotReadException;
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
@@ -38,6 +41,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -85,7 +89,7 @@ public class KWSearchHander {
                 .replaceAll("#\\{searchKey}", searchkey)
                 .replaceAll("#\\{pagesize}",pageSize.toString())
                 .replaceAll("#\\{searchType}", KwSearchType.MUSIC.getValue());
-        SearchMusicResult searchMusicResult = OkHttps.sync(s)
+        SearchMusicResult searchMusicResult = DownloadUtils.getHttp().sync(s)
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(SearchMusicResult.class);
@@ -118,7 +122,7 @@ public class KWSearchHander {
                 .replaceAll("#\\{pagesize}",pageSize.toString())
                 .replaceAll("#\\{searchKey}", artistname)
                 .replaceAll("#\\{searchType}", KwSearchType.ARTIST.getValue());
-        SearchArtistResult searchArtistResult = OkHttps.sync(searchUrl)
+        SearchArtistResult searchArtistResult = DownloadUtils.getHttp().sync(searchUrl)
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(SearchArtistResult.class);
@@ -151,7 +155,7 @@ public class KWSearchHander {
                .replaceAll("#\\{pagesize}",pageSize.toString())
                .replaceAll("#\\{searchKey}", artistname)
                .replaceAll("#\\{searchType}", KwSearchType.ARTIST.getValue());
-       SearchArtistResult searchArtistResult = OkHttps.sync(searchUrl)
+       SearchArtistResult searchArtistResult = DownloadUtils.getHttp().sync(searchUrl)
                .get()                          // GET请求
                .getBody()                      // 响应报文体
                .toBean(SearchArtistResult.class);
@@ -159,7 +163,7 @@ public class KWSearchHander {
        SearchArtistResult.AbslistDTO abslistDTO = abslist.stream().iterator().next();
        String artistid = abslistDTO.getArtistid();
        String albumListUrl = config.getAlbumListUrl().replaceAll("#\\{artistid}", artistid);
-       AlbumResult albumResult = OkHttps.sync(albumListUrl)
+       AlbumResult albumResult = DownloadUtils.getHttp().sync(albumListUrl)
                .get()                          // GET请求
                .getBody()                      // 响应报文体
                .toBean(AlbumResult.class);
@@ -185,7 +189,7 @@ public class KWSearchHander {
                 .replaceAll("#\\{pagesize}",pageSize.toString())
                 .replaceAll("#\\{searchKey}", albumsName)
                 .replaceAll("#\\{searchType}", KwSearchType.ALBUM.getValue());
-        SearchAlbumResult searchAlbumResult = OkHttps.sync(searchUrl)
+        SearchAlbumResult searchAlbumResult = DownloadUtils.getHttp().sync(searchUrl)
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(SearchAlbumResult.class);
@@ -209,7 +213,7 @@ public class KWSearchHander {
                 .replaceAll("#\\{pagesize}","1")
                 .replaceAll("#\\{searchKey}", albumsName)
                 .replaceAll("#\\{searchType}", KwSearchType.ALBUM.getValue());
-        SearchAlbumResult searchAlbumResult = OkHttps.sync(searchUrl)
+        SearchAlbumResult searchAlbumResult = DownloadUtils.getHttp().sync(searchUrl)
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(SearchAlbumResult.class);
@@ -226,7 +230,7 @@ public class KWSearchHander {
      */
     public Album queryAlbumsInfoInfoByAlbumsId(Integer albumid){
         String searchUrl = config.getAlbumInfoUrl().replaceAll("#\\{albumid}",albumid.toString());
-        AlbumInfoResult albumInfoResult = OkHttps.sync(searchUrl)
+        AlbumInfoResult albumInfoResult = DownloadUtils.getHttp().sync(searchUrl)
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(AlbumInfoResult.class);
@@ -263,8 +267,10 @@ public class KWSearchHander {
      */
     public Music queryMusicInfoBySongId(Integer SongId){
         String searchUrl = config.getSongInfoUrl().replaceAll("#\\{musicId}",SongId.toString());
-        MusicInfoResult musicInfoResult = OkHttps.sync(searchUrl)
-                .get()                          // GET请求
+
+        MusicInfoResult musicInfoResult = DownloadUtils.getHttp().async(searchUrl)
+                .get()
+                .getResult()// GET请求
                 .getBody()                      // 响应报文体
                 .toBean(MusicInfoResult.class);
         MusicInfoResult.DataDTO data = musicInfoResult.getData();
@@ -303,7 +309,7 @@ public class KWSearchHander {
             log.error("获取下载链接失败：{}",e.getMessage());
            return null;
         }
-        String s1 = OkHttps.sync(downloadurl).get().getBody().toByteString().utf8();
+        String s1 = DownloadUtils.getHttp().sync(downloadurl).get().getBody().toByteString().utf8();
 //        ByteString of = ByteString.of(OkHttps.sync(downloadurl).get().getBody().toBytes()).
         System.out.println(s1);
         downloadurl= s1.split("\n")[2].split("=")[1].split("\r")[0];
@@ -334,7 +340,7 @@ public class KWSearchHander {
             log.error("获取下载链接失败：{}",e.getMessage());
             return null;
         }
-        String s1 = OkHttps.sync(downloadurl).get().getBody().toByteString().utf8();
+        String s1 = DownloadUtils.getHttp().sync(downloadurl).get().getBody().toByteString().utf8();
         System.out.println(s1);
         String bitrate = s1.split("\n")[1].split("=")[1];
         String format = s1.split("\n")[0].split("=")[1];
@@ -365,7 +371,7 @@ public class KWSearchHander {
                 .replaceAll("#\\{pagesize}","1")
                 .replaceAll("#\\{searchKey}", artistname)
                 .replaceAll("#\\{searchType}", KwSearchType.ARTIST.getValue());
-        SearchArtistResult searchArtistResult = OkHttps.sync(searchUrl)
+        SearchArtistResult searchArtistResult = DownloadUtils.getHttp().sync(searchUrl)
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(SearchArtistResult.class);
@@ -387,7 +393,7 @@ public class KWSearchHander {
      */
     public  Artists  autoQueryArtist(Integer artistid){
         String url = config.getArtistInfoUrl().replaceAll("#\\{artistid}", artistid.toString());
-        ArtisInfoResult artisInfoResult = OkHttps.sync(url)
+        ArtisInfoResult artisInfoResult = DownloadUtils.getHttp().sync(url)
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(ArtisInfoResult.class);
@@ -408,7 +414,7 @@ public class KWSearchHander {
     public List<String> artistAlbumList(Integer artistid){
         ArrayList<String> albumids = new ArrayList<>();
         String url = config.getArtistAlbumListUrl().replaceAll("#\\{artistid}", artistid.toString());
-        ArtisAlbumListResult artisAlbumListResult = OkHttps.sync(url)
+        ArtisAlbumListResult artisAlbumListResult = HttpUtils.sync(url)
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(ArtisAlbumListResult.class);
@@ -432,7 +438,7 @@ public class KWSearchHander {
                 .replaceAll("#\\{searchType}", KwSearchType.MUSIC.getValue());
         SearchMusicResult searchMusicResult = null;
         try {
-            searchMusicResult = OkHttps.sync(s)
+            searchMusicResult = DownloadUtils.getHttp().sync(s)
                     .get()                          // GET请求
                     .getBody()                      // 响应报文体
                     .toBean(SearchMusicResult.class);
@@ -578,7 +584,7 @@ public class KWSearchHander {
             String musicPath = musicConfig.getMusicPath();
             File file = new File(musicPath);
             String searchUrl = config.getAlbumInfoUrl().replaceAll("#\\{albumid}",albumid.toString());
-            AlbumInfoResult albumInfoResult = OkHttps.sync(searchUrl)
+            AlbumInfoResult albumInfoResult = DownloadUtils.getHttp().sync(searchUrl)
                     .get()                          // GET请求
                     .getBody()                      // 响应报文体
                     .toBean(AlbumInfoResult.class);
@@ -589,8 +595,7 @@ public class KWSearchHander {
                 Music music = queryMusicInfoBySongId(Integer.valueOf(id));
                 HashMap<String, String> stringStringHashMap = autoDownloadUrl(id + "", finalKwBrType);
                 String basepath = music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
-                String reduuid = IdUtil.simpleUUID();
-                File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + " - " + reduuid + "." + stringStringHashMap.get("type"));
+                File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + "." + stringStringHashMap.get("type"));
                 type.getParentFile().mkdirs();
                 taskExecutor.execute(() -> {
                     downloadPool.add();

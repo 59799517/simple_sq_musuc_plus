@@ -1,8 +1,6 @@
 package com.sqmusicplus.utils;
 
-import com.ejlchina.okhttps.Download;
-import com.ejlchina.okhttps.HTTP;
-import com.ejlchina.okhttps.HttpResult;
+import com.ejlchina.okhttps.*;
 import com.ejlchina.okhttps.Process;
 import okhttp3.OkHttpClient;
 
@@ -19,6 +17,37 @@ import java.util.function.Consumer;
  */
 
 public class DownloadUtils {
+
+
+    public static HTTP getHttp(){
+
+        HTTP.Builder hb = HTTP.builder().config((OkHttpClient.Builder builder) -> {
+            // 连接超时时间（默认10秒）
+            builder.connectTimeout(7, TimeUnit.DAYS);
+            // 写入超时时间（默认10秒）
+            builder.writeTimeout(7, TimeUnit.DAYS);
+            // 读取超时时间（默认10秒）
+            builder.readTimeout(7, TimeUnit.DAYS);
+            //添加重试
+            builder.addInterceptor(chain -> {
+                int retryTimes = 0;
+                while (true) {
+                    try {
+                        return chain.proceed(chain.request());
+                    } catch (Exception e) {
+                        if (retryTimes >= 3) {
+                            throw e;
+                        }
+                        System.out.println("超时重试第" + retryTimes + "次！");
+                        retryTimes++;
+                    }
+                }
+            });
+
+        });
+        ConvertProvider.inject(hb);
+         return hb.build();
+    }
 
    public static void download(String url, String path, String fileName, Consumer<Process> onProcess,Consumer<File> onSuccess) {
        HTTP http = HTTP.builder()
@@ -59,6 +88,7 @@ public class DownloadUtils {
                     builder.writeTimeout(7, TimeUnit.DAYS);
                     // 读取超时时间（默认10秒）
                     builder.readTimeout(7, TimeUnit.DAYS);
+
                 })
                 .build();
        HttpResult.Body body = http.sync(url)
