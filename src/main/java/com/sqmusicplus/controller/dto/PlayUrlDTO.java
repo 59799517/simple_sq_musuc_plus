@@ -1,10 +1,8 @@
 package com.sqmusicplus.controller.dto;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.sqmusicplus.album.entity.Album;
-import com.sqmusicplus.artists.entity.Artists;
+import com.sqmusicplus.entity.Album;
+import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.config.EnumValue;
 import lombok.Data;
 

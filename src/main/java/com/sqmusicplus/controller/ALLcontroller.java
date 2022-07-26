@@ -1,29 +1,20 @@
 package com.sqmusicplus.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.sqmusicplus.album.entity.Album;
-import com.sqmusicplus.artists.entity.Artists;
+import com.sqmusicplus.entity.Album;
+import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.config.AjaxResult;
-import com.sqmusicplus.config.MusicConfig;
 import com.sqmusicplus.controller.dto.PlayUrlDTO;
-import com.sqmusicplus.controller.dto.SearchMusicDTO;
-import com.sqmusicplus.music.entity.Music;
+import com.sqmusicplus.entity.Music;
 import com.sqmusicplus.plug.entity.PlugSearchResult;
-import com.sqmusicplus.plug.kw.config.KwConfig;
+import com.sqmusicplus.plug.kw.entity.SearchAlbumResult;
+import com.sqmusicplus.plug.kw.entity.SearchArtistResult;
 import com.sqmusicplus.plug.kw.entity.SearchMusicResult;
 import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.hander.KWSearchHander;
-import com.sqmusicplus.plug.utils.DownloadPool;
-import com.sqmusicplus.utils.DownloadUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -48,9 +39,8 @@ public class ALLcontroller {
      */
     @GetMapping("/searchMusic/{keyword}/{pageSize}/{pageIndex}")
     public AjaxResult searchMusic(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
-        PlugSearchResult<Music> plugSearchMusicResult;
-            plugSearchMusicResult = searchHander.queryMusic(keyword, pageIndex - 1, pageSize);
-        return AjaxResult.success(plugSearchMusicResult);
+        SearchMusicResult searchMusicResult = searchHander.queryMusic(keyword, pageIndex - 1, pageSize);
+        return AjaxResult.success(searchMusicResult);
     }
 
     /**
@@ -122,8 +112,8 @@ public class ALLcontroller {
      */
     @GetMapping("/searchArtist/{keyword}/{pageSize}/{pageIndex}")
     public AjaxResult searchArtist(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
-        PlugSearchResult<Artists> artistsPlugSearchResult = searchHander.queryArtist(keyword, pageIndex - 1, pageSize);
-        return AjaxResult.success(artistsPlugSearchResult);
+        SearchArtistResult searchArtistResult = searchHander.queryArtist(keyword, pageIndex - 1, pageSize);
+        return AjaxResult.success(searchArtistResult);
     }
     /**
      * 下载歌手全部歌曲到服务器
@@ -156,8 +146,8 @@ public class ALLcontroller {
      */
     @GetMapping("/searchAlbum/{keyword}/{pageSize}/{pageIndex}")
     public AjaxResult searchAlbum(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
-        PlugSearchResult<Album> albumPlugSearchResult = searchHander.queryAlbumsInfoByAlbumsName(keyword, pageIndex - 1, pageSize);
-        return AjaxResult.success(albumPlugSearchResult);
+        SearchAlbumResult searchAlbumResult = searchHander.queryAlbumsInfoByAlbumsName(keyword, pageIndex - 1, pageSize);
+        return AjaxResult.success(searchAlbumResult);
     }
     /**
      * 下载歌手全部歌曲到服务器

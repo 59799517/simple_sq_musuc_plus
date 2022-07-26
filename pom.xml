@@ -42,7 +42,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-<!--工具-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version> 3.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.36.0.3</version>
+        </dependency>
+
+        <!--工具-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -88,11 +99,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.mpatric</groupId>
-            <artifactId>mp3agic</artifactId>
-            <version>0.9.1</version>
-        </dependency>
 
         <!--音乐标签工具-->
 
@@ -106,49 +112,10 @@
             <artifactId>jave-all-deps</artifactId>
             <version>${jave-all-deps.version}</version>
         </dependency>
-<!--        &lt;!&ndash; win系统平台的依赖 &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>ws.schild</groupId>-->
-<!--            <artifactId>jave-nativebin-win64</artifactId>-->
-<!--            <version>${jave-all-deps.version}</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash; linux系统平台的依赖 &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>ws.schild</groupId>-->
-<!--            <artifactId>jave-nativebin-linux64</artifactId>-->
-<!--            <version>${jave-all-deps.version}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>ws.schild</groupId>-->
-<!--            <artifactId>jave-nativebin-linux-arm64</artifactId>-->
-<!--            <version>${jave-all-deps.version}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>ws.schild</groupId>-->
-<!--            <artifactId>jave-nativebin-linux32</artifactId>-->
-<!--            <version>${jave-all-deps.version}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>ws.schild</groupId>-->
-<!--            <artifactId>jave-nativebin-linux-arm32</artifactId>-->
-<!--            <version>${jave-all-deps.version}</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org</groupId>
             <artifactId>jaudiotagger</artifactId>
             <version>${jaudiotagger.version}</version>
-        </dependency>
-<!--    数据库    -->
-        <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-            <version>3.36.0.3</version>
-        </dependency>
-        <!-- SpringBoot集成mybatis框架 -->
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>${mybatis-plus-spring-boot.version}</version>
         </dependency>
 
     </dependencies>

@@ -1,14 +1,8 @@
-package com.sqmusicplus.album.entity;
+package com.sqmusicplus.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.sqmusicplus.config.webconfig.shell.RequesrShell;
-import com.sqmusicplus.music.entity.Music;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.apache.ibatis.type.JdbcType;
 
 import java.io.Serializable;
 import java.util.List;
@@ -23,16 +17,13 @@ import java.util.List;
  */
 @Data
 @Accessors(chain = true)
-@TableName("sq_music_album")
-public class Album extends RequesrShell implements Serializable {
+public class Album  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * 主键
      */
-    @TableId(type= IdType.ASSIGN_UUID)
-    private Integer id;
 
     /**
      * 专辑名称
@@ -62,12 +53,10 @@ public class Album extends RequesrShell implements Serializable {
     /**
      * 其他  给插件提供
      */
-    @TableField(jdbcType = JdbcType.VARCHAR)
     private Object other;
     /**
      * 专辑音乐
      */
-    @TableField(exist = false)
     private List<Music> musics;
 
 

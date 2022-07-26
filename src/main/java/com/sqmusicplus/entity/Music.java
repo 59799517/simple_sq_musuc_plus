@@ -1,19 +1,10 @@
-package com.sqmusicplus.music.entity;
+package com.sqmusicplus.entity;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.sqmusicplus.album.entity.Album;
-import com.sqmusicplus.artists.entity.Artists;
 import com.sqmusicplus.config.EnumValue;
-import com.sqmusicplus.config.webconfig.shell.RequesrShell;
-import com.sqmusicplus.plug.JsonObjectHander;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.apache.ibatis.type.JdbcType;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -28,16 +19,14 @@ import java.time.LocalDateTime;
  */
 @Data
 @Accessors(chain = true)
-@TableName("sq_music")
 @ToString
-public class Music extends RequesrShell implements Serializable {
+public class Music  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
      * 歌曲标识
      */
-    @TableId(type = IdType.ASSIGN_UUID)
     private Integer id;
 
     /**
@@ -142,18 +131,12 @@ public class Music extends RequesrShell implements Serializable {
     /**
      * 其他  给插件提供
      */
-    @TableField(jdbcType = JdbcType.VARCHAR,typeHandler = JsonObjectHander.class)
     private JSONObject other;
-    @TableField(exist = false)
     private String plugName;
-    @TableField(exist = false)
     private Album album;
-    @TableField(exist = false)
     private Artists artists;
     @EnumValue(intValues = {128,192,320,1000,2000},message = "仅支持 128,192,320,1000,2000 码率")
-    @TableField(exist = false)
     private Integer bit;
-    @TableField(exist = false)
     private String PlayUrl;
 
 

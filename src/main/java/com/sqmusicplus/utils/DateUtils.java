@@ -90,6 +90,14 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
     /**
      * 日期路径 即年/月/日 如2018/08/08
      */
+    public static final String nowDate()
+    {
+        Date now = new Date();
+        return DateFormatUtils.format(now, "YYYY_MM_DD_HH_MM_SS");
+    }
+    /**
+     * 日期路径 即年/月/日 如2018/08/08
+     */
     public static final String datePath()
     {
         Date now = new Date();

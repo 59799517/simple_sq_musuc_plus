@@ -1,48 +1,37 @@
 package com.sqmusicplus.plug.kw.hander;
 
+import cn.hutool.cache.CacheUtil;
+import cn.hutool.cache.impl.LFUCache;
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.IdUtil;
-import cn.hutool.crypto.SecureUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.ejlchina.okhttps.HTTP;
 import com.ejlchina.okhttps.HttpUtils;
-import com.ejlchina.okhttps.OkHttps;
-import com.mpatric.mp3agic.InvalidDataException;
-import com.mpatric.mp3agic.UnsupportedTagException;
-import com.sqmusicplus.album.entity.Album;
-import com.sqmusicplus.album.service.IAlbumService;
-import com.sqmusicplus.artists.entity.Artists;
-import com.sqmusicplus.artists.service.IArtistsService;
+import com.sqmusicplus.entity.Album;
+import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.config.MusicConfig;
-import com.sqmusicplus.music.entity.Music;
-import com.sqmusicplus.music.service.IMusicService;
+import com.sqmusicplus.entity.Music;
 import com.sqmusicplus.plug.entity.PlugSearchResult;
 import com.sqmusicplus.plug.kw.config.KwConfig;
 import com.sqmusicplus.plug.kw.entity.*;
 import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.enums.KwSearchType;
 import com.sqmusicplus.plug.utils.*;
+import com.sqmusicplus.utils.DateUtils;
 import com.sqmusicplus.utils.DownloadUtils;
 import com.sqmusicplus.utils.MusicUtils;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import org.jaudiotagger.audio.exceptions.CannotReadException;
-import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
-import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
-import org.jaudiotagger.tag.TagException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
+import task.entity.Task;
+import task.service.TaskService;
+import task.service.impl.TaskServiceImpl;
+
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -63,17 +52,7 @@ public class KWSearchHander {
     @Qualifier("threadPoolTaskExecutor")
     private ThreadPoolTaskExecutor taskExecutor;
     @Autowired
-    private IMusicService musicService;
-    @Autowired
-    private IArtistsService artistsService;
-    @Autowired
-    private IAlbumService albumService;
-
-
-
-
-
-
+    private TaskServiceImpl taskService;
 
 
     /**
@@ -83,7 +62,7 @@ public class KWSearchHander {
      * @param pageSize 每页长度
      * @return 歌曲列表
      */
-    public PlugSearchResult<Music> queryMusic(String searchkey, Integer pageIndex,Integer pageSize){
+    public SearchMusicResult queryMusic(String searchkey, Integer pageIndex,Integer pageSize){
         String searchUrl = config.getSearchUrl();
         String s = searchUrl.replaceAll("#\\{pn}", pageIndex.toString())
                 .replaceAll("#\\{searchKey}", searchkey)
@@ -93,21 +72,7 @@ public class KWSearchHander {
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(SearchMusicResult.class);
-        List<SearchMusicResult.AbslistDTO> abslist = searchMusicResult.getAbslist();
-        List<Music> collect = abslist.stream().map(abslistDTO -> {
-            String album = abslistDTO.getAlbum();
-            String aartist = abslistDTO.getAartist();
-            String duration = abslistDTO.getDuration();
-            String url = (config.getSongCoverUrl() + abslistDTO.getWebAlbumpicShort()).replaceAll("/120", "/500");
-            return new Music().setMusicName(abslistDTO.getName()).setMusicAlbum(album).setMusicArtists(aartist).setMusicDuration(Integer.parseInt(duration)).setMusicImage(url).setOther(JSONObject.parseObject(JSONObject.toJSONString(abslistDTO))).setPlugName(config.getId());
-        }).collect(Collectors.toList());
-        PlugSearchResult<Music> plugSearchMusicResult = new PlugSearchResult<Music>()
-        .setSearchIndex(pageIndex)
-        .setSearchKeyWork(searchkey)
-        .setSearchSize(20)
-        .setSearchTotal(searchMusicResult.getTotal())
-        .setRecords(collect);
-        return plugSearchMusicResult;
+        return searchMusicResult;
     }
 
     /**
@@ -117,7 +82,7 @@ public class KWSearchHander {
      * @param pageSize 每页长度
      * @return 歌手信息
      */
-    public PlugSearchResult<Artists> queryArtist(String artistname,Integer pageIndex,Integer pageSize ){
+    public SearchArtistResult queryArtist(String artistname,Integer pageIndex,Integer pageSize ){
         String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", pageIndex.toString())
                 .replaceAll("#\\{pagesize}",pageSize.toString())
                 .replaceAll("#\\{searchKey}", artistname)
@@ -126,19 +91,7 @@ public class KWSearchHander {
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(SearchArtistResult.class);
-        List<SearchArtistResult.AbslistDTO> abslist = searchArtistResult.getAbslist();
-        ArrayList<Artists> resartists = new ArrayList<>();
-        abslist.stream().forEach(abslistDTO -> {
-            Artists artists = new Artists();
-            artists.setMusicArtistsName(abslistDTO.getArtist())
-                    .setMusicArtistsAlias(abslistDTO.getAartist())
-                    .setMusicArtistsPhoto(abslistDTO.getHtsPicpath().replaceAll("/240","/500"))
-                    .setMusicArtistsDescribe(abslistDTO.getDesc())
-                    .setOther(abslistDTO);
-            resartists.add(artists);
-        });
-        return   new PlugSearchResult<Artists>().setSearchSize(20).setSearchIndex(pageIndex).setSearchTotal(Integer.parseInt(searchArtistResult.getTotal())).setRecords(resartists).setSearchKeyWork(artistname);
-
+       return searchArtistResult;
     }
 
 
@@ -150,7 +103,7 @@ public class KWSearchHander {
      * @return  专辑信息
      */
     @Deprecated
-    public PlugSearchResult<Album> queryAlbumsByArtist (String artistname,Integer pageIndex,Integer pageSize){
+    public AlbumResult queryAlbumsByArtist (String artistname,Integer pageIndex,Integer pageSize){
        String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", pageIndex.toString())
                .replaceAll("#\\{pagesize}",pageSize.toString())
                .replaceAll("#\\{searchKey}", artistname)
@@ -167,14 +120,7 @@ public class KWSearchHander {
                .get()                          // GET请求
                .getBody()                      // 响应报文体
                .toBean(AlbumResult.class);
-        List<AlbumResult.AlbumlistDTO> albumlist = albumResult.getAlbumlist();
-        ArrayList<Album> albums = new ArrayList<>();
-        albumlist.forEach(e->{
-            Album album = new Album().setAlbumArtists(e.getArtist()).setAlbumImg(e.getPic().replaceAll("/240", "/500"))
-                    .setAlbumDescribe(e.getInfo()).setAlbumName(e.getName()).setAlbumTime(e.getPub()).setOther(e);
-            albums.add(album);
-        });
-        return   new PlugSearchResult<Album>().setSearchSize(1000).setSearchIndex(0).setSearchTotal(Integer.parseInt(searchArtistResult.getTotal())).setRecords(albums).setSearchKeyWork(artistname);
+       return albumResult;
    }
 
     /**
@@ -184,7 +130,7 @@ public class KWSearchHander {
      * @param pageSize 每页长度
      * @return 专辑信息
      */
-    public  PlugSearchResult<Album> queryAlbumsInfoByAlbumsName(String albumsName,Integer pageIndex,Integer pageSize){
+    public  SearchAlbumResult queryAlbumsInfoByAlbumsName(String albumsName,Integer pageIndex,Integer pageSize){
         String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", pageIndex.toString())
                 .replaceAll("#\\{pagesize}",pageSize.toString())
                 .replaceAll("#\\{searchKey}", albumsName)
@@ -193,35 +139,28 @@ public class KWSearchHander {
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(SearchAlbumResult.class);
-        List<SearchAlbumResult.AlbumlistDTO> albumlist = searchAlbumResult.getAlbumlist();
-        ArrayList<Album> albums = new ArrayList<>();
-        albumlist.forEach(e->{
-            Album album = new Album().setAlbumArtists(e.getArtist()).setAlbumImg(e.getPic().replaceAll("/240", "/500"))
-                    .setAlbumDescribe(e.getInfo()).setAlbumName(e.getName()).setAlbumTime(e.getPub()).setOther(e);
-            albums.add(album);
-        });
-        return   new PlugSearchResult<Album>().setSearchSize(20).setSearchIndex(pageIndex).setSearchTotal(Integer.parseInt(searchAlbumResult.getTotal())).setRecords(albums).setSearchKeyWork(albumsName);
+        return searchAlbumResult;
     }
 
-    /**
-     *  根据专辑名称查询专辑（返回最接近的）
-     * @param albumsName 专辑名称
-     * @return 专辑信息
-     */
-    public Album AutoQueryAlbumsInfoByAlbumsName(String albumsName){
-        String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", "0")
-                .replaceAll("#\\{pagesize}","1")
-                .replaceAll("#\\{searchKey}", albumsName)
-                .replaceAll("#\\{searchType}", KwSearchType.ALBUM.getValue());
-        SearchAlbumResult searchAlbumResult = DownloadUtils.getHttp().sync(searchUrl)
-                .get()                          // GET请求
-                .getBody()                      // 响应报文体
-                .toBean(SearchAlbumResult.class);
-        List<SearchAlbumResult.AlbumlistDTO> albumlist = searchAlbumResult.getAlbumlist();
-        SearchAlbumResult.AlbumlistDTO e = albumlist.get(0);
-        return new Album().setAlbumArtists(e.getArtist()).setAlbumImg(e.getPic().replaceAll("/240", "/500"))
-                .setAlbumDescribe(e.getInfo()).setAlbumName(e.getName()).setAlbumTime(e.getPub()).setOther(e);
-    }
+//    /**
+//     *  根据专辑名称查询专辑（返回最接近的）
+//     * @param albumsName 专辑名称
+//     * @return 专辑信息
+//     */
+//    public Album AutoQueryAlbumsInfoByAlbumsName(String albumsName){
+//        String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", "0")
+//                .replaceAll("#\\{pagesize}","1")
+//                .replaceAll("#\\{searchKey}", albumsName)
+//                .replaceAll("#\\{searchType}", KwSearchType.ALBUM.getValue());
+//        SearchAlbumResult searchAlbumResult = DownloadUtils.getHttp().sync(searchUrl)
+//                .get()                          // GET请求
+//                .getBody()                      // 响应报文体
+//                .toBean(SearchAlbumResult.class);
+//        List<SearchAlbumResult.AlbumlistDTO> albumlist = searchAlbumResult.getAlbumlist();
+//        SearchAlbumResult.AlbumlistDTO e = albumlist.get(0);
+//        return new Album().setAlbumArtists(e.getArtist()).setAlbumImg(e.getPic().replaceAll("/240", "/500"))
+//                .setAlbumDescribe(e.getInfo()).setAlbumName(e.getName()).setAlbumTime(e.getPub()).setOther(e);
+//    }
 
     /**
      *  根据专辑id查询专辑信息
@@ -634,6 +573,7 @@ public class KWSearchHander {
      * @param music 歌曲信息
      */
    public void musicDownload(String id,KwBrType br,Music music){
+       Task task = new Task();
        HashMap<String, String> stringStringHashMap = autoDownloadUrl(id, br);
        String musicPath = musicConfig.getMusicPath();
        File file = new File(musicPath);
@@ -641,16 +581,26 @@ public class KWSearchHander {
        File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + "." + stringStringHashMap.get("type"));
        type.getParentFile().mkdirs();
        DownloadPool downloadPool = new DownloadPool();
-//       downloadPool.setSearchHander(searchHander);
        downloadPool.add();
        downloadPool.addToRetriesPool(stringStringHashMap.get("url"),music,type);
-       DownloadUtils.download(stringStringHashMap.get("url"),type, onSuccess->{
+       taskExecutor.execute(()-> DownloadUtils.download(stringStringHashMap.get("url"), type, onSuccess -> {
            savetodb(onSuccess, music);
-       },onFailure ->{
-           log.error("下载歌曲{}失败  ->   原因{}",music.getMusicName()+"- "+music.getMusicArtists(),onFailure.getException().getMessage());
-           downloadPool.addToRetriesPool(stringStringHashMap.get("url"),music,type);
+           task.setMusicInfo(JSONObject.toJSONString(music));
+           task.setCreateTime(DateUtils.nowDate());
+           task.setStatus(0);
+           task.setName(music.getMusicName());
+           taskService.save(task);
+       }, onFailure -> {
+           task.setMusicInfo(JSONObject.toJSONString(music));
+           task.setCreateTime(DateUtils.nowDate());
+           task.setStatus(1);
+           task.setName(music.getMusicName());
+           taskService.save(task);
+           log.error("下载歌曲{}失败  ->   原因{}", music.getMusicName() + "- " + music.getMusicArtists(), onFailure.getException().getMessage());
+           downloadPool.addToRetriesPool(stringStringHashMap.get("url"), music, type);
            onFailure.getFile().delete();
-       });
+       }));
+
     }
 
 }

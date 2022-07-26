@@ -35,7 +35,11 @@ mybatis-plus:
   # 配置mapper的扫描，找到所有的mapper.xml映射文件
   mapperLocations: classpath*:mapper/**/*Mapper.xml
   # 加载全局的配置文件
-  configLocation: classpath:mybatis/mybatis-config.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    cache-enabled: true
+    default-executor-type: SIMPLE
+    use-generated-keys: true
   #  typeEnumsPackage: com.txj.zdgh.**.dbenum
   global-config:
     db-config:
