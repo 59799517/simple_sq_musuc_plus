@@ -538,10 +538,21 @@ public class KWSearchHander {
                 type.getParentFile().mkdirs();
                 taskExecutor.execute(() -> {
                     downloadPool.add();
+                    Task task = new Task();
                     DownloadUtils.download(stringStringHashMap.get("url"),type, onSuccess->{
                         savetodb(onSuccess, music);
+                        task.setMusicInfo(JSONObject.toJSONString(music));
+                        task.setCreateTime(DateUtils.nowDate());
+                        task.setStatus(0);
+                        task.setName(music.getMusicName());
+                        taskService.save(task);
                     },onFailure ->{
                         log.error("下载歌曲{}失败  ->   原因{}",music.getMusicName()+"- "+music.getMusicArtists(),onFailure.getException().getMessage());
+                        task.setMusicInfo(JSONObject.toJSONString(music));
+                        task.setCreateTime(DateUtils.nowDate());
+                        task.setStatus(1);
+                        task.setName(music.getMusicName());
+                        taskService.save(task);
                         downloadPool.addToRetriesPool(stringStringHashMap.get("url"),music,type);
                         onFailure.getFile().delete();
                     });
