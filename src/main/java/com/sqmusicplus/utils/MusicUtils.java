@@ -52,7 +52,9 @@ public class MusicUtils {
         tag.setField(FieldKey.ALBUM,album);
         tag.setField(FieldKey.ARTIST,artist);
         tag.setField(FieldKey.COMMENT,comment);
-        tag.setField(FieldKey.LYRICS,lyrics);
+        if(StringUtils.isNotEmpty(lyrics)){
+            tag.setField(FieldKey.LYRICS,lyrics);
+        }
         if (image!=null){
             try {
                 Artwork firstArtwork = tag.getFirstArtwork();

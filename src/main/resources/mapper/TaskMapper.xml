@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqmusicplus.task.mapper.TaskMapper">
+
+    <resultMap id="BaseResultMap" type="com.sqmusicplus.task.entity.Task">
+            <id property="id" column="id" jdbcType="OTHER"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="OTHER"/>
+            <result property="createTime" column="create_time" jdbcType="VARCHAR"/>
+            <result property="musicInfo" column="music_info" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,name,status,
+        create_time,music_info
+    </sql>
+</mapper>

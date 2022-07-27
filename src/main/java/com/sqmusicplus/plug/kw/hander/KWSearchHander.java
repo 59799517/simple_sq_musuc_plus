@@ -1,15 +1,14 @@
 package com.sqmusicplus.plug.kw.hander;
 
-import cn.hutool.cache.CacheUtil;
-import cn.hutool.cache.impl.LFUCache;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IORuntimeException;
 import com.alibaba.fastjson.JSONObject;
 import com.ejlchina.okhttps.HttpUtils;
+import com.sqmusicplus.config.DownloadStatus;
 import com.sqmusicplus.entity.Album;
 import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.config.MusicConfig;
 import com.sqmusicplus.entity.Music;
-import com.sqmusicplus.plug.entity.PlugSearchResult;
 import com.sqmusicplus.plug.kw.config.KwConfig;
 import com.sqmusicplus.plug.kw.entity.*;
 import com.sqmusicplus.plug.kw.enums.KwBrType;
@@ -23,9 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
-import task.entity.Task;
-import task.service.TaskService;
-import task.service.impl.TaskServiceImpl;
+import com.sqmusicplus.task.entity.Task;
+import com.sqmusicplus.task.service.TaskService;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -52,7 +50,7 @@ public class KWSearchHander {
     @Qualifier("threadPoolTaskExecutor")
     private ThreadPoolTaskExecutor taskExecutor;
     @Autowired
-    private TaskServiceImpl taskService;
+    private TaskService taskService;
 
 
     /**
@@ -249,10 +247,10 @@ public class KWSearchHander {
            return null;
         }
         String s1 = DownloadUtils.getHttp().sync(downloadurl).get().getBody().toByteString().utf8();
-//        ByteString of = ByteString.of(OkHttps.sync(downloadurl).get().getBody().toBytes()).
-        System.out.println(s1);
-        downloadurl= s1.split("\n")[2].split("=")[1].split("\r")[0];
 
+        downloadurl= s1.split("\n")[2].split("=")[1].split("\r")[0];
+        System.out.println(downloadurl);
+        System.out.println("id:"+musicId+"-------------------->"+musicId);
         return downloadurl;
     }
 
@@ -279,22 +277,35 @@ public class KWSearchHander {
             log.error("获取下载链接失败：{}",e.getMessage());
             return null;
         }
-        String s1 = DownloadUtils.getHttp().sync(downloadurl).get().getBody().toByteString().utf8();
-        System.out.println(s1);
-        String bitrate = s1.split("\n")[1].split("=")[1];
-        String format = s1.split("\n")[0].split("=")[1];
-        if (bitrate.replaceAll("\r","").equals(brvalue.getBit()+"")){
-            downloadurl= s1.split("\n")[2].split("=")[1].split("\r")[0];
-            HashMap<String, String> stringStringHashMap = new HashMap<>();
-            stringStringHashMap.put("url",downloadurl);
-            stringStringHashMap.put("type",format.replaceAll("\r",""));
-            stringStringHashMap.put("bit",bitrate.replaceAll("\r",""));
-            return stringStringHashMap;
-        }else{
-           return autoDownloadUrl(musicId,KwBrType.MP3_320);
+        try {
+            String s1 = DownloadUtils.getHttp().sync(downloadurl).get().getBody().toByteString().utf8();
+            System.out.println("id:"+musicId+"-------------------->"+s1);
+            String bitrate = s1.split("\n")[1].split("=")[1];
+            String format = s1.split("\n")[0].split("=")[1];
+//            if (bitrate.replaceAll("\r","").equals(brvalue.getBit()+"")){
+                downloadurl= s1.split("\n")[2].split("=")[1].split("\r")[0];
+                HashMap<String, String> stringStringHashMap = new HashMap<>();
+                stringStringHashMap.put("url",downloadurl);
+                stringStringHashMap.put("type",format.replaceAll("\r",""));
+                stringStringHashMap.put("bit",bitrate.replaceAll("\r",""));
+                return stringStringHashMap;
+//            }
+//            else{
+//                log.debug("id为{}-->未找到{}格式：切换320",musicId,brvalue.getBit());
+//                HashMap<String, String> stringStringHashMap = autoDownloadUrl(musicId, KwBrType.MP3_320);
+//                if(stringStringHashMap.get("bit").equals("320")){
+//                    return stringStringHashMap;
+//                }else{
+//                    log.debug("id为{}-->未找到320格式：切换128",musicId);
+//                    return autoDownloadUrl(musicId, KwBrType.MP3_128);
+//                }
+//            }
+        } catch (Exception e){
+            e.printStackTrace();
         }
 
 
+    return null;
     }
 
 
@@ -407,99 +418,45 @@ public class KWSearchHander {
      */
         public String savetodb(File file,Music music){
             try {
-//                String suffix = FileUtil.getSuffix(file);
-//
-//                String md5 = SecureUtil.sha1(file);
-//                String sha1 = SecureUtil.md5(file);
-//                //查找是否存在
-//                Music dbmusic = musicService.getOne(new QueryWrapper<Music>().eq("md5", md5).eq("sha1", sha1));
-//                if (dbmusic !=null ) {
-//                  return null;
-//                }
                 Integer albumID = music.getAlbumId();
                 Integer artistsID = music.getArtistsId();
-//                String s = music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() ;
-//                File newFile = FileUtil.rename(file, s, true, true);
-                //移动文件
-//                String toDBFilePath= File.separator + music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
-                //查看艺术家是否存在
-//                QueryWrapper<Artists> music_artists_name = new QueryWrapper<Artists>().eq("music_artists_name", music.getMusicArtists());
-//                Artists dbartists = artistsService.getOne(music_artists_name);
-//                Integer artistsid = null;
-//                Integer albumid = null;
-                //判断是否拥有cover文件
-//                if (dbartists ==null) {
-                    Artists artists = autoQueryArtist(artistsID);
-                    //不存在则添加
-                    artists.setOther(JSONObject.toJSONString(artists.getOther()));
-              String downloadurl = (config.getStarheads()+artists.getMusicArtistsPhoto()).replaceAll("/120", "/500");
+                Artists artists = autoQueryArtist(artistsID);
+                artists.setOther(JSONObject.toJSONString(artists.getOther()));
+                String downloadurl = (config.getStarheads()+artists.getMusicArtistsPhoto()).replaceAll("/120", "/500");
                 String downliadpath =   musicConfig.getMusicPath()+File.separator+artists.getMusicArtistsName();
-              DownloadUtils.download(downloadurl, downliadpath,onSuccess ->{
-//                        String imagename =SecureUtil.md5(onSuccess) +SecureUtil.sha1(onSuccess)+"."+FileUtil.getSuffix(onSuccess);
+                DownloadUtils.download(downloadurl, downliadpath,onSuccess ->{
                   try {
                       FileUtil.rename(onSuccess, "cover", true, true);
                   } catch (Exception e) {
-
+                      FileUtil.del(onSuccess);
                   }
                   artists.setMusicArtistsPhoto("cover");
                     });
-//                    artistsService.save(artists);
-//                    artistsid = artists.getId();
-//                }else{
-//                    artistsid=dbartists.getId();
-//                }
                 Album album = queryAlbumsInfoInfoByAlbumsId(albumID);
-                //查看专辑是否存在
-//                Album dbalbum = albumService.getOne(new QueryWrapper<Album>().eq("album_name", album.getAlbumName()).eq("album_time", album.getAlbumTime()));
-//                if(dbalbum ==null){
+
                     String albumImg = album.getAlbumImg();
                     String imagePath = musicConfig.getMusicPath()+File.separator + music.getMusicArtists() + File.separator + music.getMusicAlbum();
                     DownloadUtils.download(albumImg,imagePath,onSuccess ->{
-//                        String imagename =SecureUtil.md5(onSuccess) +SecureUtil.sha1(onSuccess)+"."+FileUtil.getSuffix(onSuccess);
-                        File cover = FileUtil.rename(onSuccess, "cover", true, true);
+                        File cover = null;
+                        try {
+                            cover = FileUtil.rename(onSuccess, "cover", true, true);
+                        } catch (Exception e) {
+                            FileUtil.del(onSuccess);
+                        }
                         String name =  FileUtil.getPrefix(file);
                         album.setAlbumImg("cover");
-                        FileUtil.writeBytes(music.getMusicLyric().getBytes(),cover.getParentFile()+File.separator+name+".lrc");
+                        try {
+                            FileUtil.writeBytes(music.getMusicLyric().getBytes(),cover.getParentFile()+File.separator+name+".lrc");
+                        } catch (IORuntimeException e) {
+
+                        }
                         try {
                             MusicUtils.setMediaFileInfo(file,music.getMusicName(),music.getMusicAlbum(),music.getMusicArtists(),"SqMusic",music.getMusicLyric(), cover);
                         } catch (Exception e) {
+
                             e.printStackTrace();
                         }
-
                     });
-//                    albumService.save(album);
-//                    albumid  = album.getId();
-//                }else{
-//                    albumid= dbalbum.getId();
-//                }
-                //保存到music库中
-                //转码加写入
-//                music.setMusicFormat(suffix);
-//                music.setOther(JSONObject.parseObject(JSONObject.toJSONString(music.getOther())));
-//                music.setAlbumId(albumid);
-//                music.setArtistsId(artistsid);
-//                music.setMd5(md5);
-//                music.setSha1(sha1);
-//                musicService.save(music);
-                //暂时不转码
-                //将查询的信息写入到文件标签中
-
-//                List<File> transcodings = TranscodingUtils.AutoTranscoding(newFile);
-//                transcodings.forEach(t -> {
-//                    String tmd5 = SecureUtil.sha1(t);
-//                    String tsha1 = SecureUtil.md5(t);
-//                    String tsuffix = FileUtil.getSuffix(t);
-//                    String ns = music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + " - " + tsha1 + "." + tsuffix;
-//                    File file1 = FileUtils.organizeFiles(t, toDBFilePath, ns);
-//                    MultimediaInfo tmediaFileInfo = MusicUtils.getMediaFileInfo(file1);
-////                    long tduration = tmediaFileInfo.getDuration();
-////                    String tformat = tmediaFileInfo.getFormat();
-////                    AudioInfo taudio = tmediaFileInfo.getAudio();
-////                    int tbitRate = taudio.getBitRate();
-////                    int tsamplingRate = taudio.getSamplingRate();
-////                    int tchannels = taudio.getChannels();
-////                    String tdecoder = taudio.getDecoder();
-//                });
             } catch (Exception e) {
                 log.error(e.getMessage());
                 return null;
@@ -518,8 +475,6 @@ public class KWSearchHander {
             kwBrType=KwBrType.FLAC_2000;
         }
         //下载池对象
-        DownloadPool downloadPool = new DownloadPool();
-//        downloadPool.setSearchHander(searchHander);
             String musicPath = musicConfig.getMusicPath();
             File file = new File(musicPath);
             String searchUrl = config.getAlbumInfoUrl().replaceAll("#\\{albumid}",albumid.toString());
@@ -530,6 +485,7 @@ public class KWSearchHander {
             List<AlbumInfoResult.MusiclistDTO> musiclist = albumInfoResult.getMusiclist();
         KwBrType finalKwBrType = kwBrType;
         musiclist.forEach(md -> {
+            DownloadStatus.ALL_DOWNLOAD.put(md.getName(),md.getId());
                 String id = md.getId();
                 Music music = queryMusicInfoBySongId(Integer.valueOf(id));
                 HashMap<String, String> stringStringHashMap = autoDownloadUrl(id + "", finalKwBrType);
@@ -537,7 +493,6 @@ public class KWSearchHander {
                 File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + "." + stringStringHashMap.get("type"));
                 type.getParentFile().mkdirs();
                 taskExecutor.execute(() -> {
-                    downloadPool.add();
                     Task task = new Task();
                     DownloadUtils.download(stringStringHashMap.get("url"),type, onSuccess->{
                         savetodb(onSuccess, music);
@@ -546,6 +501,7 @@ public class KWSearchHander {
                         task.setStatus(0);
                         task.setName(music.getMusicName());
                         taskService.save(task);
+                        DownloadStatus.ALL_DOWNLOAD.remove(md.getName());
                     },onFailure ->{
                         log.error("下载歌曲{}失败  ->   原因{}",music.getMusicName()+"- "+music.getMusicArtists(),onFailure.getException().getMessage());
                         task.setMusicInfo(JSONObject.toJSONString(music));
@@ -553,7 +509,7 @@ public class KWSearchHander {
                         task.setStatus(1);
                         task.setName(music.getMusicName());
                         taskService.save(task);
-                        downloadPool.addToRetriesPool(stringStringHashMap.get("url"),music,type);
+                        DownloadStatus.ALL_DOWNLOAD.remove(md.getName());
                         onFailure.getFile().delete();
                     });
                 });
@@ -584,6 +540,7 @@ public class KWSearchHander {
      * @param music 歌曲信息
      */
    public void musicDownload(String id,KwBrType br,Music music){
+       DownloadStatus.ALL_DOWNLOAD.put(music.getMusicName(),id);
        Task task = new Task();
        HashMap<String, String> stringStringHashMap = autoDownloadUrl(id, br);
        String musicPath = musicConfig.getMusicPath();
@@ -591,9 +548,6 @@ public class KWSearchHander {
        String basepath = music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
        File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + "." + stringStringHashMap.get("type"));
        type.getParentFile().mkdirs();
-       DownloadPool downloadPool = new DownloadPool();
-       downloadPool.add();
-       downloadPool.addToRetriesPool(stringStringHashMap.get("url"),music,type);
        taskExecutor.execute(()-> DownloadUtils.download(stringStringHashMap.get("url"), type, onSuccess -> {
            savetodb(onSuccess, music);
            task.setMusicInfo(JSONObject.toJSONString(music));
@@ -601,6 +555,7 @@ public class KWSearchHander {
            task.setStatus(0);
            task.setName(music.getMusicName());
            taskService.save(task);
+           DownloadStatus.ALL_DOWNLOAD.remove(music.getMusicName());
        }, onFailure -> {
            task.setMusicInfo(JSONObject.toJSONString(music));
            task.setCreateTime(DateUtils.nowDate());
@@ -608,7 +563,7 @@ public class KWSearchHander {
            task.setName(music.getMusicName());
            taskService.save(task);
            log.error("下载歌曲{}失败  ->   原因{}", music.getMusicName() + "- " + music.getMusicArtists(), onFailure.getException().getMessage());
-           downloadPool.addToRetriesPool(stringStringHashMap.get("url"), music, type);
+           DownloadStatus.ALL_DOWNLOAD.remove(music.getMusicName());
            onFailure.getFile().delete();
        }));
 
