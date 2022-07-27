@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @RestController
-@RequestMapping("")
-public class ALLcontroller {
+@RequestMapping()
+public class ALLController {
     @Autowired
     private KWSearchHander searchHander;
     @Autowired
@@ -207,7 +207,6 @@ public class ALLcontroller {
         }
         return AjaxResult.success(true);
     }
-
     }
 
     //
