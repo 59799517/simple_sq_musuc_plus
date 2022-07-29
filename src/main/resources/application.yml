@@ -3,6 +3,11 @@ server:
 spring:
   profiles:
     active: plug,music
+  mvc:
+    static-path-pattern: /**
+  web:
+    resources:
+      static-locations:  classpath:/static/**
   freemarker:
     cache: false  #关闭模板缓存，方便测试
     settings:

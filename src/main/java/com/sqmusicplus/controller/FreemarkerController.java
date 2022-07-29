@@ -18,7 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
 @RequestMapping
 public class FreemarkerController {
     @GetMapping("/")
-  public ModelAndView search(){
+    public ModelAndView search(){
         ModelAndView model = new ModelAndView();
         model.setViewName("/search");
         return model;
