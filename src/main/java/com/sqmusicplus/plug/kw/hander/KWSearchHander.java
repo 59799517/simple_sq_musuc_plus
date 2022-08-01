@@ -432,7 +432,13 @@ public class KWSearchHander {
                     .toBean(AlbumInfoResult.class);
             List<AlbumInfoResult.MusiclistDTO> musiclist = albumInfoResult.getMusiclist();
         KwBrType finalKwBrType = kwBrType;
+
         musiclist.forEach(md -> {
+            if (musicConfig.isIgnoreAccompaniment()){
+                if(md.getName().contains("伴奏")){
+                    return;
+                }
+            }
             DownloadStatus.READY_DOWNLOAD.put(md.getName(),md.getId());
                 String id = md.getId();
                 Music music = queryMusicInfoBySongId(Integer.valueOf(id));
@@ -440,18 +446,26 @@ public class KWSearchHander {
                 String basepath = music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
                 File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + "." + stringStringHashMap.get("type"));
                 type.getParentFile().mkdirs();
+                log.debug("下载音乐{}-->{}-->{}",music.getMusicName(),music.getArtists(),music.getArtists());
                 taskExecutor.execute(() -> {
                     DownloadUtils.download(stringStringHashMap.get("url"),type, onSuccess->{
-                        savetodb(onSuccess, music);
-                        DownloadStatus.OVER_DOWNLOAD.put(music.getMusicName(),id);
-                        DownloadStatus.READY_DOWNLOAD.remove(md.getName());
-                        log.debug("下载成功{}",music.getMusicName()+"- "+music.getMusicArtists());
-                        DownloadUtils.nextTask(stringStringHashMap.get("url"));
+                        try {
+                            savetodb(onSuccess, music);
+
+                        } finally {
+                            DownloadStatus.OVER_DOWNLOAD.put(music.getMusicName(),id);
+                            DownloadStatus.READY_DOWNLOAD.remove(md.getName());
+                            log.debug("下载成功{}",music.getMusicName()+"- "+music.getMusicArtists());
+                            DownloadUtils.nextTask(stringStringHashMap.get("url"));
+                        }
                     },onFailure ->{
-                        DownloadStatus.ERROR_DOWNLOAD.put(music.getMusicName(),id);
-                        DownloadStatus.READY_DOWNLOAD.remove(md.getName());
-                        onFailure.getFile().delete();
-                        DownloadUtils.nextTask(stringStringHashMap.get("url"));
+                        try {
+                            DownloadStatus.ERROR_DOWNLOAD.put(music.getMusicName(),id);
+                            DownloadStatus.READY_DOWNLOAD.remove(md.getName());
+                        } finally {
+                            onFailure.getFile().delete();
+                            DownloadUtils.nextTask(stringStringHashMap.get("url"));
+                        }
                         log.error("下载歌曲{}失败  ->   原因{}",music.getMusicName()+"- "+music.getMusicArtists(),onFailure.getException().getMessage());
                     });
                 });
@@ -489,10 +503,15 @@ public class KWSearchHander {
        String basepath = music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
        File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + "." + stringStringHashMap.get("type"));
        type.getParentFile().mkdirs();
+       log.debug("开始下载音乐{}",music);
        taskExecutor.execute(()-> DownloadUtils.download(stringStringHashMap.get("url"), type, onSuccess -> {
-           savetodb(onSuccess, music);
-           DownloadStatus.OVER_DOWNLOAD.put(music.getMusicName(),id);
-           DownloadStatus.READY_DOWNLOAD.remove(music.getMusicName());
+           try {
+               savetodb(onSuccess, music);
+           } finally {
+               DownloadStatus.OVER_DOWNLOAD.put(music.getMusicName(),id);
+               DownloadStatus.READY_DOWNLOAD.remove(music.getMusicName());
+           }
+
        }, onFailure -> {
            log.error("下载歌曲{}失败  ->   原因{}", music.getMusicName() + "- " + music.getMusicArtists(), onFailure.getException().getMessage());
            DownloadStatus.ERROR_DOWNLOAD.put(music.getMusicName(),id);

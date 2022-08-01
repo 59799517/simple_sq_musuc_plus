@@ -22,6 +22,7 @@ public class MusicConfig {
 //    private  String uploadPath;
 //    private  String tempPath;
     private  String musicPath;
+    private boolean ignoreAccompaniment;
 //    private  String mvPath;
 //    private  String musicScanPath;
 //    private  String imagePath;

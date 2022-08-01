@@ -32,7 +32,7 @@ public class DownloadUtils {
    //进行中
    private static LinkedHashMap<String,DownloadEntity> PROCESS =  new LinkedHashMap<String,DownloadEntity>();
    //最大进行条数
-   private static int MAX_DOWNLOAD_SIZE =5;
+   private static int MAX_DOWNLOAD_SIZE =20;
 
 
     public static HTTP getHttp(){
