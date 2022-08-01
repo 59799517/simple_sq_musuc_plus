@@ -13,7 +13,11 @@ import java.util.HashMap;
  */
 
 public class DownloadStatus {
-    //总的
-    public static HashMap<String, String> ALL_DOWNLOAD = new HashMap<>();
+    //准备下载的
+    public static HashMap<String, String> READY_DOWNLOAD = new HashMap<>();
+    //完成的
+    public static HashMap<String, String> OVER_DOWNLOAD = new HashMap<>();
+    //错误的
+    public static HashMap<String, String> ERROR_DOWNLOAD = new HashMap<>();
 
 }

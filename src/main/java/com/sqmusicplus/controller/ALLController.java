@@ -1,7 +1,6 @@
 package com.sqmusicplus.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.sqmusicplus.config.DownloadStatus;
 import com.sqmusicplus.config.AjaxResult;
 import com.sqmusicplus.controller.dto.PlayUrlDTO;
@@ -11,10 +10,10 @@ import com.sqmusicplus.plug.kw.entity.SearchArtistResult;
 import com.sqmusicplus.plug.kw.entity.SearchMusicResult;
 import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.hander.KWSearchHander;
-import com.sqmusicplus.task.entity.Task;
-import com.sqmusicplus.task.service.TaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -34,7 +33,9 @@ public class ALLController {
     @Autowired
     private KWSearchHander searchHander;
     @Autowired
-    private TaskService taskService;
+    @Qualifier("threadPoolTaskExecutor")
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+
 
     /**
      * 搜索单曲
@@ -82,7 +83,9 @@ public class ALLController {
         }else {
             nowbr=KwBrType.FLAC_2000;
         }
-        searchHander.musicDownload(id,nowbr,music);
+        KwBrType finalNowbr = nowbr;
+        Music finalMusic = music;
+        threadPoolTaskExecutor.execute(()->searchHander.musicDownload(id, finalNowbr, finalMusic));
         return AjaxResult.success(true);
     }
 
@@ -105,7 +108,9 @@ public class ALLController {
                     }
                 }
             }
+
             Music music1 = searchHander.queryMusicInfoBySongId(Integer.parseInt(kwdata.getMusicrid().replaceAll("MUSIC_",""))).setPlayUrl(searchHander.downloadUrl(kwdata.getMusicrid().replaceAll("MUSIC_",""), br));
+            log.info("获取下载链接{}",music1);
             return AjaxResult.success(music1);
         }
 
@@ -140,7 +145,8 @@ public class ALLController {
         }else {
             nowbr=KwBrType.FLAC_2000;
         }
-         searchHander.downloadAllMusicByArtistid(id,nowbr);
+        KwBrType finalNowbr = nowbr;
+        threadPoolTaskExecutor.execute(()->searchHander.downloadAllMusicByArtistid(id, finalNowbr));
         return AjaxResult.success(true);
     }
     /**
@@ -174,36 +180,30 @@ public class ALLController {
         }else {
             nowbr=KwBrType.FLAC_2000;
         }
-        searchHander.downloadAlbumByAlbumID(id,nowbr);
+        KwBrType finalNowbr = nowbr;
+        threadPoolTaskExecutor.execute(()->searchHander.downloadAlbumByAlbumID(id, finalNowbr));
         return AjaxResult.success(true);
     }
 
     @GetMapping("/getTask")
     public AjaxResult taskStatus(){
-        HashMap<String, Collection> stringListHashMap = new HashMap<>();
-        Set<String> wait = DownloadStatus.ALL_DOWNLOAD.keySet();
-        List<Task> statussuccess = taskService.list(new QueryWrapper<Task>().eq("status", 0));
-        List<String> success = statussuccess.stream().map(t -> t.getName()).collect(Collectors.toList());
-        List<Task> statuserror = taskService.list(new QueryWrapper<Task>().eq("status", 1));
-        List<String> error = statuserror.stream().map(t -> t.getName()).collect(Collectors.toList());
-        stringListHashMap.put("wait",wait);
-        stringListHashMap.put("success",success);
-        stringListHashMap.put("error",error);
+        HashMap<String, HashMap> stringListHashMap = new HashMap<>();
+        stringListHashMap.put("ready",DownloadStatus.READY_DOWNLOAD);
+        stringListHashMap.put("success",DownloadStatus.OVER_DOWNLOAD);
+        stringListHashMap.put("error",DownloadStatus.ERROR_DOWNLOAD);
         return AjaxResult.success(stringListHashMap);
     }
     @GetMapping("/delErrorTask")
     public AjaxResult delErrorTask(){
-        boolean status = taskService.remove(new QueryWrapper<Task>().eq("status", 1));
-        return AjaxResult.success(status);
+        DownloadStatus.ERROR_DOWNLOAD= new HashMap<>();
+        return AjaxResult.success(true);
     }
     @GetMapping("/againTask")
     public AjaxResult againTask(){
-        List<Task> statuserror = taskService.list(new QueryWrapper<Task>().eq("status", 1));
-        List<Music> collect = statuserror.stream().map(t -> JSONObject.parseObject(t.getMusicInfo(), Music.class)).collect(Collectors.toList());
-        boolean status = taskService.remove(new QueryWrapper<Task>().eq("status", 1));
-        for (Music music : collect) {
-            log.debug(music.getOther().getJSONObject("songinfo").getString("id"));
-            searchHander.musicDownload(music.getOther().getJSONObject("songinfo").getString("id"),KwBrType.FLAC_2000,music);
+        Collection<String> values = DownloadStatus.ERROR_DOWNLOAD.values();
+        for (String id : values) {
+            Music music = searchHander.queryMusicInfoBySongId(Integer.valueOf(id));
+            searchHander.musicDownload(id,KwBrType.FLAC_2000,music);
         }
         return AjaxResult.success(true);
     }

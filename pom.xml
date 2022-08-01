@@ -15,7 +15,7 @@
     <description>simple_sq_musuc_plus</description>
     <properties>
         <java.version>17</java.version>
-        <mybatis-plus-spring-boot.version>3.5.1</mybatis-plus-spring-boot.version>
+<!--        <mybatis-plus-spring-boot.version>3.5.1</mybatis-plus-spring-boot.version>-->
         <okhttps.version>3.5.1</okhttps.version>
         <jave-all-deps.version>3.3.1</jave-all-deps.version>
         <jaudiotagger.version>2.0.3</jaudiotagger.version>
@@ -42,20 +42,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version> 3.5.2</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.baomidou</groupId>-->
+<!--            <artifactId>mybatis-plus-boot-starter</artifactId>-->
+<!--            <version> 3.5.2</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-freemarker</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-            <version>3.36.0.3</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.xerial</groupId>-->
+<!--            <artifactId>sqlite-jdbc</artifactId>-->
+<!--            <version>3.36.0.3</version>-->
+<!--        </dependency>-->
 
         <!--工具-->
         <dependency>

@@ -14,24 +14,6 @@ spring:
       template_update_delay: 0 #检查模板更新延迟时间，设置为0表示立即检查，如果时间大于0会有缓存不方便进行模板测试
     template-loader-path: classpath:/templates/ #模板路径
     suffix: .ftl #模板后缀名称
-  datasource:
-    driver-class-name: org.sqlite.JDBC
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:sqlite::resource:sqmusic.db
-    hikari:
-      minimum-idle: 5
-      # 空闲连接存活最大时间，默认600000（10分钟）
-      idle-timeout: 180000
-      # 连接池最大连接数，默认是10
-      maximum-pool-size: 10
-      # 此属性控制从池返回的连接的默认自动提交行为,默认值：true
-      auto-commit: true
-      # 连接池名称
-      pool-name: MyHikariCP
-      # 此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认1800000即30分钟
-      max-lifetime: 1800000
-      # 数据库连接超时时间,默认30秒，即30000
-      connection-timeout: 30000
 
 
 # 日志配置

@@ -5,6 +5,7 @@ import com.sqmusicplus.entity.Album;
 import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.config.EnumValue;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
  */
 
 @Data
+@ToString
 public class PlayUrlDTO {
     /**
      * 歌曲标识
