@@ -4,10 +4,10 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
 import com.alibaba.fastjson.JSONObject;
 import com.ejlchina.okhttps.HttpUtils;
-import com.sqmusicplus.config.DownloadStatus;
 import com.sqmusicplus.entity.Album;
 import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.config.MusicConfig;
+import com.sqmusicplus.entity.DownloadEntity;
 import com.sqmusicplus.entity.Music;
 import com.sqmusicplus.plug.kw.config.KwConfig;
 import com.sqmusicplus.plug.kw.entity.*;
@@ -15,6 +15,7 @@ import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.enums.KwSearchType;
 import com.sqmusicplus.plug.utils.*;
 import com.sqmusicplus.utils.DownloadUtils;
+import com.sqmusicplus.utils.EhCacheUtil;
 import com.sqmusicplus.utils.MusicUtils;
 import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -439,36 +440,45 @@ public class KWSearchHander {
                     return;
                 }
             }
-            DownloadStatus.READY_DOWNLOAD.put(md.getName(),md.getId());
-                String id = md.getId();
-                Music music = queryMusicInfoBySongId(Integer.valueOf(id));
-                HashMap<String, String> stringStringHashMap = autoDownloadUrl(id + "", finalKwBrType);
-                String basepath = music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
-                File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + "." + stringStringHashMap.get("type"));
-                type.getParentFile().mkdirs();
-                log.debug("下载音乐{}-->{}-->{}",music.getMusicName(),music.getArtists(),music.getArtists());
-                taskExecutor.execute(() -> {
-                    DownloadUtils.download(stringStringHashMap.get("url"),type, onSuccess->{
-                        try {
-                            savetodb(onSuccess, music);
 
-                        } finally {
-                            DownloadStatus.OVER_DOWNLOAD.put(music.getMusicName(),id);
-                            DownloadStatus.READY_DOWNLOAD.remove(md.getName());
-                            log.debug("下载成功{}",music.getMusicName()+"- "+music.getMusicArtists());
-                            DownloadUtils.nextTask(stringStringHashMap.get("url"));
-                        }
-                    },onFailure ->{
-                        try {
-                            DownloadStatus.ERROR_DOWNLOAD.put(music.getMusicName(),id);
-                            DownloadStatus.READY_DOWNLOAD.remove(md.getName());
-                        } finally {
-                            onFailure.getFile().delete();
-                            DownloadUtils.nextTask(stringStringHashMap.get("url"));
-                        }
-                        log.error("下载歌曲{}失败  ->   原因{}",music.getMusicName()+"- "+music.getMusicArtists(),onFailure.getException().getMessage());
-                    });
-                });
+            Music music = queryMusicInfoBySongId(Integer.valueOf(md.getId()));
+            String basepath = music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
+            HashMap<String, String> stringStringHashMap = autoDownloadUrl(md.getId() + "", finalKwBrType);
+            File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + "." + stringStringHashMap.get("type"));
+            //添加到缓存
+            DownloadEntity url = new DownloadEntity(stringStringHashMap.get("url"), type, music);
+            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,stringStringHashMap.get("url"),url);
+
+//            DownloadStatus.READY_DOWNLOAD.put(md.getName(),md.getId());
+//                String id = md.getId();
+//                Music music = queryMusicInfoBySongId(Integer.valueOf(id));
+//                HashMap<String, String> stringStringHashMap = autoDownloadUrl(id + "", finalKwBrType);
+//                String basepath = music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
+//                File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + "." + stringStringHashMap.get("type"));
+//                type.getParentFile().mkdirs();
+//                log.debug("下载音乐{}-->{}-->{}",music.getMusicName(),music.getArtists(),music.getArtists());
+//                taskExecutor.execute(() -> {
+//                    DownloadUtils.download(stringStringHashMap.get("url"),type, onSuccess->{
+//                        try {
+//                            savetodb(onSuccess, music);
+//
+//                        } finally {
+//                            DownloadStatus.OVER_DOWNLOAD.put(music.getMusicName(),id);
+//                            DownloadStatus.READY_DOWNLOAD.remove(md.getName());
+//                            log.debug("下载成功{}",music.getMusicName()+"- "+music.getMusicArtists());
+//                            DownloadUtils.nextTask(stringStringHashMap.get("url"));
+//                        }
+//                    },onFailure ->{
+//                        try {
+//                            DownloadStatus.ERROR_DOWNLOAD.put(music.getMusicName(),id);
+//                            DownloadStatus.READY_DOWNLOAD.remove(md.getName());
+//                        } finally {
+//                            onFailure.getFile().delete();
+//                            DownloadUtils.nextTask(stringStringHashMap.get("url"));
+//                        }
+//                        log.error("下载歌曲{}失败  ->   原因{}",music.getMusicName()+"- "+music.getMusicArtists(),onFailure.getException().getMessage());
+//                    });
+//                });
             });
     }
 
@@ -496,28 +506,33 @@ public class KWSearchHander {
      * @param music 歌曲信息
      */
    public void musicDownload(String id,KwBrType br,Music music){
-       DownloadStatus.READY_DOWNLOAD.put(music.getMusicName(),id);
+
        HashMap<String, String> stringStringHashMap = autoDownloadUrl(id, br);
        String musicPath = musicConfig.getMusicPath();
        File file = new File(musicPath);
        String basepath = music.getMusicArtists() + File.separator + music.getMusicAlbum()+ File.separator;
        File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists() + " - " + music.getMusicAlbum() + "." + stringStringHashMap.get("type"));
        type.getParentFile().mkdirs();
-       log.debug("开始下载音乐{}",music);
-       taskExecutor.execute(()-> DownloadUtils.download(stringStringHashMap.get("url"), type, onSuccess -> {
-           try {
-               savetodb(onSuccess, music);
-           } finally {
-               DownloadStatus.OVER_DOWNLOAD.put(music.getMusicName(),id);
-               DownloadStatus.READY_DOWNLOAD.remove(music.getMusicName());
-           }
+       //添加到缓存
+       DownloadEntity url = new DownloadEntity(stringStringHashMap.get("url"), type, music);
+       EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,stringStringHashMap.get("url"),url);
 
-       }, onFailure -> {
-           log.error("下载歌曲{}失败  ->   原因{}", music.getMusicName() + "- " + music.getMusicArtists(), onFailure.getException().getMessage());
-           DownloadStatus.ERROR_DOWNLOAD.put(music.getMusicName(),id);
-           DownloadStatus.READY_DOWNLOAD.remove(music.getMusicName());
-           onFailure.getFile().delete();
-       }));
+//
+//       log.debug("开始下载音乐{}",music);
+//       taskExecutor.execute(()-> DownloadUtils.download(stringStringHashMap.get("url"), type, onSuccess -> {
+//           try {
+//               savetodb(onSuccess, music);
+//           } finally {
+//               DownloadStatus.OVER_DOWNLOAD.put(music.getMusicName(),id);
+//               DownloadStatus.READY_DOWNLOAD.remove(music.getMusicName());
+//           }
+//
+//       }, onFailure -> {
+//           log.error("下载歌曲{}失败  ->   原因{}", music.getMusicName() + "- " + music.getMusicArtists(), onFailure.getException().getMessage());
+//           DownloadStatus.ERROR_DOWNLOAD.put(music.getMusicName(),id);
+//           DownloadStatus.READY_DOWNLOAD.remove(music.getMusicName());
+//           onFailure.getFile().delete();
+//       }));
 
     }
 

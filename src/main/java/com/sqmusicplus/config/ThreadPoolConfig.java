@@ -42,7 +42,18 @@ public class ThreadPoolConfig
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         return executor;
     }
-
+    @Bean(name = "downloadThreadPool")
+    public ThreadPoolTaskExecutor downloadThreadPool()
+    {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setMaxPoolSize(10);
+        executor.setCorePoolSize(5);
+        executor.setQueueCapacity(100000);
+        executor.setKeepAliveSeconds(100);
+        // 线程池对拒绝任务(无线程可用)的处理策略
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        return executor;
+    }
     /**
      * 执行周期性或定时任务
      */

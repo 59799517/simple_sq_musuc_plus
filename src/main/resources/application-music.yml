@@ -1,7 +1,9 @@
 sqmusic:
 #  tempPath: E:\\testmc
   musicPath: E:\\testmc\\vvv
+#  忽略伴奏
   ignoreAccompaniment: true
+#  覆盖已有
   overrideDownload: false
 
 

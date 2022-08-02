@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.function.Consumer;
 
 /**
@@ -19,12 +20,13 @@ import java.util.function.Consumer;
 @Data
 @Accessors(chain = true)
 @AllArgsConstructor
-public class DownloadEntity {
+public class DownloadEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     String url;
-//    String path;
-//    String fileName;
     File file;
-    Consumer<Process> onProcess;
-    Consumer<File> onSuccess;
-    Consumer<Download.Failure> onFailure;
+//    Consumer<Process> onProcess;
+//    Consumer<File> onSuccess;
+//    Consumer<Download.Failure> onFailure;
+    Music music;
 }

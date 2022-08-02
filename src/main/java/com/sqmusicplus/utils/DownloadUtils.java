@@ -27,13 +27,6 @@ import java.util.function.Consumer;
 public class DownloadUtils {
 
    private static HTTP http = null;
-   //准备
-   private static LinkedHashMap<String,DownloadEntity> READY =  new LinkedHashMap<>();
-   //进行中
-   private static LinkedHashMap<String,DownloadEntity> PROCESS =  new LinkedHashMap<String,DownloadEntity>();
-   //最大进行条数
-   private static int MAX_DOWNLOAD_SIZE =20;
-
 
     public static HTTP getHttp(){
         if (http==null){
@@ -75,7 +68,8 @@ public class DownloadUtils {
             return http;
         }
     }
-    //下载其他的（）
+
+    //下载其他的
    public static void download(String url, String path, String fileName, Consumer<Process> onProcess,Consumer<File> onSuccess) {
 
        HTTP http = getHttp();
@@ -99,18 +93,15 @@ public class DownloadUtils {
         download.start();
     }
 
-    public static void download(DownloadEntity downloadEntity){
-        download(downloadEntity.getUrl(),downloadEntity.getFile(),downloadEntity.getOnProcess(),downloadEntity.getOnSuccess(),downloadEntity.getOnFailure());
+    public static void download(DownloadEntity downloadEntity,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure){
+        download(downloadEntity.getUrl(),downloadEntity.getFile(),null,onSuccess,onFailure);
+    }
+    public static void download(DownloadEntity downloadEntity,Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure){
+        download(downloadEntity.getUrl(),downloadEntity.getFile(),onProcess,onSuccess,onFailure);
     }
     public static void download(String url, File file, Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure) {
 
-        log.debug("正在下载条数：{}",PROCESS.size());
-        log.debug("准备个数：{}",READY.size());
-        if (PROCESS.size()>=MAX_DOWNLOAD_SIZE){
-            READY.put(url,new DownloadEntity(url,file,onProcess,onSuccess,onFailure));
-        }else{
-            READY.remove(url);
-            PROCESS.put(url,new DownloadEntity(url,file,onProcess,onSuccess,onFailure));
+
             //开始下载
             HTTP http = getHttp();
             HttpResult.Body body = http.sync(url)
@@ -128,7 +119,7 @@ public class DownloadUtils {
                 download.setOnFailure(onFailure);
             }
             download.start();
-        }
+
         }
 
 //    public static void download(String url, String path, String fileName,Consumer<File> onSuccess) {
@@ -144,25 +135,7 @@ public class DownloadUtils {
         download(url,file,null,onSuccess,onFailure);
     }
 
-    public static DownloadEntity getNextTask(){
-        //下载完成从准备下载中获取
-        DownloadEntity downloadEntity = null;
-        try {
-            String key = READY.keySet().iterator().next();
-            downloadEntity = READY.get(key);
-            return downloadEntity;
 
-        } catch (Exception e) {
-            return null;
-        }
-    }
-    public static void  nextTask(String delurl){
-        DownloadEntity nextTask = getNextTask();
-        if (nextTask!=null){
-            PROCESS.remove(delurl);
-            download(nextTask);
-        }
-    }
 
 
 }

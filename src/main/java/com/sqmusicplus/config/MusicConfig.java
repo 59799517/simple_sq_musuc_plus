@@ -21,8 +21,9 @@ import org.springframework.context.annotation.Configuration;
 public class MusicConfig {
 //    private  String uploadPath;
 //    private  String tempPath;
-    private  String musicPath;
-    private boolean ignoreAccompaniment;
+      private  String musicPath;
+      private boolean ignoreAccompaniment;
+      private boolean overrideDownload;
 //    private  String mvPath;
 //    private  String musicScanPath;
 //    private  String imagePath;
