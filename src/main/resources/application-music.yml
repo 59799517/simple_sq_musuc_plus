@@ -5,6 +5,10 @@ sqmusic:
   ignoreAccompaniment: true
 #  覆盖已有
   overrideDownload: false
+#  初始化检查未下载
+  initDownload: true
+# 同时下载数量
+  downloadSize: 20
 
 
 

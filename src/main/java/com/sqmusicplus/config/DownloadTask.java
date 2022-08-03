@@ -1,19 +1,12 @@
 package com.sqmusicplus.config;
 
-import com.sqmusicplus.entity.DownloadEntity;
-import com.sqmusicplus.plug.kw.hander.KWSearchHander;
-import com.sqmusicplus.utils.DownloadUtils;
 import com.sqmusicplus.utils.EhCacheUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.Set;
 
 /**
  * @Classname DownloadTask
@@ -24,52 +17,34 @@ import java.util.concurrent.CountDownLatch;
  */
 @Slf4j
 @Component
-@EnableScheduling
 public class DownloadTask {
-    //是否停止运行 true是 停止  false 是正在进行
-//    ThreadLocal<Boolean> studentThreadLocal=new ThreadLocal<Boolean>();
-    CountDownLatch threadSignal = new CountDownLatch(10);
-
 
     @Autowired
-    @Qualifier("downloadThreadPool")
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
-    @Autowired
-    KWSearchHander searchHander;
-    @Scheduled(initialDelay = 1000 * 20, fixedDelay = 1000 * 60)
-//    @Scheduled(initialDelay = 1000 * 20，)
+    MusicConfig musicConfig;
+
+
     public void execute(){
-        List<Object> values = EhCacheUtil.values(EhCacheUtil.READY_DOWNLOAD);
-//        if (values.size()==0){
-//            studentThreadLocal.set(true);
-//            return;
-//        }else{
-//            studentThreadLocal.set(false);
-//        }
-//        if(studentThreadLocal.get()){
-//            return;
-//        }
 
-        for (Object value : values) {
-            DownloadEntity downloadEntity = (DownloadEntity) value;
-
-            threadPoolTaskExecutor.execute(()->{
-                threadSignal.countDown();
-                log.debug("下载开始下载{}",downloadEntity.getMusic().getMusicName());
-                DownloadUtils.download(downloadEntity,onSuccess->{
-                    EhCacheUtil.remove(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getUrl());
-                    searchHander.savetodb(onSuccess,downloadEntity.getMusic());
-                    EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD,downloadEntity.getUrl(),downloadEntity);
-                    log.debug("下载成功{}",downloadEntity.getMusic().getMusicName());
-                },onFailure->{
-                    EhCacheUtil.remove(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getUrl());
-                    EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD,downloadEntity.getUrl(),downloadEntity);
-                    log.debug("下载失败{}",downloadEntity.getMusic().getMusicName());
-                });
-            });
+        log.debug("正在进行中{}个",EhCacheUtil.keys(EhCacheUtil.RUN_DOWNLOAD).size());
+        log.debug("准备{}个",EhCacheUtil.keys(EhCacheUtil.READY_DOWNLOAD).size());
+        log.debug("完成{}个",EhCacheUtil.keys(EhCacheUtil.OVER_DOWNLOAD).size());
+        log.debug("错误{}个",EhCacheUtil.keys(EhCacheUtil.ERROR_DOWNLOAD).size());
+        List<Object> run_download = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
+        if (run_download.size()>=0&&run_download.size()<musicConfig.getDownloadSize()){
+            List<Object> ready_download = EhCacheUtil.values(EhCacheUtil.READY_DOWNLOAD);
+            //有准备下载的
+            if (ready_download.size()>0){
+                //可以添加到任务
+                int addsize = musicConfig.getDownloadSize() - run_download.size();
+                Set<String> keys = EhCacheUtil.keys(EhCacheUtil.READY_DOWNLOAD, addsize);
+                for (String key : keys) {
+                    //删除待下
+                    Object o = EhCacheUtil.get(EhCacheUtil.READY_DOWNLOAD, key);
+                    EhCacheUtil.remove(EhCacheUtil.READY_DOWNLOAD,key);
+                    //添加到下载
+                    EhCacheUtil.put(EhCacheUtil.RUN_DOWNLOAD,key,o);
+                }
+            }
         }
-
-
-
     }
 }

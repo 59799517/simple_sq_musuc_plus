@@ -3,6 +3,7 @@ package com.sqmusicplus.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.sqmusicplus.config.AjaxResult;
 import com.sqmusicplus.controller.dto.PlayUrlDTO;
+import com.sqmusicplus.entity.DownloadEntity;
 import com.sqmusicplus.entity.Music;
 import com.sqmusicplus.plug.kw.entity.SearchAlbumResult;
 import com.sqmusicplus.plug.kw.entity.SearchArtistResult;
@@ -191,9 +192,11 @@ public class ALLController {
         List<Object> ready = EhCacheUtil.values(EhCacheUtil.READY_DOWNLOAD);
         List<Object> success = EhCacheUtil.values(EhCacheUtil.OVER_DOWNLOAD);
         List<Object> error = EhCacheUtil.values(EhCacheUtil.ERROR_DOWNLOAD);
+        List<Object> run = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
         stringListHashMap.put("ready",ready);
         stringListHashMap.put("success",success);
         stringListHashMap.put("error",error);
+        stringListHashMap.put("error",run);
         return AjaxResult.success(stringListHashMap);
     }
     @GetMapping("/delErrorTask")
@@ -201,15 +204,23 @@ public class ALLController {
         EhCacheUtil.removeaLL(EhCacheUtil.ERROR_DOWNLOAD);
         return AjaxResult.success(true);
     }
-//    @GetMapping("/againTask")
-//    public AjaxResult againTask(){
-//        Collection<String> values = DownloadStatus.ERROR_DOWNLOAD.values();
-//        for (String id : values) {
-//            Music music = searchHander.queryMusicInfoBySongId(Integer.valueOf(id));
-//            searchHander.musicDownload(id,KwBrType.FLAC_2000,music);
-//        }
-//        return AjaxResult.success(true);
-//    }
+    @GetMapping("/delAllTask")
+    public AjaxResult delAllTask(){
+        EhCacheUtil.removeaLL(EhCacheUtil.ERROR_DOWNLOAD);
+        EhCacheUtil.removeaLL(EhCacheUtil.OVER_DOWNLOAD);
+        EhCacheUtil.removeaLL(EhCacheUtil.READY_DOWNLOAD);
+        EhCacheUtil.removeaLL(EhCacheUtil.RUN_DOWNLOAD);
+        return AjaxResult.success(true);
+    }
+    @GetMapping("/againTask")
+    public AjaxResult againTask(){
+        List<Object> values1 = EhCacheUtil.values(EhCacheUtil.ERROR_DOWNLOAD);
+        for (Object o : values1) {
+            DownloadEntity downloadEntity = (DownloadEntity)o;
+            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getUrl(),downloadEntity);
+        }
+        return AjaxResult.success(true);
+    }
     }
 
     //

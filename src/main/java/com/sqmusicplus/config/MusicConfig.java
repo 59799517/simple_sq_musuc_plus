@@ -22,8 +22,10 @@ public class MusicConfig {
 //    private  String uploadPath;
 //    private  String tempPath;
       private  String musicPath;
-      private boolean ignoreAccompaniment;
-      private boolean overrideDownload;
+      private Boolean ignoreAccompaniment;
+      private Boolean overrideDownload;
+      private Boolean initDownload;
+      private Integer downloadSize;
 //    private  String mvPath;
 //    private  String musicScanPath;
 //    private  String imagePath;

@@ -21,10 +21,14 @@ public class EhCacheUtil {
 
     private static CacheManager cacheManager = ((CacheManager) SpringContextUtil
             .getBean(CacheManager.class));
-
+    //准备
     public static final String READY_DOWNLOAD = "ready";
+    //完成
     public static final String OVER_DOWNLOAD = "over";
+    //错误
     public static final String ERROR_DOWNLOAD = "error";
+    //进行中
+    public static final String RUN_DOWNLOAD = "run";
 
     /**
      * 获取SYS_CACHE缓存
@@ -32,10 +36,21 @@ public class EhCacheUtil {
 //    public static Object get(String cacheName,String key) {
 //        return get(cacheName, key);
 //    }
-    public static Object get(String cacheName) {
+
+    /**
+     * 取出固定个数的缓存数据
+     * @param cacheName
+     * @param size
+     * @return
+     */
+    public static List<Object> get(String cacheName,Integer size) {
         try {
-            String o = getCache(cacheName).getKeys().get(0).toString();
-            return get(cacheName, o);
+            ArrayList<Object> objects = new ArrayList<>();
+            for (Integer i = 0; i < size; i++) {
+                String o = getCache(cacheName).getKeys().get(i).toString();
+                objects.add(get(cacheName, o));
+            }
+            return objects;
         } catch (Exception e) {
            return null;
         }
@@ -143,6 +158,20 @@ public class EhCacheUtil {
     @SuppressWarnings("unchecked")
     public static Set<String> keys(String cacheName) {
         return new HashSet<String>(getCache(cacheName).getKeys());
+    }
+    public static Set<String> keys(String cacheName,Integer size) {
+        HashSet<String> hashSet = new HashSet<>();
+        for (Integer i = 0; i < size; i++) {
+            try {
+                String s = getCache(cacheName).getKeys().get(i).toString();
+                hashSet.add(s);
+            } catch (Exception e) {
+
+            }
+
+        }
+
+        return hashSet;
     }
 
 

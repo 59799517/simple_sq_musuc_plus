@@ -9,10 +9,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -94,14 +90,15 @@ public class DownloadUtils {
     }
 
     public static void download(DownloadEntity downloadEntity,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure){
-        download(downloadEntity.getUrl(),downloadEntity.getFile(),null,onSuccess,onFailure);
+        download(downloadEntity.getUrl(),downloadEntity.getFile(),null,onSuccess,onFailure,null);
     }
-    public static void download(DownloadEntity downloadEntity,Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure){
-        download(downloadEntity.getUrl(),downloadEntity.getFile(),onProcess,onSuccess,onFailure);
+    public static void download(DownloadEntity downloadEntity,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete){
+        download(downloadEntity.getUrl(),downloadEntity.getFile(),null,onSuccess,onFailure,onComplete);
     }
-    public static void download(String url, File file, Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure) {
-
-
+    public static void download(DownloadEntity downloadEntity,Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete){
+        download(downloadEntity.getUrl(),downloadEntity.getFile(),onProcess,onSuccess,onFailure,onComplete);
+    }
+    public static void download(String url, File file, Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete) {
             //开始下载
             HTTP http = getHttp();
             HttpResult.Body body = http.sync(url)
@@ -118,6 +115,10 @@ public class DownloadUtils {
             if (onFailure!=null){
                 download.setOnFailure(onFailure);
             }
+            if (onComplete!=null){
+                download.setOnComplete(onComplete);
+            }
+
             download.start();
 
         }
@@ -131,9 +132,9 @@ public class DownloadUtils {
     public static void download(String url, String path, Consumer<File> onSuccess) {
         download(url,path,null,null,onSuccess);
     }
-    public static void download(String url, File file,Consumer<File> onSuccess ,Consumer<Download.Failure> onFailure) {
-        download(url,file,null,onSuccess,onFailure);
-    }
+//    public static void download(String url, File file,Consumer<File> onSuccess ,Consumer<Download.Failure> onFailure) {
+//        download(url,file,null,onSuccess,onFailure);
+//    }
 
 
 

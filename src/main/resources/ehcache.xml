@@ -15,31 +15,35 @@
             name="ready"
             maxElementsInMemory="5000000"
             eternal="true"
+            diskPersistent="true"
             overflowToDisk="true"
             memoryStoreEvictionPolicy="LRU">
-        <!-- 比非持久化的配置多了这个 -->
-        <cacheEventListenerFactory class="net.sf.ehcache.distribution.RMICacheReplicatorFactory" />
-        <bootstrapCacheLoaderFactory class="net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory"/>
+        <cacheEventListenerFactory class="com.sqmusicplus.config.ReadyCacheEventListener" />
+    </cache>
+    <cache
+            name="run"
+            maxElementsInMemory="5000000"
+            eternal="true"
+            diskPersistent="true"
+            overflowToDisk="true"
+            memoryStoreEvictionPolicy="LRU">
+        <cacheEventListenerFactory class="com.sqmusicplus.config.RunCacheEventListener" />
     </cache>
     <cache
             name="over"
             maxElementsInMemory="5000000"
             eternal="true"
+            diskPersistent="true"
             overflowToDisk="true"
             memoryStoreEvictionPolicy="LRU">
-        <!-- 比非持久化的配置多了这个 -->
-        <cacheEventListenerFactory class="net.sf.ehcache.distribution.RMICacheReplicatorFactory" />
-        <bootstrapCacheLoaderFactory class="net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory"/>
     </cache>
     <cache
             name="error"
             maxElementsInMemory="5000000"
             eternal="true"
+            diskPersistent="true"
             overflowToDisk="true"
             memoryStoreEvictionPolicy="LRU">
-        <!-- 比非持久化的配置多了这个 -->
-        <cacheEventListenerFactory class="net.sf.ehcache.distribution.RMICacheReplicatorFactory" />
-        <bootstrapCacheLoaderFactory class="net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory"/>
     </cache>
 
 
