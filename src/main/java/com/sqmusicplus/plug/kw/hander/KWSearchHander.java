@@ -385,22 +385,26 @@ public class KWSearchHander {
                     String downloadurl = (config.getStarheads() + artists.getMusicArtistsPhoto()).replaceAll("/120", "/500");
                     String downliadpath = musicConfig.getMusicPath() + File.separator + artists.getMusicArtistsName();
                     //人物
-                    DownloadUtils.download(downloadurl, downliadpath, onArtistsPhoto -> {
-                        try {
-                            FileUtil.rename(onArtistsPhoto, "cover", true, true);
-                        } catch (Exception e) {
-                            FileUtil.del(onArtistsPhoto);
-                        }
-                        artists.setMusicArtistsPhoto("cover");
-                    });
+                    File file = new File(downliadpath + File.separator + "cover.jpg");
+                    if (!file.exists()){
+                        DownloadUtils.download(downloadurl, downliadpath, onArtistsPhoto -> {
+                            try {
+                                FileUtil.rename(onArtistsPhoto, "cover", true, true);
+                            } catch (Exception e) {
+                                FileUtil.del(onArtistsPhoto);
+                            }
+                            artists.setMusicArtistsPhoto("cover");
+                        });
+                    }
+
                     //zj
                     Album album = queryAlbumsInfoInfoByAlbumsId(albumID);
                     String albumImg = album.getAlbumImg();
                     String imagePath = musicConfig.getMusicPath() + File.separator + downloadEntity.getMusic().getMusicArtists() + File.separator + downloadEntity.getMusic().getMusicAlbum();
-                    AtomicReference<File> albumcover = null;
                     DownloadUtils.download(albumImg, imagePath, onAlbumImg -> {
+                        File cover= null;
                         try {
-                            albumcover.set(FileUtil.rename(onAlbumImg, "cover", true, true));
+                            cover= FileUtil.rename(onAlbumImg, "cover", true, true);
                         } catch (Exception e) {
                             FileUtil.del(onAlbumImg);
                         }
@@ -415,7 +419,7 @@ public class KWSearchHander {
                         }
                         //修改文件
                         try {
-                            MusicUtils.setMediaFileInfo(onSuccess, downloadEntity.getMusic().getMusicName(), downloadEntity.getMusic().getMusicAlbum(), downloadEntity.getMusic().getMusicArtists(), "SqMusic", downloadEntity.getMusic().getMusicLyric(), albumcover.get());
+                            MusicUtils.setMediaFileInfo(onSuccess, downloadEntity.getMusic().getMusicName(), downloadEntity.getMusic().getMusicAlbum(), downloadEntity.getMusic().getMusicArtists(), "SqMusic", downloadEntity.getMusic().getMusicLyric(), cover);
                             EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getUrl());
                             EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getUrl(), downloadEntity);
                             log.debug("下载成功{}", downloadEntity.getMusic().getMusicName());

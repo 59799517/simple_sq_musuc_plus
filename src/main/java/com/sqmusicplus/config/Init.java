@@ -1,9 +1,13 @@
 package com.sqmusicplus.config;
 
+import com.sqmusicplus.entity.DownloadEntity;
+import com.sqmusicplus.utils.EhCacheUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 /**
  * @Classname Init
@@ -21,6 +25,12 @@ public class Init implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
+        for (Object value : values) {
+            DownloadEntity downloadEntity = (DownloadEntity) value;
+            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD,downloadEntity.getUrl());
+            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getUrl(),downloadEntity);
+        }
         if (musicConfig.getInitDownload()){
             downloadTask.execute();
         }

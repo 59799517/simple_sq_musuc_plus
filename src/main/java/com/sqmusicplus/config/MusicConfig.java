@@ -9,6 +9,7 @@ package com.sqmusicplus.config;
  */
 
 import lombok.Data;
+import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Data
 @Configuration
+@ToString
 @ConfigurationProperties(prefix = "sqmusic")
 public class MusicConfig {
 //    private  String uploadPath;

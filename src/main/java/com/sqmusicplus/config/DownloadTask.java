@@ -24,7 +24,7 @@ public class DownloadTask {
 
 
     public void execute(){
-
+        log.info("读取设置--{}--",musicConfig.toString());
         log.debug("正在进行中{}个",EhCacheUtil.keys(EhCacheUtil.RUN_DOWNLOAD).size());
         log.debug("准备{}个",EhCacheUtil.keys(EhCacheUtil.READY_DOWNLOAD).size());
         log.debug("完成{}个",EhCacheUtil.keys(EhCacheUtil.OVER_DOWNLOAD).size());

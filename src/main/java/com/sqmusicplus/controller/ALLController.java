@@ -196,7 +196,7 @@ public class ALLController {
         stringListHashMap.put("ready",ready);
         stringListHashMap.put("success",success);
         stringListHashMap.put("error",error);
-        stringListHashMap.put("error",run);
+        stringListHashMap.put("run",run);
         return AjaxResult.success(stringListHashMap);
     }
     @GetMapping("/delErrorTask")
@@ -212,12 +212,25 @@ public class ALLController {
         EhCacheUtil.removeaLL(EhCacheUtil.RUN_DOWNLOAD);
         return AjaxResult.success(true);
     }
+    @GetMapping("/refreshTask")
+    public AjaxResult refreshTask(){
+        List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
+        for (Object value : values) {
+            DownloadEntity downloadEntity = (DownloadEntity) value;
+            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD,downloadEntity.getUrl());
+            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getUrl(),downloadEntity);
+        }
+        return AjaxResult.success(true);
+    }
+
+
     @GetMapping("/againTask")
     public AjaxResult againTask(){
         List<Object> values1 = EhCacheUtil.values(EhCacheUtil.ERROR_DOWNLOAD);
         for (Object o : values1) {
             DownloadEntity downloadEntity = (DownloadEntity)o;
             EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getUrl(),downloadEntity);
+            EhCacheUtil.remove(EhCacheUtil.ERROR_DOWNLOAD,downloadEntity.getUrl());
         }
         return AjaxResult.success(true);
     }

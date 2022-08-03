@@ -1,14 +1,15 @@
 sqmusic:
 #  tempPath: E:\\testmc
-  musicPath: E:\\testmc\\vvv
+#  musicPath: E:\\testmc\\vvv
+  musicPath: ${MUSIC_PATH:/music}
 #  忽略伴奏
-  ignoreAccompaniment: true
+  ignoreAccompaniment: ${IGNORE_ACCOMPANIMENT:true}
 #  覆盖已有
-  overrideDownload: false
+  overrideDownload: ${OVERRIDE_DOWNLOAD:false}
 #  初始化检查未下载
-  initDownload: true
+  initDownload: ${INIT_DOWNLOAD:true}
 # 同时下载数量
-  downloadSize: 20
+  downloadSize: ${DOWNLOAD_SIZE:20}
 
 
 
