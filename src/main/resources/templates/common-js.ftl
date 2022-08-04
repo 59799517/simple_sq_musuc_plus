@@ -5,6 +5,8 @@
 <script src="/static/mdui-v1.0.2/js/mdui.js"></script>
 <script src="/static/mdui-v1.0.2/js/mdui.esm.js"></script>
 <link rel="stylesheet" href="/static/mdui-v1.0.2/css/mdui.css">
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+
 <style>
     .box{
         display: -webkit-flex; /* Safari */
@@ -18,6 +20,15 @@
         align-items:center;
         align-content:center;
 
+    }
+    .flexcolumn{
+        flex-direction:column
+    }
+    .flexrow{
+        flex-direction:row
+    }
+    .liwidth{
+        width: 500px;
     }
 </style>
 
