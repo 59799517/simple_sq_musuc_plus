@@ -1,5 +1,7 @@
 package com.sqmusicplus.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.sqmusicplus.config.AjaxResult;
 import com.sqmusicplus.controller.dto.PlayUrlDTO;
@@ -14,9 +16,12 @@ import com.sqmusicplus.utils.EhCacheUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,6 +42,12 @@ public class ALLController {
     @Qualifier("threadPoolTaskExecutor")
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
+    @Value("${user.username}")
+    String username;
+    @Value("${user.password}")
+    String password;
+
+
 
     /**
      * 搜索单曲
@@ -45,6 +56,7 @@ public class ALLController {
      * @param pageIndex 页码 从1开始
      * @return
      */
+    @SaCheckLogin
     @GetMapping("/searchMusic/{keyword}/{pageSize}/{pageIndex}")
     public AjaxResult searchMusic(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
         SearchMusicResult searchMusicResult = searchHander.queryMusic(keyword, pageIndex - 1, pageSize);
@@ -56,6 +68,7 @@ public class ALLController {
      * @param id 搜素的id
      * @return
      */
+    @SaCheckLogin
     @GetMapping("/musicInfo/{id}")
     public AjaxResult musicInfo(@PathVariable("id") Integer id){
         Music music = searchHander.queryMusicInfoBySongId(id);
@@ -67,7 +80,8 @@ public class ALLController {
      * @param br 码率 156498
      * @return
      */
-    @PostMapping("/musicDownload/{id}/{br}")
+        @SaCheckLogin
+        @PostMapping("/musicDownload/{id}/{br}")
     public AjaxResult musicDownload(@PathVariable("id") String id,@PathVariable(value = "br",required = false) Integer br,@RequestBody(required = false) Music music){
         if (music==null){
           music =   searchHander.queryMusicInfoBySongId(Integer.valueOf(id));
@@ -95,6 +109,7 @@ public class ALLController {
      * @param music
      * @return
      */
+    @SaCheckLogin
     @PostMapping("getplayUrl")
     public AjaxResult getplayUrl(@RequestBody PlayUrlDTO music){
             JSONObject other = music.getOther();
@@ -122,6 +137,7 @@ public class ALLController {
      * @param pageIndex 页码 从1开始
      * @return
      */
+    @SaCheckLogin
     @GetMapping("/searchArtist/{keyword}/{pageSize}/{pageIndex}")
     public AjaxResult searchArtist(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
         SearchArtistResult searchArtistResult = searchHander.queryArtist(keyword, pageIndex - 1, pageSize);
@@ -132,6 +148,7 @@ public class ALLController {
      * @param br 码率
      * @return
      */
+    @SaCheckLogin
     @PostMapping("/ArtistDownload/{id}/{br}")
     public AjaxResult ArtistDownload(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br){
         KwBrType[] values = KwBrType.values();
@@ -151,12 +168,13 @@ public class ALLController {
         return AjaxResult.success(true);
     }
     /**
-     * 搜索歌手
+     * 搜索专辑
      * @param keyword 关键字
      * @param pageSize 每页长度 最大50
      * @param pageIndex 页码 从1开始
      * @return
      */
+    @SaCheckLogin
     @GetMapping("/searchAlbum/{keyword}/{pageSize}/{pageIndex}")
     public AjaxResult searchAlbum(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
         SearchAlbumResult searchAlbumResult = searchHander.queryAlbumsInfoByAlbumsName(keyword, pageIndex - 1, pageSize);
@@ -167,6 +185,7 @@ public class ALLController {
      * @param br 码率
      * @return
      */
+    @SaCheckLogin
     @PostMapping("/AlbumDownload/{id}/{br}")
     public AjaxResult AlbumDownload(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br,@RequestBody Music music){
         KwBrType[] values = KwBrType.values();
@@ -199,11 +218,13 @@ public class ALLController {
         stringListHashMap.put("run",run);
         return AjaxResult.success(stringListHashMap);
     }
+    @SaCheckLogin
     @GetMapping("/delErrorTask")
     public AjaxResult delErrorTask(){
         EhCacheUtil.removeaLL(EhCacheUtil.ERROR_DOWNLOAD);
         return AjaxResult.success(true);
     }
+    @SaCheckLogin
     @GetMapping("/delAllTask")
     public AjaxResult delAllTask(){
         EhCacheUtil.removeaLL(EhCacheUtil.ERROR_DOWNLOAD);
@@ -212,6 +233,7 @@ public class ALLController {
         EhCacheUtil.removeaLL(EhCacheUtil.RUN_DOWNLOAD);
         return AjaxResult.success(true);
     }
+    @SaCheckLogin
     @GetMapping("/refreshTask")
     public AjaxResult refreshTask(){
         List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
@@ -223,7 +245,7 @@ public class ALLController {
         return AjaxResult.success(true);
     }
 
-
+    @SaCheckLogin
     @GetMapping("/againTask")
     public AjaxResult againTask(){
         List<Object> values1 = EhCacheUtil.values(EhCacheUtil.ERROR_DOWNLOAD);
@@ -234,6 +256,22 @@ public class ALLController {
         }
         return AjaxResult.success(true);
     }
+
+
+    @RequestMapping("login")
+    public String Login(String username, String password, HttpServletResponse response) throws IOException {
+        // 此处仅作模拟示例，真实项目需要从数据库中查询数据进行比对
+        if(this.username.equals(username) && this.password.equals(password)) {
+            StpUtil.login(10001);
+            response.sendRedirect("/index.html");
+        }
+        return "登录失败:请输入用户名密码";
+    }
+    @RequestMapping("isLogin")
+    public String isLogin() {
+        return "当前会话是否登录：" + StpUtil.isLogin();
+    }
+
     }
 
     //
