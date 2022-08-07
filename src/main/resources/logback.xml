@@ -20,7 +20,7 @@
             <!-- 日志文件名格式 -->
 			<fileNamePattern>${log.path}/sys-info.%d{yyyy-MM-dd}.log</fileNamePattern>
 			<!-- 日志最大的历史 60天 -->
-			<maxHistory>60</maxHistory>
+			<maxHistory>10</maxHistory>
 		</rollingPolicy>
 		<encoder>
 			<pattern>${log.pattern}</pattern>
@@ -42,7 +42,7 @@
             <!-- 日志文件名格式 -->
             <fileNamePattern>${log.path}/sys-error.%d{yyyy-MM-dd}.log</fileNamePattern>
 			<!-- 日志最大的历史 60天 -->
-			<maxHistory>60</maxHistory>
+			<maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>${log.pattern}</pattern>
@@ -64,7 +64,7 @@
             <!-- 按天回滚 daily -->
             <fileNamePattern>${log.path}/sys-user.%d{yyyy-MM-dd}.log</fileNamePattern>
             <!-- 日志最大的历史 60天 -->
-            <maxHistory>60</maxHistory>
+            <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>${log.pattern}</pattern>

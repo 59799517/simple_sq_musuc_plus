@@ -28,8 +28,8 @@ public class Init implements ApplicationRunner {
         List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
         for (Object value : values) {
             DownloadEntity downloadEntity = (DownloadEntity) value;
-            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD,downloadEntity.getUrl());
-            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getUrl(),downloadEntity);
+            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD,downloadEntity.getMusicid());
+            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getMusicid(),downloadEntity);
         }
         if (musicConfig.getInitDownload()){
             downloadTask.execute();

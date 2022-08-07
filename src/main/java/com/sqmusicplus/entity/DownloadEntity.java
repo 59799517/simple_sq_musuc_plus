@@ -2,6 +2,7 @@ package com.sqmusicplus.entity;
 
 import com.ejlchina.okhttps.Download;
 import com.ejlchina.okhttps.Process;
+import com.sqmusicplus.plug.kw.enums.KwBrType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -23,10 +24,15 @@ import java.util.function.Consumer;
 public class DownloadEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    String url;
-    File file;
+//    String url;
+//    File file;
 //    Consumer<Process> onProcess;
 //    Consumer<File> onSuccess;
 //    Consumer<Download.Failure> onFailure;
-    Music music;
+//    Music music;
+    String musicid ;
+    KwBrType kwBrType;
+    String musicname;
+    String artistname;
+    String albumname;
 }

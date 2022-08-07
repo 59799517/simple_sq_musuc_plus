@@ -239,8 +239,8 @@ public class ALLController {
         List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
         for (Object value : values) {
             DownloadEntity downloadEntity = (DownloadEntity) value;
-            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD,downloadEntity.getUrl());
-            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getUrl(),downloadEntity);
+            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD,downloadEntity.getMusicid());
+            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getMusicid(),downloadEntity);
         }
         return AjaxResult.success(true);
     }
@@ -251,8 +251,8 @@ public class ALLController {
         List<Object> values1 = EhCacheUtil.values(EhCacheUtil.ERROR_DOWNLOAD);
         for (Object o : values1) {
             DownloadEntity downloadEntity = (DownloadEntity)o;
-            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getUrl(),downloadEntity);
-            EhCacheUtil.remove(EhCacheUtil.ERROR_DOWNLOAD,downloadEntity.getUrl());
+            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getMusicid(),downloadEntity);
+            EhCacheUtil.remove(EhCacheUtil.ERROR_DOWNLOAD,downloadEntity.getMusicid());
         }
         return AjaxResult.success(true);
     }

@@ -89,15 +89,15 @@ public class DownloadUtils {
         download.start();
     }
 
-    public static void download(DownloadEntity downloadEntity,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure){
-        download(downloadEntity.getUrl(),downloadEntity.getFile(),null,onSuccess,onFailure,null);
+    public static void download(String url ,File file,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure){
+        download(url,file,null,onSuccess,onFailure,null);
     }
-    public static void download(DownloadEntity downloadEntity,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete){
-        download(downloadEntity.getUrl(),downloadEntity.getFile(),null,onSuccess,onFailure,onComplete);
+    public static void download(String url ,File file,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete){
+        download(url,file,null,onSuccess,onFailure,onComplete);
     }
-    public static void download(DownloadEntity downloadEntity,Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete){
-        download(downloadEntity.getUrl(),downloadEntity.getFile(),onProcess,onSuccess,onFailure,onComplete);
-    }
+//    public static void download(DownloadEntity downloadEntity,Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete){
+//        download(downloadEntity.getUrl(),downloadEntity.getFile(),onProcess,onSuccess,onFailure,onComplete);
+//    }
     public static void download(String url, File file, Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete) {
             //开始下载
             HTTP http = getHttp();
