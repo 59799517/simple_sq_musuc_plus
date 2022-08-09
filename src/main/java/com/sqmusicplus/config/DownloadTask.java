@@ -1,6 +1,7 @@
 package com.sqmusicplus.config;
 
 import com.sqmusicplus.utils.EhCacheUtil;
+import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,11 @@ public class DownloadTask {
         log.debug("完成{}个",EhCacheUtil.keys(EhCacheUtil.OVER_DOWNLOAD).size());
         log.debug("错误{}个",EhCacheUtil.keys(EhCacheUtil.ERROR_DOWNLOAD).size());
         List<Object> run_download = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
+        for (Object o : run_download) {
+            if (o==null){
+                run_download.remove(null);
+            }
+        }
         if (run_download.size()>=0&&run_download.size()<musicConfig.getDownloadSize()){
             List<Object> ready_download = EhCacheUtil.values(EhCacheUtil.READY_DOWNLOAD);
             //有准备下载的
@@ -38,6 +44,10 @@ public class DownloadTask {
                 int addsize = musicConfig.getDownloadSize() - run_download.size();
                 Set<String> keys = EhCacheUtil.keys(EhCacheUtil.READY_DOWNLOAD, addsize);
                 for (String key : keys) {
+                    if (StringUtils.isEmpty(key)){
+                        EhCacheUtil.remove(EhCacheUtil.READY_DOWNLOAD,key);
+                        continue;
+                    }
                     //删除待下
                     Object o = EhCacheUtil.get(EhCacheUtil.READY_DOWNLOAD, key);
                     EhCacheUtil.remove(EhCacheUtil.READY_DOWNLOAD,key);
