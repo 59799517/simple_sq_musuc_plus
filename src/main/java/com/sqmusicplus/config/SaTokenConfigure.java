@@ -27,11 +27,9 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                 .addExclude("/login", "/favicon.ico")
                 .setAuth(obj -> {
                     if(StpUtil.isLogin() == false) {
-//                        String back = SaFoxUtil.joinParam(SaHolder.getRequest().getUrl(), SpringMVCUtil.getRequest().getQueryString());
                         SaHolder.getResponse().redirect("/login?username=&password=");
                         SaRouter.back();
                     }
-                })
-                ;
+                });
     }
 }

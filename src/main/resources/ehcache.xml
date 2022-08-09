@@ -3,7 +3,7 @@
          xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
          updateCheck="false" monitoring="autodetect" dynamicConfig="true">
 
-    <diskStore path="./cache" />
+    <diskStore path="/sqmusic/cache" />
 
 
 

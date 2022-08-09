@@ -1,21 +1,14 @@
 sqmusic:
-#  tempPath: E:\\testmc
-#  musicPath: E:\\testmc\\vvv
   musicPath: ${MUSIC_PATH:/music}
 #  忽略伴奏
   ignoreAccompaniment: ${IGNORE_ACCOMPANIMENT:true}
-#  覆盖已有
-  overrideDownload: ${OVERRIDE_DOWNLOAD:false}
+#  不允许重复下载
+  overrideDownload: ${OVERRIDE_DOWNLOAD:true}
 #  初始化检查未下载
   initDownload: ${INIT_DOWNLOAD:true}
 # 同时下载数量
-  downloadSize: ${DOWNLOAD_SIZE:20}
-
-
-
-
-
-#  mvPath: /sqmusic/mv/
-#  musicScanPath: /scan
-#  audiobooksPath: E:\\testmc\\audiobooks
-#  audiobooksTempPath: E:\\audiobook
+  downloadSize: ${DOWNLOAD_SIZE:5}
+#  强制匹配专辑下歌手
+  strongMatchAlbumSinger: ${STRONG_MATCH_ALBUM_SINGER:true}
+#  专辑歌手统一（多人演唱仅保存下载时查询的歌手）   --->避免出现多个乱七八糟歌手
+  albumSingerUnity: ${ALBUM_SINGER_UNITY:true}

@@ -20,7 +20,6 @@ import java.util.function.Consumer;
  */
 @Data
 @Accessors(chain = true)
-@AllArgsConstructor
 public class DownloadEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -35,4 +34,14 @@ public class DownloadEntity implements Serializable {
     String musicname;
     String artistname;
     String albumname;
+    String errorMsg;
+
+
+    public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname) {
+        this.musicid = musicid;
+        this.kwBrType = kwBrType;
+        this.musicname = musicname;
+        this.artistname = artistname;
+        this.albumname = albumname;
+    }
 }

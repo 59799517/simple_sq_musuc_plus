@@ -5,6 +5,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.sqmusicplus.config.AjaxResult;
 import com.sqmusicplus.controller.dto.PlayUrlDTO;
+import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.entity.DownloadEntity;
 import com.sqmusicplus.entity.Music;
 import com.sqmusicplus.plug.kw.entity.SearchAlbumResult;
@@ -80,7 +81,7 @@ public class ALLController {
      * @param br 码率 156498
      * @return
      */
-        @SaCheckLogin
+    @SaCheckLogin
         @PostMapping("/musicDownload/{id}/{br}")
     public AjaxResult musicDownload(@PathVariable("id") String id,@PathVariable(value = "br",required = false) Integer br,@RequestBody(required = false) Music music){
         if (music==null){
@@ -151,6 +152,8 @@ public class ALLController {
     @SaCheckLogin
     @PostMapping("/ArtistDownload/{id}/{br}")
     public AjaxResult ArtistDownload(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br){
+        Artists artists = searchHander.autoQueryArtist(id);
+        String artist = artists.getMusicArtistsName();
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
         if(br!=null){
@@ -164,7 +167,7 @@ public class ALLController {
             nowbr=KwBrType.FLAC_2000;
         }
         KwBrType finalNowbr = nowbr;
-        threadPoolTaskExecutor.execute(()->searchHander.downloadAllMusicByArtistid(id, finalNowbr));
+        threadPoolTaskExecutor.execute(()->searchHander.downloadAllMusicByArtistid(id, finalNowbr,artist));
         return AjaxResult.success(true);
     }
     /**
@@ -201,10 +204,10 @@ public class ALLController {
             nowbr=KwBrType.FLAC_2000;
         }
         KwBrType finalNowbr = nowbr;
-        threadPoolTaskExecutor.execute(()->searchHander.downloadAlbumByAlbumID(id, finalNowbr));
+        threadPoolTaskExecutor.execute(()->searchHander.downloadAlbumByAlbumID(id, finalNowbr,null));
         return AjaxResult.success(true);
     }
-
+    @SaCheckLogin
     @GetMapping("/getTask")
     public AjaxResult taskStatus(){
         HashMap<String, List> stringListHashMap = new HashMap<>();
@@ -222,6 +225,12 @@ public class ALLController {
     @GetMapping("/delErrorTask")
     public AjaxResult delErrorTask(){
         EhCacheUtil.removeaLL(EhCacheUtil.ERROR_DOWNLOAD);
+        return AjaxResult.success(true);
+    }
+    @SaCheckLogin
+    @GetMapping("/delSuccessTask")
+    public AjaxResult delSuccessTask(){
+        EhCacheUtil.removeaLL(EhCacheUtil.OVER_DOWNLOAD);
         return AjaxResult.success(true);
     }
     @SaCheckLogin

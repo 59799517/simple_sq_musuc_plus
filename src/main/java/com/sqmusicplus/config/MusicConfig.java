@@ -28,6 +28,8 @@ public class MusicConfig {
       private Boolean overrideDownload;
       private Boolean initDownload;
       private Integer downloadSize;
+      private Boolean strongMatchAlbumSinger;
+      private Boolean albumSingerUnity;
 //    private  String mvPath;
 //    private  String musicScanPath;
 //    private  String imagePath;
