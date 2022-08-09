@@ -11,6 +11,7 @@ import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
 import org.jaudiotagger.tag.datatype.Artwork;
+import org.jaudiotagger.tag.id3.ID3v24Tag;
 import ws.schild.jave.EncoderException;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.info.MultimediaInfo;
@@ -64,8 +65,17 @@ public class MusicUtils {
                 try {
                     Artwork firstArtwork = Artwork.createArtworkFromFile(image);
                     tag.setField(firstArtwork);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                } catch (UnsupportedOperationException ex) {
+                    tag = new ID3v24Tag();
+                    tag.setField(FieldKey.TITLE,title);
+                    tag.setField(FieldKey.ALBUM,album);
+                    tag.setField(FieldKey.ARTIST,artist);
+                    tag.setField(FieldKey.COMMENT,comment);
+                    Artwork artworkFromFile = Artwork.createArtworkFromFile(image);
+                    tag.setField(artworkFromFile);
+                    if(StringUtils.isNotEmpty(lyrics)){
+                        tag.setField(FieldKey.LYRICS,lyrics);
+                    }
                 }
             }
 
