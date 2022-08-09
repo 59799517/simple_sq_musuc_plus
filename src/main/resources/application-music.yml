@@ -7,7 +7,7 @@ sqmusic:
 #  初始化检查未下载
   initDownload: ${INIT_DOWNLOAD:true}
 # 同时下载数量
-  downloadSize: ${DOWNLOAD_SIZE:5}
+  downloadSize: ${DOWNLOAD_SIZE:8}
 #  强制匹配专辑下歌手
   strongMatchAlbumSinger: ${STRONG_MATCH_ALBUM_SINGER:true}
 #  专辑歌手统一（多人演唱仅保存下载时查询的歌手）   --->避免出现多个乱七八糟歌手

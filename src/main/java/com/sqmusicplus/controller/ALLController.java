@@ -248,8 +248,13 @@ public class ALLController {
         List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
         for (Object value : values) {
             DownloadEntity downloadEntity = (DownloadEntity) value;
-            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD,downloadEntity.getMusicid());
-            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getMusicid(),downloadEntity);
+            try {
+                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD,downloadEntity.getMusicid());
+                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getMusicid(),downloadEntity);
+            } catch (Exception e) {
+
+            }
+
         }
         return AjaxResult.success(true);
     }

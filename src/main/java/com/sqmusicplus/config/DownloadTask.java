@@ -52,7 +52,9 @@ public class DownloadTask {
                     Object o = EhCacheUtil.get(EhCacheUtil.READY_DOWNLOAD, key);
                     EhCacheUtil.remove(EhCacheUtil.READY_DOWNLOAD,key);
                     //添加到下载
-                    EhCacheUtil.put(EhCacheUtil.RUN_DOWNLOAD,key,o);
+                    if (StringUtils.isNotEmpty(key)&&o!=null){
+                        EhCacheUtil.put(EhCacheUtil.RUN_DOWNLOAD,key,o);
+                    }
                 }
             }
         }

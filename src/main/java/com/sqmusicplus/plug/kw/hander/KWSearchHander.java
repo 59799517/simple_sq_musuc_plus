@@ -533,7 +533,9 @@ public class KWSearchHander {
             }
             //添加到缓存
             DownloadEntity url = new DownloadEntity(md.getId(),finalKwBrType,md.getName(),change.get(),albumInfoResult.getName());
-            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,md.getId(),url);
+            if (StringUtils.isNotEmpty(md.getId())){
+                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,md.getId(),url);
+            }
             });
     }
 
