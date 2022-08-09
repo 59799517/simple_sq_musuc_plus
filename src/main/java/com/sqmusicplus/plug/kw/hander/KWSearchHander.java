@@ -490,7 +490,6 @@ public class KWSearchHander {
             EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
             log.debug("下载成功{}", music.getMusicName());
         } catch (Exception e) {
-            errorMsg=e.getMessage();
             EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
             EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
             log.debug("下载成功{}", music.getMusicName());
