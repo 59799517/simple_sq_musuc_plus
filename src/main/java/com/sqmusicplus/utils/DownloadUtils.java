@@ -1,12 +1,10 @@
 package com.sqmusicplus.utils;
 
-import com.ejlchina.okhttps.*;
 import com.ejlchina.okhttps.Process;
-import com.sqmusicplus.entity.DownloadEntity;
+import com.ejlchina.okhttps.*;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -36,25 +34,25 @@ public class DownloadUtils {
                 //连接池
                 builder.connectionPool(new ConnectionPool(10, 5, TimeUnit.MINUTES));
                 //添加重试
-                builder.addInterceptor(chain -> {
-                    HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-                    logging.setLevel(HttpLoggingInterceptor.Level.BASIC);
-                    // 添加日志拦截器
-                    builder.addInterceptor(logging);
-
-                    int retryTimes = 0;
-                    while (true) {
-                        try {
-                            return chain.proceed(chain.request());
-                        } catch (Exception e) {
-                            if (retryTimes >= 3) {
-                                throw e;
-                            }
-                            log.debug("超时重试第{}次！",retryTimes);
-                            retryTimes++;
-                        }
-                    }
-                });
+//                builder.addInterceptor(chain -> {
+//                    HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+//                    logging.setLevel(HttpLoggingInterceptor.Level.BASIC);
+//                    // 添加日志拦截器
+//                    builder.addInterceptor(logging);
+//
+//                    int retryTimes = 0;
+//                    while (true) {
+//                        try {
+//                            return chain.proceed(chain.request());
+//                        } catch (Exception e) {
+//                            if (retryTimes >= 3) {
+//                                throw e;
+//                            }
+//                            log.debug("超时重试第{}次！",retryTimes);
+//                            retryTimes++;
+//                        }
+//                    }
+//                });
 
             });
             ConvertProvider.inject(hb);
