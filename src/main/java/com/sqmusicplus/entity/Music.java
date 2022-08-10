@@ -127,6 +127,11 @@ public class Music  implements Serializable {
      */
     private String md5;
 
+    /**
+     * 查询时歌曲id
+     */
+    private String searchMusicId;
+
 
     /**
      * 其他  给插件提供

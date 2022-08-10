@@ -1,7 +1,6 @@
 package com.sqmusicplus.utils;
 
 import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 
@@ -19,8 +18,8 @@ import java.util.Set;
  */
 public class EhCacheUtil {
 
-    private static CacheManager cacheManager = ((CacheManager) SpringContextUtil
-            .getBean(CacheManager.class));
+    //歌单解析
+    public static final String PARSER_DOWNLOAD = "parser";
     //准备
     public static final String READY_DOWNLOAD = "ready";
     //完成
@@ -29,6 +28,12 @@ public class EhCacheUtil {
     public static final String ERROR_DOWNLOAD = "error";
     //进行中
     public static final String RUN_DOWNLOAD = "run";
+    /**
+     * 所有任务名称
+     */
+    public static final String PARSER_TASK_DOWNLOAD = "parser_task";
+    private static CacheManager cacheManager = SpringContextUtil
+            .getBean(CacheManager.class);
 
     /**
      * 获取SYS_CACHE缓存

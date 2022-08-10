@@ -4,24 +4,24 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
 import com.alibaba.fastjson.JSONObject;
 import com.ejlchina.okhttps.HttpUtils;
+import com.sqmusicplus.config.MusicConfig;
 import com.sqmusicplus.entity.Album;
 import com.sqmusicplus.entity.Artists;
-import com.sqmusicplus.config.MusicConfig;
 import com.sqmusicplus.entity.DownloadEntity;
 import com.sqmusicplus.entity.Music;
 import com.sqmusicplus.plug.kw.config.KwConfig;
 import com.sqmusicplus.plug.kw.entity.*;
 import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.enums.KwSearchType;
-import com.sqmusicplus.plug.utils.*;
+import com.sqmusicplus.plug.utils.Base64Coder;
+import com.sqmusicplus.plug.utils.KuwoDES;
+import com.sqmusicplus.plug.utils.LrcUtils;
 import com.sqmusicplus.utils.DownloadUtils;
 import com.sqmusicplus.utils.EhCacheUtil;
 import com.sqmusicplus.utils.MusicUtils;
 import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -332,14 +332,16 @@ public class KWSearchHander {
 
     /**
      * 根基关键字搜索歌曲
-     * @param searchkey 关键字
+     * @param songName 歌名
+     * @param artists 歌手
+     * @param conformity
      * @return 歌曲信息
      */
-    public Music AutoqueryMusic(String searchkey){
+    public Music AutoqueryMusic(String songName , String artists,boolean conformity){
         String searchUrl = config.getSearchUrl();
         String s = searchUrl.replaceAll("#\\{pn}", "0")
-                .replaceAll("#\\{pagesize}","1")
-                .replaceAll("#\\{searchKey}", searchkey)
+                .replaceAll("#\\{pagesize}","10")
+                .replaceAll("#\\{searchKey}", songName+" "+artists)
                 .replaceAll("#\\{searchType}", KwSearchType.MUSIC.getValue());
         SearchMusicResult searchMusicResult = null;
         try {
@@ -349,20 +351,41 @@ public class KWSearchHander {
                     .toBean(SearchMusicResult.class);
             if (searchMusicResult.getAbslist().size()>0){
                 List<SearchMusicResult.AbslistDTO> abslist = searchMusicResult.getAbslist();
-                SearchMusicResult.AbslistDTO abslistDTO = abslist.get(0);
-                Music music = queryMusicInfoBySongId(Integer.parseInt(abslistDTO.getMusicrid().replace("MUSIC_", "")));
-                MusicInfoResult.DataDTO dataDTO = music.getOther().toJavaObject(MusicInfoResult.DataDTO.class);
-                String albumId = dataDTO.getSonginfo().getAlbumId();
-                Album album = queryAlbumsInfoInfoByAlbumsId(Integer.valueOf(albumId));
-                music.setAlbum(album);
-                music.setArtists(autoQueryArtist(Integer.valueOf(abslistDTO.getArtistid())));
-                return music;
+                if (conformity){
+                    for (SearchMusicResult.AbslistDTO abslistDTO : abslist) {
+                        String aartist = abslistDTO.getAartist();
+                        String name = abslistDTO.getName();
+                        String searmusic_id = abslistDTO.getMusicrid().replace("MUSIC_", "");
+                        if (name.equals("songName")&&aartist.contains(artists)){
+                            Music music = queryMusicInfoBySongId(Integer.parseInt(abslistDTO.getMusicrid().replace("MUSIC_", "")));
+                            MusicInfoResult.DataDTO dataDTO = music.getOther().toJavaObject(MusicInfoResult.DataDTO.class);
+                            String albumId = dataDTO.getSonginfo().getAlbumId();
+                            Album album = queryAlbumsInfoInfoByAlbumsId(Integer.valueOf(albumId));
+                            music.setAlbum(album);
+                            music.setArtists(autoQueryArtist(Integer.valueOf(abslistDTO.getArtistid())));
+                            music.setSearchMusicId(searmusic_id);
+                            return music;
+                        }
+                    }
+                }else{
+                    SearchMusicResult.AbslistDTO abslistDTO = abslist.get(0);
+                    String searmusic_id = abslistDTO.getMusicrid().replace("MUSIC_", "");
+                    Music music = queryMusicInfoBySongId(Integer.parseInt(abslistDTO.getMusicrid().replace("MUSIC_", "")));
+                    MusicInfoResult.DataDTO dataDTO = music.getOther().toJavaObject(MusicInfoResult.DataDTO.class);
+                    String albumId = dataDTO.getSonginfo().getAlbumId();
+                    Album album = queryAlbumsInfoInfoByAlbumsId(Integer.valueOf(albumId));
+                    music.setAlbum(album);
+                    music.setArtists(autoQueryArtist(Integer.valueOf(abslistDTO.getArtistid())));
+                    music.setSearchMusicId(searmusic_id);
+                    return music;
+                }
             }else{
                 return  null;
             }
         } catch (Exception e) {
             return  null;
         }
+        return null;
     }
 
     /**
@@ -461,7 +484,9 @@ public class KWSearchHander {
                 });
 
             }catch (Exception e){
-                e.printStackTrace();
+                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
+                EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+
 
             }
 
@@ -492,7 +517,9 @@ public class KWSearchHander {
         } catch (Exception e) {
             EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
             EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-            log.debug("下载成功{}", music.getMusicName());
+            log.debug("下载错误{}  ----------> {}", music.getMusicName(),e.getMessage());
+            log.error(e.getMessage());
+            e.printStackTrace();
         }
     }
 

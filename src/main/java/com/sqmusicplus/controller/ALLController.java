@@ -8,6 +8,8 @@ import com.sqmusicplus.controller.dto.PlayUrlDTO;
 import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.entity.DownloadEntity;
 import com.sqmusicplus.entity.Music;
+import com.sqmusicplus.entity.ParserEntity;
+import com.sqmusicplus.listener.TextMusicPlayListParser;
 import com.sqmusicplus.plug.kw.entity.SearchAlbumResult;
 import com.sqmusicplus.plug.kw.entity.SearchArtistResult;
 import com.sqmusicplus.plug.kw.entity.SearchMusicResult;
@@ -23,8 +25,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -42,6 +44,8 @@ public class ALLController {
     @Autowired
     @Qualifier("threadPoolTaskExecutor")
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    @Autowired
+    TextMusicPlayListParser textMusicPlayListParser;
 
     @Value("${user.username}")
     String username;
@@ -254,7 +258,6 @@ public class ALLController {
             } catch (Exception e) {
 
             }
-
         }
         return AjaxResult.success(true);
     }
@@ -286,7 +289,65 @@ public class ALLController {
         return "当前会话是否登录：" + StpUtil.isLogin();
     }
 
+    /**
+     * 解析单单
+     * @param text
+     * @return
+     */
+    @SaCheckLogin
+    @GetMapping("/parserText")
+    public List<ParserEntity> parserText(String text) throws IOException {
+        List<ParserEntity> parser = textMusicPlayListParser.parser(text);
+        return parser;
     }
+    /**
+     * 解析单单
+     * @param data { text：“内容”，taskName：“任务名”}
+     * @return
+     */
+    @SaCheckLogin
+    @GetMapping("/downloadParser")
+    public void downloadParser(@RequestBody HashMap<String,String> data) throws IOException {
+        String text = data.get("text");
+        String taskName = data.get("taskName");
+        String br = data.get("br");
+        List<ParserEntity> parser = textMusicPlayListParser.parser(text);
+
+        KwBrType[] values = KwBrType.values();
+        KwBrType nowbr = KwBrType.MP3_320;
+        if(br!=null){
+            for (KwBrType value : values) {
+                if (value.getBit().intValue()==Integer.valueOf(br)) {
+                    nowbr=value;
+                    break;
+                }
+            }
+        }else {
+            nowbr=KwBrType.FLAC_2000;
+        }
+        for (ParserEntity parserEntity : parser) {
+            Music music = searchHander.AutoqueryMusic(parserEntity.getSongName(), parserEntity.getArtistsName(), true);
+            if (music!=null){
+                //成功了
+                KwBrType finalNowbr = nowbr;
+                music.setMusicArtists(parserEntity.getArtistsName());
+                threadPoolTaskExecutor.execute(()->searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
+                EhCacheUtil.put(EhCacheUtil.PARSER_DOWNLOAD,taskName+"_over",parserEntity);
+            }else{
+                //失败了
+                EhCacheUtil.put(EhCacheUtil.PARSER_DOWNLOAD,taskName+"_error",parserEntity);
+            }
+        }
+
+}
+
+
+
+    }
+
+
+
+
 
     //
 

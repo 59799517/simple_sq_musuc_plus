@@ -103,7 +103,11 @@
             <artifactId>sa-token-spring-boot-starter</artifactId>
             <version>1.30.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.15.2</version>
+        </dependency>
         <dependency>
             <groupId>com.squareup.okio</groupId>
             <artifactId>okio</artifactId>
@@ -140,6 +144,8 @@
             <artifactId>jaudiotagger</artifactId>
             <version>${jaudiotagger.version}</version>
         </dependency>
+
+
 
     </dependencies>
 
