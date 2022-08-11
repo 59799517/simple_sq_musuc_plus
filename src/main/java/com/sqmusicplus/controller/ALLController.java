@@ -3,6 +3,7 @@ package com.sqmusicplus.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.sqmusicplus.config.AjaxResult;
+import com.sqmusicplus.config.MusicConfig;
 import com.sqmusicplus.controller.dto.PlayUrlDTO;
 import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.entity.DownloadEntity;
@@ -44,7 +45,9 @@ public class ALLController {
     @Qualifier("threadPoolTaskExecutor")
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
     @Autowired
-    TextMusicPlayListParser textMusicPlayListParser;
+    private TextMusicPlayListParser textMusicPlayListParser;
+    @Autowired
+    private MusicConfig musicConfig;
 
     @Value("${user.username}")
     String username;
@@ -371,6 +374,11 @@ public void ArtistSongList(@PathVariable("id") Integer id,@PathVariable(value = 
         List<Music> musics = searchHander.queryAllArtistSongList(id, 1000, 1);
         KwBrType finalNowbr = nowbr;
         for (Music music : musics) {
+            if(musicConfig.getIgnoreAccompaniment()){
+                if (music.getMusicName().contains("伴奏")||music.getMusicName().contains("试听版")) {
+                    continue;
+                }
+            }
             threadPoolTaskExecutor.execute(()->searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
         }
 
