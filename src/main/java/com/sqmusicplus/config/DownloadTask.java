@@ -25,10 +25,6 @@ public class DownloadTask {
 
 
     public void execute(){
-        log.debug("正在进行中{}个",EhCacheUtil.keys(EhCacheUtil.RUN_DOWNLOAD).size());
-        log.debug("准备{}个",EhCacheUtil.keys(EhCacheUtil.READY_DOWNLOAD).size());
-        log.debug("完成{}个",EhCacheUtil.keys(EhCacheUtil.OVER_DOWNLOAD).size());
-        log.debug("错误{}个",EhCacheUtil.keys(EhCacheUtil.ERROR_DOWNLOAD).size());
         List<Object> run_download = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
         for (Object o : run_download) {
             if (o==null){
@@ -57,5 +53,9 @@ public class DownloadTask {
                 }
             }
         }
+        log.debug("正在进行中{}个",EhCacheUtil.keys(EhCacheUtil.RUN_DOWNLOAD).size());
+        log.debug("准备{}个",EhCacheUtil.keys(EhCacheUtil.READY_DOWNLOAD).size());
+        log.debug("完成{}个",EhCacheUtil.keys(EhCacheUtil.OVER_DOWNLOAD).size());
+        log.debug("错误{}个",EhCacheUtil.keys(EhCacheUtil.ERROR_DOWNLOAD).size());
     }
 }

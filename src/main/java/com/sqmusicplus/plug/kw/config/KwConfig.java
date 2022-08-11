@@ -29,6 +29,7 @@ public class KwConfig {
     private String AlbumListUrl;
     private String AlbumInfoUrl;
     private String ArtistAlbumListUrl;
+    private String ArtistSongListUrl;
 
 
 }

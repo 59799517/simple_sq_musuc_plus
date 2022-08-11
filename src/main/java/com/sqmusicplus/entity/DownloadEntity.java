@@ -1,15 +1,11 @@
 package com.sqmusicplus.entity;
 
-import com.ejlchina.okhttps.Download;
-import com.ejlchina.okhttps.Process;
 import com.sqmusicplus.plug.kw.enums.KwBrType;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
-import java.io.File;
 import java.io.Serializable;
-import java.util.function.Consumer;
 
 /**
  * @Classname DownloadEntity
@@ -20,6 +16,7 @@ import java.util.function.Consumer;
  */
 @Data
 @Accessors(chain = true)
+@ToString
 public class DownloadEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 

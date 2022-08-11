@@ -21,6 +21,7 @@ import com.sqmusicplus.utils.EhCacheUtil;
 import com.sqmusicplus.utils.MusicUtils;
 import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -86,6 +87,75 @@ public class KWSearchHander {
                 .toBean(SearchArtistResult.class);
        return searchArtistResult;
     }
+
+
+
+    public ImmutableTriple<String, String, List<Music>> queryArtistSongList(Integer artistid,Integer pageSize,Integer pageIndex){
+        String s = config.getArtistSongListUrl().replaceAll("#\\{pn}", pageIndex.toString())
+                .replaceAll("#\\{pagesize}", pageSize.toString())
+                .replaceAll("#\\{artistid}", artistid.toString());
+        ArtistSongListResult artistSongListResult = DownloadUtils.getHttp().sync(s).get().getBody().toBean(ArtistSongListResult.class);
+        String total = artistSongListResult.getTotal();
+        String pn = artistSongListResult.getPn();
+        List<ArtistSongListResult.MusiclistDTO> musiclist = artistSongListResult.getMusiclist();
+        List<Music> collect = musiclist.stream().map(abslistDTO -> {
+            String album = StringUtils.isEmpty(abslistDTO.getAlbum())?"其他":abslistDTO.getAlbum();
+            String aartist = artistSongListResult.getArtist();
+            String url = (config.getSongCoverUrl() + abslistDTO.getWebAlbumpicShort()).replaceAll("/120", "/500");
+            return new Music().setMusicName(abslistDTO.getName()).setMusicAlbum(album).setMusicArtists(aartist).setMusicImage(url).setOther(JSONObject.parseObject(JSONObject.toJSONString(abslistDTO))).setSearchMusicId(abslistDTO.getMusicrid());
+        }).collect(Collectors.toList());
+        ImmutableTriple<String, String, List<Music>> stringStringListImmutableTriple = new ImmutableTriple<>(total, pn, collect);
+        return stringStringListImmutableTriple;
+    }
+
+    /**
+     *
+     * @param artistid id
+     * @param pageSize 长度
+     * @param pageIndex 页码(起始为1)
+     * @return
+     */
+    public  List<Music> queryAllArtistSongList(Integer artistid,Integer pageSize,Integer pageIndex){
+        pageIndex--;
+        ImmutableTriple<String, String, List<Music>> stringStringListImmutableTriple = queryArtistSongList(artistid,pageSize,pageIndex);
+        Integer total = Integer.valueOf(stringStringListImmutableTriple.getLeft());
+       int countsize = total%pageSize==0?total/pageSize:total/pageSize+1;
+        List<Music> collect = stringStringListImmutableTriple.getRight();
+        for (int i = 1; i < countsize; i++) {
+            pageIndex++;
+            ImmutableTriple<String, String, List<Music>> tempTriple = queryArtistSongList(artistid,pageSize,pageIndex);
+            collect.addAll(tempTriple.getRight());
+        }
+         return collect;
+
+    }
+
+
+
+//    public List<Music> queryAllArtistSongList(Integer artistid ,Integer pageNumber){
+//        ArrayList<Music> music = new ArrayList<>();
+//        Integer pn=pageNumber!=null?pageNumber:0;
+//        String s = config.getArtistSongListUrl().replaceAll("#\\{pn}", pn.toString())
+//                .replaceAll("#\\{pagesize}", "1000")
+//                .replaceAll("#\\{artistid}", artistid.toString());
+//        ArtistSongListResult artistSongListResult = DownloadUtils.getHttp().sync(s).get().getBody().toBean(ArtistSongListResult.class);
+//        pn = Integer.valueOf(artistSongListResult.getPn());
+//        Integer total = Integer.valueOf(artistSongListResult.getTotal());
+//        Integer getSize = (total%1000)==0?total/1000:(total/1000)+1;
+//        List<ArtistSongListResult.MusiclistDTO> musiclist = artistSongListResult.getMusiclist();
+//        List<Music> collect = musiclist.stream().map(abslistDTO -> {
+//            String album = StringUtils.isEmpty(abslistDTO.getAlbum())?"其他":abslistDTO.getAlbum();
+//            String aartist = abslistDTO.getAartist().split("&")[0];
+//            String url = (config.getSongCoverUrl() + abslistDTO.getWebAlbumpicShort()).replaceAll("/120", "/500");
+//            return new Music().setMusicName(abslistDTO.getName()).setMusicAlbum(album).setMusicArtists(aartist).setMusicImage(url).setOther(JSONObject.parseObject(JSONObject.toJSONString(abslistDTO))).setSearchMusicId(abslistDTO.getMusicrid());
+//        }).collect(Collectors.toList());
+//        if (getSize.intValue()-1==pn){
+//            music.addAll(collect);
+//            return music;
+//        }else{
+//           return
+//        }
+//    }
 
 
     /**
@@ -353,10 +423,10 @@ public class KWSearchHander {
                 List<SearchMusicResult.AbslistDTO> abslist = searchMusicResult.getAbslist();
                 if (conformity){
                     for (SearchMusicResult.AbslistDTO abslistDTO : abslist) {
-                        String aartist = abslistDTO.getAartist();
-                        String name = abslistDTO.getName();
-                        String searmusic_id = abslistDTO.getMusicrid().replace("MUSIC_", "");
-                        if (name.equals("songName")&&aartist.contains(artists)){
+                        String aartist = abslistDTO.getArtist().trim();
+                        String name = abslistDTO.getName().trim();
+                        if (name.equals(songName.trim())&&aartist.trim().contains(artists.trim())){
+                            String searmusic_id = abslistDTO.getMusicrid().replace("MUSIC_", "");
                             Music music = queryMusicInfoBySongId(Integer.parseInt(abslistDTO.getMusicrid().replace("MUSIC_", "")));
                             MusicInfoResult.DataDTO dataDTO = music.getOther().toJavaObject(MusicInfoResult.DataDTO.class);
                             String albumId = dataDTO.getSonginfo().getAlbumId();

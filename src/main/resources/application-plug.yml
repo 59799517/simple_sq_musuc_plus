@@ -25,4 +25,4 @@ kw:
   #专辑列表
   ArtistAlbumListUrl: https://search.kuwo.cn/r.s?pn=0&rn=1000&artistid=#{artistid}&stype=albumlist&sortby=1&alflac=1&show_copyright_off=1&pcmp4=1&encoding=utf8&plat=pc&thost=search.kuwo.cn&vipver=MUSIC_9.1.1.2_BCS2&devid=38668888&pcjson=1
 #  歌手单曲列表（分页）
-  ArtistSongListUrl: https://search.kuwo.cn/r.s?pn=0&rn=1000&artistid=#{artistid}&stype=artist2music&sortby=0&alflac=1&show_copyright_off=1&pcmp4=1&encoding=utf8&plat=pc&thost=search.kuwo.cn&vipver=MUSIC_9.1.1.2_BCS2&devid=38668888&newver=1&pcjson=1
+  ArtistSongListUrl: https://search.kuwo.cn/r.s?pn=#{pn}&rn=#{pagesize}&artistid=#{artistid}&stype=artist2music&sortby=0&alflac=1&show_copyright_off=1&pcmp4=1&encoding=utf8&plat=pc&thost=search.kuwo.cn&vipver=MUSIC_9.1.1.2_BCS2&devid=38668888&newver=1&pcjson=1
