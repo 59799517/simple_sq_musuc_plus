@@ -473,12 +473,12 @@ public class KWSearchHander {
             if (StringUtils.isEmpty(music.getMusicAlbum())){
                 music.setMusicAlbum("其他");
             }
-            String basepath = music.getMusicArtists() + File.separator+music.getMusicAlbum()+ File.separator;
+            String basepath = music.getMusicArtists().trim() + File.separator+music.getMusicAlbum().trim()+ File.separator;
             HashMap<String, String> stringStringHashMap = autoDownloadUrl(downloadEntity.getMusicid() + "", downloadEntity.getKwBrType());
-            File type = new File(file,  basepath + music.getMusicName() + " - " + music.getMusicArtists()  + "." + stringStringHashMap.get("type"));
+            File type = new File(file,  basepath + music.getMusicName().trim() + " - " + music.getMusicArtists().trim()  + "." + stringStringHashMap.get("type"));
 
             try {
-                log.debug("开始下载---->{}",music.getMusicName());
+                log.debug("开始下载---->{}",music.getMusicName().trim());
                 if (musicConfig.getOverrideDownload()) {
                     if(type.exists()){
                         EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
@@ -663,7 +663,7 @@ public class KWSearchHander {
      */
    public void musicDownload(String id,KwBrType br,Music music){
        //添加到缓存
-       DownloadEntity url = new DownloadEntity(id,br,music.getMusicName(),music.getMusicArtists(),music.getMusicAlbum());
+       DownloadEntity url = new DownloadEntity(id,br,music.getMusicName().trim(),music.getMusicArtists().trim(),music.getMusicAlbum().trim());
        EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,id,url);
     }
 
