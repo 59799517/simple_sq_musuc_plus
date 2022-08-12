@@ -1,6 +1,5 @@
 package com.sqmusicplus.config;
 
-import com.sqmusicplus.entity.DownloadEntity;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -12,7 +11,7 @@ import java.util.Properties;
 
 /**
  * @Classname ReadyCacheEventListener
- * @Description TODO
+ * @Description 准备下载缓存监听
  * @Version 1.0.0
  * @Date 2022/8/3 15:46
  * @Created by SQ

@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * @Classname AlbumInfoResult
- * @Description TODO
+ * @Description 专辑信息实体类（url请求）
  * @Version 1.0.0
  * @Date 2022/5/30 16:09
  * @Created by SQ

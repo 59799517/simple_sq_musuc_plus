@@ -1,9 +1,9 @@
 package com.sqmusicplus.controller.dto;
 
 import com.alibaba.fastjson.JSONObject;
+import com.sqmusicplus.config.EnumValue;
 import com.sqmusicplus.entity.Album;
 import com.sqmusicplus.entity.Artists;
-import com.sqmusicplus.config.EnumValue;
 import lombok.Data;
 import lombok.ToString;
 
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 /**
  * @Classname PlayUrlDTO
- * @Description TODO
+ * @Description 播放歌曲实体类
  * @Version 1.0.0
  * @Date 2022/6/8 16:00
  * @Created by SQ

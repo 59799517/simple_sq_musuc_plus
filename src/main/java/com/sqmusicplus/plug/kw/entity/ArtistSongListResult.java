@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * @Classname ArtistSongListResult
- * @Description TODO
+ * @Description 歌手全部歌曲实体类（酷我）
  * @Version 1.0.0
  * @Date 2022/8/11 10:12
  * @Created by SQ
