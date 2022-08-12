@@ -13,6 +13,11 @@ https://support.emby.media/support/solutions/articles/44001159113-music-naming
 4. 缓存 ehcache.xml--->diskStore
 5. 日志 logback.xml---->property--->log.path
 
+## 使用可（java -jar ./simple-MusicServer-0.0.1-SNAPSHOT.jar
+
+1. 安装java17
+2. 运行jar包即）
+
 ## 打包docker方法
 
 1. 删除旧的包 docker rmi sqmusicplusserver
