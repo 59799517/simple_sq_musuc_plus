@@ -3,6 +3,7 @@ package com.sqmusicplus.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.sqmusicplus.config.AjaxResult;
+import com.sqmusicplus.config.MusicConfig;
 import com.sqmusicplus.controller.dto.PlayUrlDTO;
 import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.entity.DownloadEntity;
@@ -44,7 +45,9 @@ public class ALLController {
     @Qualifier("threadPoolTaskExecutor")
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
     @Autowired
-    TextMusicPlayListParser textMusicPlayListParser;
+    private TextMusicPlayListParser textMusicPlayListParser;
+    @Autowired
+    private MusicConfig musicConfig;
 
     @Value("${user.username}")
     String username;
@@ -276,7 +279,6 @@ public class ALLController {
 
     @RequestMapping("login")
     public String Login(String username, String password, HttpServletResponse response) throws IOException {
-        // 此处仅作模拟示例，真实项目需要从数据库中查询数据进行比对
         if(this.username.equals(username) && this.password.equals(password)) {
             StpUtil.login(10001);
             response.sendRedirect("/index.html");
@@ -309,10 +311,10 @@ public class ALLController {
     public AjaxResult downloadParser(@RequestBody HashMap<String,String> data) throws IOException {
         String text = data.get("text");
 //        String taskName = data.get("taskName");
-        String br = data.get("br");
 //        if (StringUtils.isEmpty(taskName)){
 //            taskName = DateUtils.dateTimeNow();
 //        }
+        String br = data.get("br");
         List<ParserEntity> parser = textMusicPlayListParser.parser(text);
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
@@ -371,7 +373,15 @@ public void ArtistSongList(@PathVariable("id") Integer id,@PathVariable(value = 
         List<Music> musics = searchHander.queryAllArtistSongList(id, 1000, 1);
         KwBrType finalNowbr = nowbr;
         for (Music music : musics) {
+        if (musicConfig.getIgnoreAccompaniment()){
+            if (music.getMusicName().contains("(伴奏)")||music.getMusicName().contains("(试听版)")||music.getMusicName().contains("(片段)")){
+                continue;
+            }
+        }
+        if (music.getSearchMusicId().equals("186292777")){
+            System.out.println(music);
             threadPoolTaskExecutor.execute(()->searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
+        }
         }
 
     }

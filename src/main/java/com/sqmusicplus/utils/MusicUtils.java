@@ -11,6 +11,7 @@ import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.*;
 import org.jaudiotagger.tag.datatype.Artwork;
+import org.jaudiotagger.tag.flac.FlacTag;
 import org.jaudiotagger.tag.id3.ID3v1Tag;
 import org.jaudiotagger.tag.id3.ID3v24Tag;
 import ws.schild.jave.EncoderException;
@@ -55,10 +56,10 @@ public class MusicUtils {
         if ( tag instanceof ID3v1Tag ){
             tag = new ID3v24Tag();
         }
-        tag.setField(FieldKey.TITLE,title);
-        tag.setField(FieldKey.ALBUM,album);
-        tag.setField(FieldKey.ARTIST,artist);
-        tag.setField(FieldKey.COMMENT,comment);
+        tag.setField(FieldKey.TITLE,title.trim());
+        tag.setField(FieldKey.ALBUM,album.trim());
+        tag.setField(FieldKey.ARTIST,artist.trim());
+        tag.setField(FieldKey.COMMENT,comment.trim());
         if(StringUtils.isNotEmpty(lyrics)){
             try {
                 tag.setField(FieldKey.LYRICS,lyrics);
@@ -68,7 +69,7 @@ public class MusicUtils {
                 throw new RuntimeException(e);
             }
         }
-        if (image!=null){
+        if (image!=null&&image.exists()){
             try {
                 Artwork firstArtwork = tag.getFirstArtwork();
                 firstArtwork.setFromFile(image);
@@ -79,10 +80,10 @@ public class MusicUtils {
                     tag.setField(firstArtwork);
                 } catch (UnsupportedOperationException ex) {
                     tag = new ID3v24Tag();
-                    tag.setField(FieldKey.TITLE,title);
-                    tag.setField(FieldKey.ALBUM,album);
-                    tag.setField(FieldKey.ARTIST,artist);
-                    tag.setField(FieldKey.COMMENT,comment);
+                    tag.setField(FieldKey.TITLE,title.trim());
+                    tag.setField(FieldKey.ALBUM,album.trim());
+                    tag.setField(FieldKey.ARTIST,artist.trim());
+                    tag.setField(FieldKey.COMMENT,comment.trim());
                     Artwork artworkFromFile = Artwork.createArtworkFromFile(image);
                     tag.setField(artworkFromFile);
                     if(StringUtils.isNotEmpty(lyrics)){
@@ -94,10 +95,10 @@ public class MusicUtils {
                     Artwork firstArtwork = Artwork.createArtworkFromFile(image);
                     tag.setField(firstArtwork);
                 }catch (Exception ale){
-                    tag.setField(FieldKey.TITLE,title);
-                    tag.setField(FieldKey.ALBUM,album);
-                    tag.setField(FieldKey.ARTIST,artist);
-                    tag.setField(FieldKey.COMMENT,comment);
+                    tag.setField(FieldKey.TITLE,title.trim());
+                    tag.setField(FieldKey.ALBUM,album.trim());
+                    tag.setField(FieldKey.ARTIST,artist.trim());
+                    tag.setField(FieldKey.COMMENT,comment.trim());
                     if(StringUtils.isNotEmpty(lyrics)){
                         tag.setField(FieldKey.LYRICS,lyrics);
                     }
