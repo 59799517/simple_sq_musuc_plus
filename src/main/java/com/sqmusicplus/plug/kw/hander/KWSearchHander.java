@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Component
-public class KWSearchHander {
+public class    KWSearchHander {
     @Autowired
     private KwConfig config;
     @Autowired
@@ -480,7 +480,7 @@ public class KWSearchHander {
         music.setMusicArtists(downloadEntity.getArtistname());
         music.setMusicName(music.getMusicName().replaceAll("<[^>]*>", ""));
         if (StringUtils.isEmpty(music.getMusicAlbum())) {
-            music.setMusicAlbum("其他");
+            music.setMusicAlbum("other");
         }
         String basepath = music.getMusicArtists().trim() + File.separator + music.getMusicAlbum().trim() + File.separator;
         HashMap<String, String> stringStringHashMap = autoDownloadUrl(downloadEntity.getMusicid() + "", downloadEntity.getKwBrType());
@@ -511,7 +511,7 @@ public class KWSearchHander {
                 String downliadpath = musicConfig.getMusicPath() + File.separator + music.getMusicArtists().trim();
                 //人物
                 File Artistsfile = new File(downliadpath + File.separator + "cover.jpg");
-                if (!Artistsfile.exists() || musicArtistsName.equals(music.getMusicArtists().trim())) {
+                if (!Artistsfile.exists()) {
                     try {
                         DownloadUtils.download(downloadurl, downliadpath, onArtistsPhoto -> {
                             try {
@@ -535,7 +535,7 @@ public class KWSearchHander {
                     downloadalubimage = false;
                 }
                 String imagePath = musicConfig.getMusicPath() + File.separator + music.getMusicArtists().trim() + File.separator + music.getMusicAlbum().trim();
-                if (StringUtils.isEmpty(album.getAlbumName()) && music.getMusicAlbum().trim().equals("其他")) {
+                if (StringUtils.isEmpty(album.getAlbumName()) && music.getMusicAlbum().trim().equals("other")) {
                     FileUtil.copy(Artistsfile, new File(imagePath + File.separator + "cover.jpg"), true);
                 }
                 File albumfile = new File(imagePath + File.separator + "cover.jpg");

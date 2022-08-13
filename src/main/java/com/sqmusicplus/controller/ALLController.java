@@ -1,5 +1,6 @@
 package com.sqmusicplus.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.sqmusicplus.config.AjaxResult;
@@ -63,7 +64,7 @@ public class ALLController {
      * @param pageIndex 页码 从1开始
      * @return
      */
-    
+    @SaCheckLogin
     @GetMapping("/searchMusic/{keyword}/{pageSize}/{pageIndex}")
     public AjaxResult searchMusic(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
         SearchMusicResult searchMusicResult = searchHander.queryMusic(keyword, pageIndex - 1, pageSize);
@@ -75,7 +76,7 @@ public class ALLController {
      * @param id 搜素的id
      * @return
      */
-    
+    @SaCheckLogin
     @GetMapping("/musicInfo/{id}")
     public AjaxResult musicInfo(@PathVariable("id") Integer id){
         Music music = searchHander.queryMusicInfoBySongId(id);
@@ -87,7 +88,7 @@ public class ALLController {
      * @param br 码率 156498
      * @return
      */
-    
+    @SaCheckLogin
         @PostMapping("/musicDownload/{id}/{br}")
     public AjaxResult musicDownload(@PathVariable("id") String id,@PathVariable(value = "br",required = false) Integer br,@RequestBody(required = false) Music music){
         if (music==null){
@@ -116,7 +117,7 @@ public class ALLController {
      * @param music
      * @return
      */
-    
+    @SaCheckLogin
     @PostMapping("getplayUrl")
     public AjaxResult getplayUrl(@RequestBody PlayUrlDTO music){
             JSONObject other = music.getOther();
@@ -144,7 +145,7 @@ public class ALLController {
      * @param pageIndex 页码 从1开始
      * @return
      */
-    
+    @SaCheckLogin
     @GetMapping("/searchArtist/{keyword}/{pageSize}/{pageIndex}")
     public AjaxResult searchArtist(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
         SearchArtistResult searchArtistResult = searchHander.queryArtist(keyword, pageIndex - 1, pageSize);
@@ -155,7 +156,7 @@ public class ALLController {
      * @param br 码率
      * @return
      */
-    
+    @SaCheckLogin
     @PostMapping("/ArtistDownload/{id}/{br}")
     public AjaxResult ArtistDownload(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br){
         Artists artists = searchHander.autoQueryArtist(id);
@@ -183,7 +184,7 @@ public class ALLController {
      * @param pageIndex 页码 从1开始
      * @return
      */
-    
+    @SaCheckLogin
     @GetMapping("/searchAlbum/{keyword}/{pageSize}/{pageIndex}")
     public AjaxResult searchAlbum(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
         SearchAlbumResult searchAlbumResult = searchHander.queryAlbumsInfoByAlbumsName(keyword, pageIndex - 1, pageSize);
@@ -194,7 +195,7 @@ public class ALLController {
      * @param br 码率
      * @return
      */
-    
+    @SaCheckLogin
     @PostMapping("/AlbumDownload/{id}/{br}")
     public AjaxResult AlbumDownload(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br,@RequestBody Music music){
         KwBrType[] values = KwBrType.values();
@@ -213,7 +214,7 @@ public class ALLController {
         threadPoolTaskExecutor.execute(()->searchHander.downloadAlbumByAlbumID(id, finalNowbr,null));
         return AjaxResult.success(true);
     }
-    
+    @SaCheckLogin
     @GetMapping("/getTask")
     public AjaxResult taskStatus(){
         HashMap<String, List> stringListHashMap = new HashMap<>();
@@ -227,19 +228,19 @@ public class ALLController {
         stringListHashMap.put("run",run);
         return AjaxResult.success(stringListHashMap);
     }
-    
+    @SaCheckLogin
     @GetMapping("/delErrorTask")
     public AjaxResult delErrorTask(){
         EhCacheUtil.removeaLL(EhCacheUtil.ERROR_DOWNLOAD);
         return AjaxResult.success(true);
     }
-    
+    @SaCheckLogin
     @GetMapping("/delSuccessTask")
     public AjaxResult delSuccessTask(){
         EhCacheUtil.removeaLL(EhCacheUtil.OVER_DOWNLOAD);
         return AjaxResult.success(true);
     }
-    
+    @SaCheckLogin
     @GetMapping("/delAllTask")
     public AjaxResult delAllTask(){
         EhCacheUtil.removeaLL(EhCacheUtil.ERROR_DOWNLOAD);
@@ -248,7 +249,7 @@ public class ALLController {
         EhCacheUtil.removeaLL(EhCacheUtil.RUN_DOWNLOAD);
         return AjaxResult.success(true);
     }
-    
+    @SaCheckLogin
     @GetMapping("/refreshTask")
     public AjaxResult refreshTask(){
         List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
@@ -264,7 +265,7 @@ public class ALLController {
         return AjaxResult.success(true);
     }
 
-    
+    @SaCheckLogin
     @GetMapping("/againTask")
     public AjaxResult againTask(){
         List<Object> values1 = EhCacheUtil.values(EhCacheUtil.ERROR_DOWNLOAD);
@@ -275,7 +276,6 @@ public class ALLController {
         }
         return AjaxResult.success(true);
     }
-
 
     @RequestMapping("login")
     public String Login(String username, String password, HttpServletResponse response) throws IOException {
@@ -295,7 +295,7 @@ public class ALLController {
      * @param text
      * @return
      */
-    
+    @SaCheckLogin
     @GetMapping("/parserText")
     public List<ParserEntity> parserText(String text) throws IOException {
         List<ParserEntity> parser = textMusicPlayListParser.parser(text);
@@ -306,7 +306,7 @@ public class ALLController {
      * @param data { text：“内容”，taskName：“任务名”}
      * @return
      */
-    
+    @SaCheckLogin
     @PostMapping("/downloadParser")
     public AjaxResult downloadParser(@RequestBody HashMap<String,String> data) throws IOException {
         String text = data.get("text");
@@ -355,9 +355,9 @@ public class ALLController {
 //        objectObjectHashMap.put("size",parser.size());
         return AjaxResult.success(true);
 }
-
+    @SaCheckLogin
 @PostMapping("/ArtistSongList/{id}/{br}")
-public void ArtistSongList(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br){
+public AjaxResult ArtistSongList(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br){
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
         if(br!=null){
@@ -370,19 +370,21 @@ public void ArtistSongList(@PathVariable("id") Integer id,@PathVariable(value = 
         }else {
             nowbr=KwBrType.FLAC_2000;
         }
+    KwBrType finalNowbr = nowbr;
+    threadPoolTaskExecutor.execute(()->{
         List<Music> musics = searchHander.queryAllArtistSongList(id, 1000, 1);
-        KwBrType finalNowbr = nowbr;
         for (Music music : musics) {
-        if (musicConfig.getIgnoreAccompaniment()){
-            if (music.getMusicName().contains("(伴奏)")||music.getMusicName().contains("(试听版)")||music.getMusicName().contains("(片段)")){
-                continue;
+            if (musicConfig.getIgnoreAccompaniment()){
+                if (music.getMusicName().contains("(伴奏)")||music.getMusicName().contains("(试听版)")||music.getMusicName().contains("(片段)")){
+                    continue;
+                }
             }
-        }
-        if (music.getSearchMusicId().equals("186292777")){
-            System.out.println(music);
             threadPoolTaskExecutor.execute(()->searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
+
         }
-        }
+    });
+
+        return AjaxResult.success(true);
 
     }
 }

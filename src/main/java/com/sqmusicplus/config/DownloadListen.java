@@ -40,7 +40,7 @@ public class DownloadListen {
                 hashCode+=downloadEntity.hashCode();
             }
         }
-        if (DigestUtil.md5Hex(GlobalCacheUtils.RUN_DOWNLOAD_DATA).equals(DigestUtil.md5Hex(hashCode))){
+        if (GlobalCacheUtils.RUN_DOWNLOAD_DATA.equals(DigestUtil.md5Hex(hashCode))){
             List<Object> values1 = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
             for (Object value : values1) {
                 DownloadEntity downloadEntity = (DownloadEntity) value;
