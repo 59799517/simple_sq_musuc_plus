@@ -571,6 +571,14 @@ public class    KWSearchHander {
         return null;
     }
 
+    /**
+     * 根据歌曲情况写入到歌曲标签
+     * @param music
+     * @param onSuccess
+     * @param albumfile
+     * @param downloadEntity
+     * @param errorMsg
+     */
     private void extracted(Music music, File onSuccess, File albumfile, DownloadEntity downloadEntity, String errorMsg) {
         //创建歌词
         try {
