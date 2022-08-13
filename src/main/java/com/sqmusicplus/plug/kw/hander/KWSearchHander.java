@@ -474,19 +474,20 @@ public class    KWSearchHander {
 
 
     public String savetodb(DownloadEntity downloadEntity) {
-        Music music = queryMusicInfoBySongId(Integer.valueOf(downloadEntity.getMusicid()));
-        String musicPath = musicConfig.getMusicPath();
-        File file = new File(musicPath);
-        music.setMusicArtists(downloadEntity.getArtistname());
-        music.setMusicName(music.getMusicName().replaceAll("<[^>]*>", ""));
-        if (StringUtils.isEmpty(music.getMusicAlbum())) {
-            music.setMusicAlbum("other");
-        }
-        String basepath = music.getMusicArtists().trim() + File.separator + music.getMusicAlbum().trim() + File.separator;
-        HashMap<String, String> stringStringHashMap = autoDownloadUrl(downloadEntity.getMusicid() + "", downloadEntity.getKwBrType());
-        File type = new File(file, basepath + music.getMusicName().trim() + " - " + music.getMusicArtists().trim() + "." + stringStringHashMap.get("type"));
 
         try {
+            Music music = queryMusicInfoBySongId(Integer.valueOf(downloadEntity.getMusicid()));
+            String musicPath = musicConfig.getMusicPath();
+            File file = new File(musicPath);
+            music.setMusicArtists(downloadEntity.getArtistname());
+            music.setMusicName(music.getMusicName().replaceAll("<[^>]*>", ""));
+            if (StringUtils.isEmpty(music.getMusicAlbum())) {
+                music.setMusicAlbum("other");
+            }
+            String basepath = music.getMusicArtists().trim() + File.separator + music.getMusicAlbum().trim() + File.separator;
+            HashMap<String, String> stringStringHashMap = autoDownloadUrl(downloadEntity.getMusicid() + "", downloadEntity.getKwBrType());
+            File type = new File(file, basepath + music.getMusicName().trim() + " - " + music.getMusicArtists().trim() + "." + stringStringHashMap.get("type"));
+
             log.debug("开始下载---->{}", music.getMusicName());
             if (musicConfig.getOverrideDownload()) {
                 if (type.exists()) {
