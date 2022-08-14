@@ -6,7 +6,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * @Classname MyWebMvcConfig
- * @Description TODO
+ * @Description 静态资源映射
  * @Version 1.0.0
  * @Date 2022/7/29 16:20
  * @Created by SQ

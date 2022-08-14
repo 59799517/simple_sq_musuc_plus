@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * @Classname ArtisInfoResult
- * @Description TODO
+ * @Description 歌手信息实体类（酷我）
  * @Version 1.0.0
  * @Date 2022/5/30 10:01
  * @Created by SQ

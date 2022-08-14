@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * @Classname ArtisAlbumListResult
- * @Description TODO
+ * @Description 歌手专辑列表实体类（酷我搜索）
  * @Version 1.0.0
  * @Date 2022/6/10 14:37
  * @Created by SQ

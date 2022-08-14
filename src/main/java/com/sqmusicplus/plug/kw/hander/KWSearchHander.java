@@ -42,25 +42,27 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Component
-public class KWSearchHander {
+public class    KWSearchHander {
     @Autowired
     private KwConfig config;
     @Autowired
-    private MusicConfig musicConfig;;
+    private MusicConfig musicConfig;
+    ;
 
 
     /**
      * 搜索歌曲
+     *
      * @param searchkey 关键字
      * @param pageIndex 页码
-     * @param pageSize 每页长度
+     * @param pageSize  每页长度
      * @return 歌曲列表
      */
-    public SearchMusicResult queryMusic(String searchkey, Integer pageIndex,Integer pageSize){
+    public SearchMusicResult queryMusic(String searchkey, Integer pageIndex, Integer pageSize) {
         String searchUrl = config.getSearchUrl();
         String s = searchUrl.replaceAll("#\\{pn}", pageIndex.toString())
                 .replaceAll("#\\{searchKey}", searchkey)
-                .replaceAll("#\\{pagesize}",pageSize.toString())
+                .replaceAll("#\\{pagesize}", pageSize.toString())
                 .replaceAll("#\\{searchType}", KwSearchType.MUSIC.getValue());
         SearchMusicResult searchMusicResult = DownloadUtils.getHttp().sync(s)
                 .get()                          // GET请求
@@ -70,27 +72,27 @@ public class KWSearchHander {
     }
 
     /**
-     *  搜素歌手
-     * @param artistname  歌手名称
-     * @param pageIndex 页码
-     * @param pageSize 每页长度
+     * 搜素歌手
+     *
+     * @param artistname 歌手名称
+     * @param pageIndex  页码
+     * @param pageSize   每页长度
      * @return 歌手信息
      */
-    public SearchArtistResult queryArtist(String artistname,Integer pageIndex,Integer pageSize ){
+    public SearchArtistResult queryArtist(String artistname, Integer pageIndex, Integer pageSize) {
         String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", pageIndex.toString())
-                .replaceAll("#\\{pagesize}",pageSize.toString())
+                .replaceAll("#\\{pagesize}", pageSize.toString())
                 .replaceAll("#\\{searchKey}", artistname)
                 .replaceAll("#\\{searchType}", KwSearchType.ARTIST.getValue());
         SearchArtistResult searchArtistResult = DownloadUtils.getHttp().sync(searchUrl)
                 .get()                          // GET请求
                 .getBody()                      // 响应报文体
                 .toBean(SearchArtistResult.class);
-       return searchArtistResult;
+        return searchArtistResult;
     }
 
 
-
-    public ImmutableTriple<String, String, List<Music>> queryArtistSongList(Integer artistid,Integer pageSize,Integer pageIndex){
+    public ImmutableTriple<String, String, List<Music>> queryArtistSongList(Integer artistid, Integer pageSize, Integer pageIndex) {
         String s = config.getArtistSongListUrl().replaceAll("#\\{pn}", pageIndex.toString())
                 .replaceAll("#\\{pagesize}", pageSize.toString())
                 .replaceAll("#\\{artistid}", artistid.toString());
@@ -99,8 +101,8 @@ public class KWSearchHander {
         String pn = artistSongListResult.getPn();
         List<ArtistSongListResult.MusiclistDTO> musiclist = artistSongListResult.getMusiclist();
         List<Music> collect = musiclist.stream().map(abslistDTO -> {
-            String album = StringUtils.isEmpty(abslistDTO.getAlbum())?"其他":abslistDTO.getAlbum();
-            String aartist = artistSongListResult.getArtist();
+            String album = StringUtils.isEmpty(abslistDTO.getAlbum().trim()) ? "无专辑" : abslistDTO.getAlbum().trim();
+            String aartist = artistSongListResult.getArtist().trim();
             String url = (config.getSongCoverUrl() + abslistDTO.getWebAlbumpicShort()).replaceAll("/120", "/500");
             return new Music().setMusicName(abslistDTO.getName()).setMusicAlbum(album).setMusicArtists(aartist).setMusicImage(url).setOther(JSONObject.parseObject(JSONObject.toJSONString(abslistDTO))).setSearchMusicId(abslistDTO.getMusicrid());
         }).collect(Collectors.toList());
@@ -109,27 +111,25 @@ public class KWSearchHander {
     }
 
     /**
-     *
-     * @param artistid id
-     * @param pageSize 长度
+     * @param artistid  id
+     * @param pageSize  长度
      * @param pageIndex 页码(起始为1)
      * @return
      */
-    public  List<Music> queryAllArtistSongList(Integer artistid,Integer pageSize,Integer pageIndex){
+    public List<Music> queryAllArtistSongList(Integer artistid, Integer pageSize, Integer pageIndex) {
         pageIndex--;
-        ImmutableTriple<String, String, List<Music>> stringStringListImmutableTriple = queryArtistSongList(artistid,pageSize,pageIndex);
+        ImmutableTriple<String, String, List<Music>> stringStringListImmutableTriple = queryArtistSongList(artistid, pageSize, pageIndex);
         Integer total = Integer.valueOf(stringStringListImmutableTriple.getLeft());
-       int countsize = total%pageSize==0?total/pageSize:total/pageSize+1;
+        int countsize = total % pageSize == 0 ? total / pageSize : total / pageSize + 1;
         List<Music> collect = stringStringListImmutableTriple.getRight();
         for (int i = 1; i < countsize; i++) {
             pageIndex++;
-            ImmutableTriple<String, String, List<Music>> tempTriple = queryArtistSongList(artistid,pageSize,pageIndex);
+            ImmutableTriple<String, String, List<Music>> tempTriple = queryArtistSongList(artistid, pageSize, pageIndex);
             collect.addAll(tempTriple.getRight());
         }
-         return collect;
+        return collect;
 
     }
-
 
 
 //    public List<Music> queryAllArtistSongList(Integer artistid ,Integer pageNumber){
@@ -160,42 +160,44 @@ public class KWSearchHander {
 
     /**
      * 根据歌手搜索专辑 （找到新接口一次即可查询）
+     *
      * @param artistname 专辑名称
-     * @param pageIndex 页码
-     * @param pageSize 每页长度
-     * @return  专辑信息
+     * @param pageIndex  页码
+     * @param pageSize   每页长度
+     * @return 专辑信息
      */
     @Deprecated
-    public AlbumResult queryAlbumsByArtist (String artistname,Integer pageIndex,Integer pageSize){
-       String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", pageIndex.toString())
-               .replaceAll("#\\{pagesize}",pageSize.toString())
-               .replaceAll("#\\{searchKey}", artistname)
-               .replaceAll("#\\{searchType}", KwSearchType.ARTIST.getValue());
-       SearchArtistResult searchArtistResult = DownloadUtils.getHttp().sync(searchUrl)
-               .get()                          // GET请求
-               .getBody()                      // 响应报文体
-               .toBean(SearchArtistResult.class);
-       List<SearchArtistResult.AbslistDTO> abslist = searchArtistResult.getAbslist();
-       SearchArtistResult.AbslistDTO abslistDTO = abslist.stream().iterator().next();
-       String artistid = abslistDTO.getArtistid();
-       String albumListUrl = config.getAlbumListUrl().replaceAll("#\\{artistid}", artistid);
-       AlbumResult albumResult = DownloadUtils.getHttp().sync(albumListUrl)
-               .get()                          // GET请求
-               .getBody()                      // 响应报文体
-               .toBean(AlbumResult.class);
-       return albumResult;
-   }
+    public AlbumResult queryAlbumsByArtist(String artistname, Integer pageIndex, Integer pageSize) {
+        String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", pageIndex.toString())
+                .replaceAll("#\\{pagesize}", pageSize.toString())
+                .replaceAll("#\\{searchKey}", artistname)
+                .replaceAll("#\\{searchType}", KwSearchType.ARTIST.getValue());
+        SearchArtistResult searchArtistResult = DownloadUtils.getHttp().sync(searchUrl)
+                .get()                          // GET请求
+                .getBody()                      // 响应报文体
+                .toBean(SearchArtistResult.class);
+        List<SearchArtistResult.AbslistDTO> abslist = searchArtistResult.getAbslist();
+        SearchArtistResult.AbslistDTO abslistDTO = abslist.stream().iterator().next();
+        String artistid = abslistDTO.getArtistid();
+        String albumListUrl = config.getAlbumListUrl().replaceAll("#\\{artistid}", artistid);
+        AlbumResult albumResult = DownloadUtils.getHttp().sync(albumListUrl)
+                .get()                          // GET请求
+                .getBody()                      // 响应报文体
+                .toBean(AlbumResult.class);
+        return albumResult;
+    }
 
     /**
      * 根据专辑名称搜索专辑
+     *
      * @param albumsName 专辑名称
-     * @param pageIndex 页码
-     * @param pageSize 每页长度
+     * @param pageIndex  页码
+     * @param pageSize   每页长度
      * @return 专辑信息
      */
-    public  SearchAlbumResult queryAlbumsInfoByAlbumsName(String albumsName,Integer pageIndex,Integer pageSize){
+    public SearchAlbumResult queryAlbumsInfoByAlbumsName(String albumsName, Integer pageIndex, Integer pageSize) {
         String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", pageIndex.toString())
-                .replaceAll("#\\{pagesize}",pageSize.toString())
+                .replaceAll("#\\{pagesize}", pageSize.toString())
                 .replaceAll("#\\{searchKey}", albumsName)
                 .replaceAll("#\\{searchType}", KwSearchType.ALBUM.getValue());
         SearchAlbumResult searchAlbumResult = DownloadUtils.getHttp().sync(searchUrl)
@@ -206,9 +208,9 @@ public class KWSearchHander {
     }
 
 
-
     /**
-     *  根据专辑id查询专辑信息
+     * 根据专辑id查询专辑信息
+     *
      * @param albumid 专辑id
      * @return 专辑信息
      */
@@ -235,12 +237,13 @@ public class KWSearchHander {
 
 
     /**
-     *  根据歌曲id查询歌曲信息
+     * 根据歌曲id查询歌曲信息
+     *
      * @param SongId 歌曲id
      * @return 歌曲信息
      */
-    public Music queryMusicInfoBySongId(Integer SongId){
-        String searchUrl = config.getSongInfoUrl().replaceAll("#\\{musicId}",SongId.toString());
+    public Music queryMusicInfoBySongId(Integer SongId) {
+        String searchUrl = config.getSongInfoUrl().replaceAll("#\\{musicId}", SongId.toString());
 
         MusicInfoResult musicInfoResult = DownloadUtils.getHttp().sync(searchUrl)
                 .get()
@@ -256,90 +259,91 @@ public class KWSearchHander {
         String songName = songinfo.getSongName();
         String duration = songinfo.getDuration();
         List<MusicInfoResult.DataDTO.LrclistDTO> lrclist = data.getLrclist();
-        String Lrc=null;
-       if (lrclist!=null&&lrclist.size()>0){
-           Lrc = LrcUtils.krcTolrc(lrclist, album, artist, songName);
-       }
-      return   new Music().setMusicImage(s).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(artist).setMusicName(songName).setOther(JSONObject.parseObject(JSONObject.toJSONString(data))).setMusicDuration(Integer.parseInt(duration)).setAlbumId(Integer.valueOf(albumId)).setArtistsId(Integer.valueOf(artistId));
+        String Lrc = null;
+        if (lrclist != null && lrclist.size() > 0) {
+            Lrc = LrcUtils.krcTolrc(lrclist, album, artist, songName);
+        }
+        return new Music().setMusicImage(s).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(artist).setMusicName(songName).setOther(JSONObject.parseObject(JSONObject.toJSONString(data))).setMusicDuration(Integer.parseInt(duration)).setAlbumId(Integer.valueOf(albumId)).setArtistsId(Integer.valueOf(artistId));
     }
 
     /**
      * 获取歌曲下载（播放连接）
+     *
      * @param musicId 歌曲id
      * @param brvalue 码率
      * @return 播放（下载）连接
      */
-    public String downloadUrl(String  musicId , KwBrType brvalue){
+    public String downloadUrl(String musicId, KwBrType brvalue) {
         String downloadurl = config.getDownloadurl();
         String s = "user=e3cc098fd4c59ce2&android_id=e3cc098fd4c59ce2&prod=kwplayer_ar_9.3.1.3&corp=kuwo&newver=2&vipver=9.3.1.3&source=kwplayer_ar_9.3.1.3_qq.apk&p2p=1&notrace=0&type=convert_url2&br=#{brvalue}&format=flac|mp3|aac&sig=0&rid=#{musicId}&priority=bitrate&loginUid=435947810&network=WIFI&loginSid=1694167478&mode=download&uid=658048466";
         try {
-            s = s.replaceAll("#\\{musicId}",musicId).replaceAll("#\\{brvalue}",brvalue.getValue());
+            s = s.replaceAll("#\\{musicId}", musicId).replaceAll("#\\{brvalue}", brvalue.getValue());
             byte[] bytes = KuwoDES.encrypt2(s.getBytes("UTF-8"), s.length(), KuwoDES.SECRET_KEY, KuwoDES.SECRET_KEY_LENG);
             char[] encode = Base64Coder.encode(bytes);
-             String out =  new String(encode);
-            downloadurl =  downloadurl+out;
+            String out = new String(encode);
+            downloadurl = downloadurl + out;
         } catch (UnsupportedEncodingException e) {
-            log.error("获取下载链接失败：{}",e.getMessage());
-           return null;
+            log.error("获取下载链接失败：{}", e.getMessage());
+            return null;
         }
         String s1 = DownloadUtils.getHttp().sync(downloadurl).get().getBody().toByteString().utf8();
 
-        downloadurl= s1.split("\n")[2].split("=")[1].split("\r")[0];
+        downloadurl = s1.split("\n")[2].split("=")[1].split("\r")[0];
         return downloadurl;
     }
 
     /**
      * 获取下载（播放连接）自动匹配码率（最小320 小于则返回null）
+     *
      * @param musicId 歌曲id
      * @param brvalue 码率
      * @return {
-     *     url：连接，
-     *     type："类型"，
-     *     bit：bit值
+     * url：连接，
+     * type："类型"，
+     * bit：bit值
      * }
      */
-    public HashMap<String,String> autoDownloadUrl(String  musicId , KwBrType brvalue){
+    public HashMap<String, String> autoDownloadUrl(String musicId, KwBrType brvalue) {
         String downloadurl = config.getDownloadurl();
         String s = "user=e3cc098fd4c59ce2&android_id=e3cc098fd4c59ce2&prod=kwplayer_ar_9.3.1.3&corp=kuwo&newver=2&vipver=9.3.1.3&source=kwplayer_ar_9.3.1.3_qq.apk&p2p=1&notrace=0&type=convert_url2&br=#{brvalue}&format=flac|mp3|aac&sig=0&rid=#{musicId}&priority=bitrate&loginUid=435947810&network=WIFI&loginSid=1694167478&mode=download&uid=658048466";
         try {
-            s = s.replaceAll("#\\{musicId}",musicId).replaceAll("#\\{brvalue}",brvalue.getValue());
+            s = s.replaceAll("#\\{musicId}", musicId).replaceAll("#\\{brvalue}", brvalue.getValue());
             byte[] bytes = KuwoDES.encrypt2(s.getBytes("UTF-8"), s.length(), KuwoDES.SECRET_KEY, KuwoDES.SECRET_KEY_LENG);
             char[] encode = Base64Coder.encode(bytes);
-            String out =  new String(encode);
-            downloadurl =  downloadurl+out;
+            String out = new String(encode);
+            downloadurl = downloadurl + out;
         } catch (UnsupportedEncodingException e) {
-            log.error("获取下载链接失败：{}",e.getMessage());
+            log.error("获取下载链接失败：{}", e.getMessage());
             return null;
         }
         try {
             String s1 = DownloadUtils.getHttp().sync(downloadurl).get().getBody().toByteString().utf8();
             String bitrate = s1.split("\n")[1].split("=")[1];
             String format = s1.split("\n")[0].split("=")[1];
-                downloadurl= s1.split("\n")[2].split("=")[1].split("\r")[0];
-                HashMap<String, String> stringStringHashMap = new HashMap<>();
-                stringStringHashMap.put("url",downloadurl);
-                stringStringHashMap.put("type",format.replaceAll("\r",""));
-                stringStringHashMap.put("bit",bitrate.replaceAll("\r",""));
-                return stringStringHashMap;
-        } catch (Exception e){
+            downloadurl = s1.split("\n")[2].split("=")[1].split("\r")[0];
+            HashMap<String, String> stringStringHashMap = new HashMap<>();
+            stringStringHashMap.put("url", downloadurl);
+            stringStringHashMap.put("type", format.replaceAll("\r", ""));
+            stringStringHashMap.put("bit", bitrate.replaceAll("\r", ""));
+            return stringStringHashMap;
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
 
-    return null;
+        return null;
     }
-
-
 
 
     /**
      * 自动匹配艺术家获取艺术家信息
+     *
      * @param artistname 歌手名称
      * @return 歌手信息
      */
-    public   Artists  autoQueryArtist(String artistname){
+    public Artists autoQueryArtist(String artistname) {
         String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", "0")
-                .replaceAll("#\\{pagesize}","1")
+                .replaceAll("#\\{pagesize}", "1")
                 .replaceAll("#\\{searchKey}", artistname)
                 .replaceAll("#\\{searchType}", KwSearchType.ARTIST.getValue());
         SearchArtistResult searchArtistResult = DownloadUtils.getHttp().sync(searchUrl)
@@ -351,18 +355,19 @@ public class KWSearchHander {
         Artists artists = new Artists();
         artists.setMusicArtistsName(abslistDTO.getArtist())
                 .setMusicArtistsAlias(abslistDTO.getAartist())
-                .setMusicArtistsPhoto(abslistDTO.getHtsPicpath().replaceAll("/240","/500"))
+                .setMusicArtistsPhoto(abslistDTO.getHtsPicpath().replaceAll("/240", "/500"))
                 .setMusicArtistsDescribe(abslistDTO.getDesc())
                 .setOther(abslistDTO);
         return artists;
     }
 
     /**
-     *  根据歌手id查询歌手信息
+     * 根据歌手id查询歌手信息
+     *
      * @param artistid 歌手id
      * @return 歌手信息
      */
-    public  Artists  autoQueryArtist(Integer artistid){
+    public Artists autoQueryArtist(Integer artistid) {
         String url = config.getArtistInfoUrl().replaceAll("#\\{artistid}", artistid.toString());
         ArtisInfoResult artisInfoResult = DownloadUtils.getHttp().sync(url)
                 .get()                          // GET请求
@@ -371,7 +376,7 @@ public class KWSearchHander {
         Artists artists = new Artists();
         artists.setMusicArtistsName(artisInfoResult.getName())
                 .setMusicArtistsAlias(artisInfoResult.getAartist())
-                .setMusicArtistsPhoto(artisInfoResult.getPic().replaceAll("/240","/500"))
+                .setMusicArtistsPhoto(artisInfoResult.getPic().replaceAll("/240", "/500"))
                 .setMusicArtistsDescribe(artisInfoResult.getDesc())
                 .setOther(artisInfoResult);
         return artists;
@@ -379,10 +384,11 @@ public class KWSearchHander {
 
     /**
      * 根据歌手id查询所有专辑id
+     *
      * @param artistid 歌手id
      * @return 专辑id
      */
-    public List<String> artistAlbumList(Integer artistid){
+    public List<String> artistAlbumList(Integer artistid) {
         try {
             ArrayList<String> albumids = new ArrayList<>();
             String url = config.getArtistAlbumListUrl().replaceAll("#\\{artistid}", artistid.toString());
@@ -402,16 +408,17 @@ public class KWSearchHander {
 
     /**
      * 根基关键字搜索歌曲
-     * @param songName 歌名
-     * @param artists 歌手
+     *
+     * @param songName   歌名
+     * @param artists    歌手
      * @param conformity
      * @return 歌曲信息
      */
-    public Music AutoqueryMusic(String songName , String artists,boolean conformity){
+    public Music AutoqueryMusic(String songName, String artists, boolean conformity) {
         String searchUrl = config.getSearchUrl();
         String s = searchUrl.replaceAll("#\\{pn}", "0")
-                .replaceAll("#\\{pagesize}","10")
-                .replaceAll("#\\{searchKey}", songName+" "+artists)
+                .replaceAll("#\\{pagesize}", "10")
+                .replaceAll("#\\{searchKey}", songName + " " + artists)
                 .replaceAll("#\\{searchType}", KwSearchType.MUSIC.getValue());
         SearchMusicResult searchMusicResult = null;
         try {
@@ -419,13 +426,13 @@ public class KWSearchHander {
                     .get()                          // GET请求
                     .getBody()                      // 响应报文体
                     .toBean(SearchMusicResult.class);
-            if (searchMusicResult.getAbslist().size()>0){
+            if (searchMusicResult.getAbslist().size() > 0) {
                 List<SearchMusicResult.AbslistDTO> abslist = searchMusicResult.getAbslist();
-                if (conformity){
+                if (conformity) {
                     for (SearchMusicResult.AbslistDTO abslistDTO : abslist) {
                         String aartist = abslistDTO.getArtist().trim();
                         String name = abslistDTO.getName().trim();
-                        if (name.equals(songName.trim())&&aartist.trim().contains(artists.trim())){
+                        if (name.equals(songName.trim()) && aartist.trim().contains(artists.trim())) {
                             String searmusic_id = abslistDTO.getMusicrid().replace("MUSIC_", "");
                             Music music = queryMusicInfoBySongId(Integer.parseInt(abslistDTO.getMusicrid().replace("MUSIC_", "")));
                             MusicInfoResult.DataDTO dataDTO = music.getOther().toJavaObject(MusicInfoResult.DataDTO.class);
@@ -437,7 +444,7 @@ public class KWSearchHander {
                             return music;
                         }
                     }
-                }else{
+                } else {
                     SearchMusicResult.AbslistDTO abslistDTO = abslist.get(0);
                     String searmusic_id = abslistDTO.getMusicrid().replace("MUSIC_", "");
                     Music music = queryMusicInfoBySongId(Integer.parseInt(abslistDTO.getMusicrid().replace("MUSIC_", "")));
@@ -449,121 +456,130 @@ public class KWSearchHander {
                     music.setSearchMusicId(searmusic_id);
                     return music;
                 }
-            }else{
-                return  null;
+            } else {
+                return null;
             }
         } catch (Exception e) {
-            return  null;
+            return null;
         }
         return null;
     }
 
     /**
      * 保存文件到服务器中
+     *
      * @param downloadEntity 下载信息
      * @return 保存后文件id
      */
 
 
-        public String savetodb(DownloadEntity downloadEntity){
+    public String savetodb(DownloadEntity downloadEntity) {
+
+        try {
             Music music = queryMusicInfoBySongId(Integer.valueOf(downloadEntity.getMusicid()));
             String musicPath = musicConfig.getMusicPath();
             File file = new File(musicPath);
             music.setMusicArtists(downloadEntity.getArtistname());
-            if (StringUtils.isEmpty(music.getMusicAlbum())){
-                music.setMusicAlbum("其他");
+            music.setMusicName(music.getMusicName().replaceAll("<[^>]*>", ""));
+            if (StringUtils.isEmpty(music.getMusicAlbum())) {
+                music.setMusicAlbum("other");
             }
-            String basepath = music.getMusicArtists().trim() + File.separator+music.getMusicAlbum().trim()+ File.separator;
+            String basepath = music.getMusicArtists().trim() + File.separator + music.getMusicAlbum().trim() + File.separator;
             HashMap<String, String> stringStringHashMap = autoDownloadUrl(downloadEntity.getMusicid() + "", downloadEntity.getKwBrType());
-            File type = new File(file,  basepath + music.getMusicName().trim() + " - " + music.getMusicArtists().trim()  + "." + stringStringHashMap.get("type"));
+            File type = new File(file, basepath + music.getMusicName().trim() + " - " + music.getMusicArtists().trim() + "." + stringStringHashMap.get("type"));
 
-            try {
-                log.debug("开始下载---->{}",music.getMusicName().trim());
-                if (musicConfig.getOverrideDownload()) {
-                    if(type.exists()){
-                        EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-                        EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-                        return null;
-                    }
-                }
-                if (StringUtils.isEmpty(stringStringHashMap.get("url"))){
+            log.debug("开始下载---->{}", music.getMusicName());
+            if (musicConfig.getOverrideDownload()) {
+                if (type.exists()) {
                     EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-                    EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-                    log.debug("下载失败{}", music.getMusicName());
+                    EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
                     return null;
                 }
-                DownloadUtils.download(stringStringHashMap.get("url"), type,onSuccess -> {
-                    Integer albumID = music.getAlbumId();
-                    Integer artistsID = music.getArtistsId();
-                    Artists artists = autoQueryArtist(artistsID);
-                    String musicArtistsName = artists.getMusicArtistsName();
-                    artists.setOther(JSONObject.toJSONString(artists.getOther()));
-                    String downloadurl = (config.getStarheads() + artists.getMusicArtistsPhoto()).replaceAll("/120", "/500");
-                    String downliadpath = musicConfig.getMusicPath() + File.separator + music.getMusicArtists();
-                    //人物
-                    File Artistsfile = new File(downliadpath + File.separator + "cover.jpg");
-                    if (!Artistsfile.exists()||musicArtistsName.equals(music.getMusicArtists())){
-                        try {
-                            DownloadUtils.download(downloadurl, downliadpath, onArtistsPhoto -> {
-                                try {
-                                    File cover = FileUtil.rename(onArtistsPhoto, "cover", true, true);
-                                    FileUtil.copy(cover,new File(downliadpath + File.separator + "folder.jpg"),true);
-                                } catch (Exception e) {
-                                    FileUtil.del(onArtistsPhoto);
-                                }
-                                artists.setMusicArtistsPhoto("cover");
-                            });
-                        }catch (Exception e){
-
-                        }
-
-                    }
-
-                    //专辑
-                    Album album = queryAlbumsInfoInfoByAlbumsId(albumID);
-                    String albumImg = album.getAlbumImg();
-                    Boolean downloadalubimage = true;
-                    if (StringUtils.isEmpty(albumImg)){
-                        downloadalubimage=false;
-                    }
-                    String imagePath = musicConfig.getMusicPath() + File.separator +music.getMusicArtists() + File.separator + music.getMusicAlbum();
-                    File albumfile = new File(imagePath+File.separator+"cover.jpg");
-
-                    if(!albumfile.exists()||downloadalubimage){
-                        try {
-                            DownloadUtils.download(albumImg, imagePath, onAlbumImg -> {
-                                File cover= null;
-                                try {
-                                    cover= FileUtil.rename(onAlbumImg, "cover", true, true);
-                                } catch (Exception e) {
-                                    FileUtil.del(onAlbumImg);
-                                }
-                                album.setAlbumImg("cover");
-                                extracted(music, onSuccess, true, cover, downloadEntity,null);
-                            });
-                        }catch (Exception e){
-                            extracted(music, onSuccess, false, albumfile, downloadEntity,e.getMessage());
-                        }
-                    }else {
-                        extracted(music, onSuccess, downloadalubimage, albumfile, downloadEntity,null);
-                    }
-                }, onFailure -> {
-                    EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-                    EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-                    log.debug("下载失败{}", music.getMusicName());
-                });
-
-            }catch (Exception e){
+            }
+            if (StringUtils.isEmpty(stringStringHashMap.get("url"))) {
                 EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
                 EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-
-
+                log.debug("下载失败{}", music.getMusicName());
+                return null;
             }
+            DownloadUtils.download(stringStringHashMap.get("url"), type, onSuccess -> {
+                Integer albumID = music.getAlbumId();
+                Integer artistsID = music.getArtistsId();
+                Artists artists = autoQueryArtist(artistsID);
+                String musicArtistsName = artists.getMusicArtistsName();
+                artists.setOther(JSONObject.toJSONString(artists.getOther()));
+                String downloadurl = (config.getStarheads() + artists.getMusicArtistsPhoto()).replaceAll("/120", "/500");
+                String downliadpath = musicConfig.getMusicPath() + File.separator + music.getMusicArtists().trim();
+                //人物
+                File Artistsfile = new File(downliadpath + File.separator + "cover.jpg");
+                if (!Artistsfile.exists()) {
+                    try {
+                        DownloadUtils.download(downloadurl, downliadpath, onArtistsPhoto -> {
+                            try {
+                                File cover = FileUtil.rename(onArtistsPhoto, "cover", true, true);
+                                FileUtil.copy(cover, new File(downliadpath + File.separator + "folder.jpg"), true);
+                            } catch (Exception e) {
+                                FileUtil.del(onArtistsPhoto);
+                            }
+                            artists.setMusicArtistsPhoto("cover");
+                        });
+                    } catch (Exception e) {
 
-            return null;
+                    }
+                }
+
+                //专辑
+                Album album = queryAlbumsInfoInfoByAlbumsId(albumID);
+                String albumImg = album.getAlbumImg();
+                Boolean downloadalubimage = true;
+                if (StringUtils.isEmpty(albumImg)) {
+                    downloadalubimage = false;
+                }
+                String imagePath = musicConfig.getMusicPath() + File.separator + music.getMusicArtists().trim() + File.separator + music.getMusicAlbum().trim();
+                if (StringUtils.isEmpty(album.getAlbumName()) && music.getMusicAlbum().trim().equals("other")) {
+                    FileUtil.copy(Artistsfile, new File(imagePath + File.separator + "cover.jpg"), true);
+                }
+                File albumfile = new File(imagePath + File.separator + "cover.jpg");
+                if (!albumfile.exists() || downloadalubimage) {
+                    try {
+                        DownloadUtils.download(albumImg, imagePath, onAlbumImg -> {
+                            File cover = null;
+                            try {
+                                cover = FileUtil.rename(onAlbumImg, "cover", true, true);
+                            } catch (Exception e) {
+                                FileUtil.del(onAlbumImg);
+                            }
+                            album.setAlbumImg("cover");
+                            extracted(music, onSuccess, cover, downloadEntity, null);
+                        });
+                    } catch (Exception e) {
+                        extracted(music, onSuccess, albumfile, downloadEntity, e.getMessage());
+                    }
+                } else {
+                    extracted(music, onSuccess, albumfile, downloadEntity, null);
+                }
+            }, onFailure -> {
+                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
+                EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+                log.debug("下载失败{}", music.getMusicName());
+            });
+
+        } catch (Exception e) {
+            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
+            EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
         }
+        return null;
+    }
 
-    private void extracted(Music music, File onSuccess, Boolean downloadalubimage, File albumfile, DownloadEntity downloadEntity,String errorMsg) {
+    /**
+     * 根据歌曲情况写入到歌曲标签
+     * @param music
+     * @param onSuccess
+     * @param albumfile
+     * @param downloadEntity
+     * @param errorMsg
+     */
+    private void extracted(Music music, File onSuccess, File albumfile, DownloadEntity downloadEntity, String errorMsg) {
         //创建歌词
         try {
             if (StringUtils.isNotEmpty(music.getMusicLyric())) {
@@ -571,23 +587,18 @@ public class KWSearchHander {
                 FileUtil.writeBytes(music.getMusicLyric().getBytes(), onSuccess.getParentFile() + File.separator + name + ".lrc");
             }
         } catch (IORuntimeException e) {
-            errorMsg =e.getMessage();
+            errorMsg = e.getMessage();
         }
         //修改文件
         try {
-            if (downloadalubimage){
-                MusicUtils.setMediaFileInfo(onSuccess, music.getMusicName(), music.getMusicAlbum(), music.getMusicArtists(), "SqMusic", music.getMusicLyric(), albumfile);
-            }else{
-                MusicUtils.setMediaFileInfo(onSuccess, music.getMusicName(), music.getMusicAlbum(), music.getMusicArtists(), "SqMusic", music.getMusicLyric(),null);
-            }
-
+            MusicUtils.setMediaFileInfo(onSuccess, music.getMusicName(), music.getMusicAlbum(), music.getMusicArtists(), "SqMusic", music.getMusicLyric(), albumfile);
             EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
             EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
             log.debug("下载成功{}", music.getMusicName());
         } catch (Exception e) {
             EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
             EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-            log.debug("下载错误{}  ----------> {}", music.getMusicName(),e.getMessage());
+            log.debug("下载错误{}  ----------> {}", music.getMusicName(), e.getMessage());
             log.error(e.getMessage());
             e.printStackTrace();
         }
@@ -595,76 +606,79 @@ public class KWSearchHander {
 
     /**
      * 根据专辑id下载所有专辑歌曲到服务器
+     *
      * @param albumid 专辑id
      */
-    public void downloadAlbumByAlbumID(Integer albumid,KwBrType kwBrType,String artist){
-        if (kwBrType==null){
-            kwBrType=KwBrType.FLAC_2000;
+    public void downloadAlbumByAlbumID(Integer albumid, KwBrType kwBrType, String artist) {
+        if (kwBrType == null) {
+            kwBrType = KwBrType.FLAC_2000;
         }
-         AtomicReference<String> change = new AtomicReference<>(artist);
-
+        AtomicReference<String> change = new AtomicReference<>(artist);
         //下载池对象
-            String searchUrl = config.getAlbumInfoUrl().replaceAll("#\\{albumid}",albumid.toString());
-            AlbumInfoResult albumInfoResult = DownloadUtils.getHttp().sync(searchUrl)
-                    .get()                          // GET请求
-                    .getBody()                      // 响应报文体
-                    .toBean(AlbumInfoResult.class);
+        String searchUrl = config.getAlbumInfoUrl().replaceAll("#\\{albumid}", albumid.toString());
+        AlbumInfoResult albumInfoResult = DownloadUtils.getHttp().sync(searchUrl)
+                .get()                          // GET请求
+                .getBody()                      // 响应报文体
+                .toBean(AlbumInfoResult.class);
 
 //        AtomicReference<String> artist = new AtomicReference<>(albumInfoResult.getArtist());
         List<AlbumInfoResult.MusiclistDTO> musiclist = albumInfoResult.getMusiclist();
         KwBrType finalKwBrType = kwBrType;
 
         musiclist.forEach(md -> {
-            if (musicConfig.getIgnoreAccompaniment()){
-                if(md.getName().contains("伴奏")||md.getName().contains("试听版")){
+            if (musicConfig.getIgnoreAccompaniment()) {
+                if (md.getName().contains("(伴奏)") || md.getName().contains("(试听版)") || md.getName().contains("(片段)")) {
                     return;
                 }
             }
-            if (musicConfig.getStrongMatchAlbumSinger()){
+            if (musicConfig.getStrongMatchAlbumSinger()) {
                 if (!md.getArtist().contains(change.get())) {
                     return;
                 }
             }
-            if (!musicConfig.getAlbumSingerUnity()){
+            if (!musicConfig.getAlbumSingerUnity()) {
                 change.set(md.getArtist());
             }
             //添加到缓存
-            DownloadEntity url = new DownloadEntity(md.getId(),finalKwBrType,md.getName(),change.get(),albumInfoResult.getName());
-            if (StringUtils.isNotEmpty(md.getId())){
-                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,md.getId(),url);
+            DownloadEntity url = new DownloadEntity(md.getId(), finalKwBrType, md.getName(), change.get(), albumInfoResult.getName());
+            if (StringUtils.isNotEmpty(md.getId())) {
+                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, md.getId(), url);
             }
-            });
+        });
     }
 
     /**
      * 根据歌手id下载所有专辑到服务器
+     *
      * @param artistid 歌手id
      */
-   public  void downloadAllMusicByArtistid(Integer artistid,KwBrType kwBrType,String artist){
-       List<String> strings = artistAlbumList(artistid);
+    public void downloadAllMusicByArtistid(Integer artistid, KwBrType kwBrType, String artist) {
+        List<String> strings = artistAlbumList(artistid);
 
 
-       strings.forEach(e -> {
-           downloadAlbumByAlbumID(Integer.valueOf(e),kwBrType,artist);
-       });
-   }
-    public  void downloadAllMusicByArtistid(Integer artistid,String artist){
+        strings.forEach(e -> {
+            downloadAlbumByAlbumID(Integer.valueOf(e), kwBrType, artist);
+        });
+    }
+
+    public void downloadAllMusicByArtistid(Integer artistid, String artist) {
         List<String> strings = artistAlbumList(artistid);
         strings.forEach(e -> {
-            downloadAlbumByAlbumID(Integer.valueOf(e), KwBrType.FLAC_2000,artist);
+            downloadAlbumByAlbumID(Integer.valueOf(e), KwBrType.FLAC_2000, artist);
         });
     }
 
     /**
      * 单曲下载
-     * @param id 酷我id
-     * @param br 码率
+     *
+     * @param id    酷我id
+     * @param br    码率
      * @param music 歌曲信息
      */
-   public void musicDownload(String id,KwBrType br,Music music){
-       //添加到缓存
-       DownloadEntity url = new DownloadEntity(id,br,music.getMusicName().trim(),music.getMusicArtists().trim(),music.getMusicAlbum().trim());
-       EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,id,url);
+    public void musicDownload(String id, KwBrType br, Music music) {
+        //添加到缓存
+        DownloadEntity url = new DownloadEntity(id, br, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum());
+        EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, id, url);
     }
 
 }
