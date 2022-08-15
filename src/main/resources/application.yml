@@ -40,6 +40,3 @@ sa-token:
   # 是否输出操作日志
   is-log: false
 
-user:
-  username: sq
-  password: shangqi123

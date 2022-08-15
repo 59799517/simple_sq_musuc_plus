@@ -1,12 +1,18 @@
+user:
+  #  登录账号
+  username: admin
+  #  登录密码
+  password: admin
+
 sqmusic:
   musicPath: ${MUSIC_PATH:/music}
-#  忽略伴奏
+  #  忽略伴奏
   ignoreAccompaniment: ${IGNORE_ACCOMPANIMENT:true}
-#  不允许重复下载
+  #  不允许重复下载
   overrideDownload: ${OVERRIDE_DOWNLOAD:true}
-#  初始化检查未下载
+  #  初始化检查未下载
   initDownload: ${INIT_DOWNLOAD:true}
-# 同时下载数量
+  # 同时下载数量
   downloadSize: ${DOWNLOAD_SIZE:8}
 #  强制匹配专辑下歌手
   strongMatchAlbumSinger: ${STRONG_MATCH_ALBUM_SINGER:true}
