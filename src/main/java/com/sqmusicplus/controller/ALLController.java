@@ -277,13 +277,31 @@ public class ALLController {
         return AjaxResult.success(true);
     }
 
-    @RequestMapping("login")
+    @RequestMapping(value = "login", produces = "text/html")
     public String Login(String username, String password, HttpServletResponse response) throws IOException {
-        if(this.username.equals(username) && this.password.equals(password)) {
+        if (this.username.equals(username) && this.password.equals(password)) {
             StpUtil.login(10001);
             response.sendRedirect("/index.html");
         }
-        return "登录失败:请输入用户名密码";
+        String html = "<!DOCTYPE html>\n" +
+                "<html lang=\"zh\">\n" +
+                "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
+                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "    <title>登录</title>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <h2>登录</h2>\n" +
+                "     <div> 登录失败:请输入用户名密码</div>       \n" +
+                "    <form name=\"form\" method=\"post\" action=\"/login\">\n" +
+                "    <div>用户名：<input type=\"text\" name=\"username\"></div>\n" +
+                "    <div>密码：<input  type=\"password\" name=\"password\"></div>\n" +
+                "    <div><button type=\"submit\">登录</button></div>\n" +
+                "</form>\n" +
+                "</body>\n" +
+                "</html>";
+        return html;
     }
     @RequestMapping("isLogin")
     public String isLogin() {
