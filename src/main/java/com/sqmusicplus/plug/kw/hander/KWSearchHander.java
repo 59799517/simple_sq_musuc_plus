@@ -550,13 +550,13 @@ public class    KWSearchHander {
                                 FileUtil.del(onAlbumImg);
                             }
                             album.setAlbumImg("cover");
-                            extracted(music, onSuccess, cover, downloadEntity, null);
+                            extracted(music, onSuccess, cover, downloadEntity);
                         });
                     } catch (Exception e) {
-                        extracted(music, onSuccess, albumfile, downloadEntity, e.getMessage());
+                        extracted(music, onSuccess, albumfile, downloadEntity);
                     }
                 } else {
-                    extracted(music, onSuccess, albumfile, downloadEntity, null);
+                    extracted(music, onSuccess, albumfile, downloadEntity);
                 }
             }, onFailure -> {
                 EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
@@ -573,21 +573,22 @@ public class    KWSearchHander {
 
     /**
      * 根据歌曲情况写入到歌曲标签
+     *
      * @param music
      * @param onSuccess
      * @param albumfile
      * @param downloadEntity
-     * @param errorMsg
      */
-    private void extracted(Music music, File onSuccess, File albumfile, DownloadEntity downloadEntity, String errorMsg) {
+    private void extracted(Music music, File onSuccess, File albumfile, DownloadEntity downloadEntity) {
         //创建歌词
         try {
             if (StringUtils.isNotEmpty(music.getMusicLyric())) {
                 String name = FileUtil.getPrefix(onSuccess);
+                log.debug("lrc地址{}", onSuccess.getParentFile() + File.separator + name + ".lrc");
                 FileUtil.writeBytes(music.getMusicLyric().getBytes(), onSuccess.getParentFile() + File.separator + name + ".lrc");
             }
         } catch (IORuntimeException e) {
-            errorMsg = e.getMessage();
+            log.error(e.getMessage());
         }
         //修改文件
         try {

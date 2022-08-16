@@ -27,6 +27,18 @@ https://support.emby.media/support/solutions/articles/44001159113-music-naming
 3. 运行 docker run -d --name="sqmusicplusserver"   -p 8022:8083 -v /mnt/user/media/newmusic:/music -v
    /mnt/user/appdata/sqmusic:/sqmusic sqmusicplusserver
 
+### 运行图：
+
+![](img/1.png)
+![](img/2.png)
+![](img/3.png)
+![](img/4.png)
+![](img/5.png)
+![](img/6.png)
+![](img/7.png)
+![](img/8.png)
+![](img/9.png)
+
 后期可能实现功能
 
 ### 有声下载
