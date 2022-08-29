@@ -1,5 +1,6 @@
 package com.sqmusicplus.listener;
 
+import com.sqmusicplus.entity.Music;
 import com.sqmusicplus.entity.ParserEntity;
 
 import java.io.IOException;
@@ -15,5 +16,22 @@ import java.util.List;
 
 public interface MusicPlayListParser {
 
-    List<ParserEntity> parser (String msg) throws IOException;
+    /**
+     * 解析文本
+     *
+     * @param msg 文本内容
+     * @return
+     * @throws IOException
+     */
+    List<ParserEntity> parser(String msg) throws IOException;
+
+    /**
+     * 解析url
+     *
+     * @param url  地址
+     * @param type 类型
+     * @return
+     * @throws IOException
+     */
+    List<Music> parser(String url, String type) throws IOException;
 }

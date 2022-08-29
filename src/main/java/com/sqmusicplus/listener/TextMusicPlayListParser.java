@@ -16,14 +16,15 @@ import java.util.stream.Collectors;
  * @Created by SQ
  */
 @Component("textParser")
-public class TextMusicPlayListParser implements MusicPlayListParser {
+public class TextMusicPlayListParser extends TextParser {
     @Override
     public List<ParserEntity> parser(String msg) throws IOException {
         String[] split = msg.split("\n");
-         return Arrays.stream(split).map(m -> {
+        return Arrays.stream(split).map(m -> {
             String[] sa = m.split("-");
             return new ParserEntity().setSourceName("text").setSongName(sa[0]).setArtistsName(sa[1]);
         }).collect(Collectors.toList());
 
     }
+
 }

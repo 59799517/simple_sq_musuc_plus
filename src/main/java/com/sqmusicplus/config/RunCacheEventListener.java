@@ -41,7 +41,7 @@ public class RunCacheEventListener extends CacheEventListenerFactory implements 
     @Override
     public void notifyElementPut(Ehcache cache, Element element) throws CacheException {
         DownloadEntity downloadEntity = (DownloadEntity) element.getObjectValue();
-        searchHander.savetodb(downloadEntity);
+        searchHander.saveToFile(downloadEntity);
     }
 
     @Override

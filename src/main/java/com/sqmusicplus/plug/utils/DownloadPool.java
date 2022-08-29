@@ -84,7 +84,7 @@
 //
 //    void  excute(DownloadMusicDTO downloadMusicDTO){
 //        DownloadUtils.download(downloadMusicDTO.getDownloadUrl(),downloadMusicDTO.getType(),onSuccess ->{
-//            searchHander.savetodb(downloadMusicDTO.getType(),downloadMusicDTO.getMusic());
+//            searchHander.saveToFile(downloadMusicDTO.getType(),downloadMusicDTO.getMusic());
 //            retriesPool.remove(downloadMusicDTO);
 //            record.remove(downloadMusicDTO.getDownloadUrl());
 //        },onFailure ->{

@@ -32,6 +32,7 @@ public class DownloadEntity implements Serializable {
     String artistname;
     String albumname;
     String errorMsg;
+    Boolean audioBook;
 
 
     public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname) {
@@ -40,5 +41,16 @@ public class DownloadEntity implements Serializable {
         this.musicname = musicname;
         this.artistname = artistname;
         this.albumname = albumname;
+        this.audioBook = false;
+
+    }
+
+    public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname, Boolean audioBook) {
+        this.musicid = musicid;
+        this.kwBrType = kwBrType;
+        this.musicname = musicname;
+        this.artistname = artistname;
+        this.albumname = albumname;
+        this.audioBook = audioBook;
     }
 }

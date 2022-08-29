@@ -10,6 +10,7 @@ import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.entity.DownloadEntity;
 import com.sqmusicplus.entity.Music;
 import com.sqmusicplus.entity.ParserEntity;
+import com.sqmusicplus.listener.KwUrlMusicPlayListParser;
 import com.sqmusicplus.listener.TextMusicPlayListParser;
 import com.sqmusicplus.plug.kw.entity.SearchAlbumResult;
 import com.sqmusicplus.plug.kw.entity.SearchArtistResult;
@@ -47,6 +48,8 @@ public class ALLController {
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
     @Autowired
     private TextMusicPlayListParser textMusicPlayListParser;
+    @Autowired
+    private KwUrlMusicPlayListParser urlMusicPlayListParser;
     @Autowired
     private MusicConfig musicConfig;
 
@@ -319,27 +322,50 @@ public class ALLController {
         List<ParserEntity> parser = textMusicPlayListParser.parser(text);
         return parser;
     }
+
     /**
      * 解析单单
+     *
+     * @param url
+     * @return
+     */
+    @SaCheckLogin
+    @GetMapping("/parserUrlAndDownload")
+    public AjaxResult parserUrl(String url, Integer br, Boolean isAudioBook, String bookName, String artist) throws IOException {
+        KwBrType[] values = KwBrType.values();
+        KwBrType nowbr = KwBrType.MP3_320;
+        if (br != null) {
+            for (KwBrType value : values) {
+                if (value.getBit().intValue() == br.intValue()) {
+                    nowbr = value;
+                    break;
+                }
+            }
+        } else {
+            nowbr = KwBrType.FLAC_2000;
+        }
+        urlMusicPlayListParser.parser(url, nowbr, isAudioBook, bookName, artist);
+        return AjaxResult.success(true);
+    }
+
+    /**
+     * 解析单单
+     *
      * @param data { text：“内容”，taskName：“任务名”}
      * @return
      */
     @SaCheckLogin
     @PostMapping("/downloadParser")
-    public AjaxResult downloadParser(@RequestBody HashMap<String,String> data) throws IOException {
+    public AjaxResult downloadParser(@RequestBody HashMap<String, String> data) throws IOException {
         String text = data.get("text");
-//        String taskName = data.get("taskName");
-//        if (StringUtils.isEmpty(taskName)){
-//            taskName = DateUtils.dateTimeNow();
-//        }
         String br = data.get("br");
         List<ParserEntity> parser = textMusicPlayListParser.parser(text);
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
-        if(br!=null){
+        if (br != null) {
             for (KwBrType value : values) {
-                if (value.getBit().intValue()==Integer.valueOf(br)) {
-                    nowbr=value;
+                if (value.getBit().intValue() == Integer.valueOf(br)) {
+                    nowbr = value;
                     break;
                 }
             }
@@ -347,41 +373,31 @@ public class ALLController {
             nowbr=KwBrType.FLAC_2000;
         }
         KwBrType finalNowbr = nowbr;
-//        int success =0;
-//        int error =0;
         threadPoolTaskExecutor.execute(()->{
             for (ParserEntity parserEntity : parser) {
                 Music music = searchHander.AutoqueryMusic(parserEntity.getSongName(), parserEntity.getArtistsName(), true);
                 if (music!=null){
                     //成功了
                     music.setMusicArtists(parserEntity.getArtistsName());
-                    threadPoolTaskExecutor.execute(()->searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
-//                    success++;
-                    //                EhCacheUtil.put(EhCacheUtil.PARSER_DOWNLOAD,taskName+"_over",parserEntity);
-                }else{
-//                    error++;
-                    log.error("没有查询到歌曲："+parserEntity);
-                    //失败了
-//                EhCacheUtil.put(EhCacheUtil.PARSER_DOWNLOAD,taskName+"_error",parserEntity);
+                    threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
+                } else {
+                    log.error("没有查询到歌曲：" + parserEntity);
                 }
             }
 
         });
-//        HashMap<Object, Object> objectObjectHashMap = new HashMap<>();
-//        objectObjectHashMap.put("success",success);
-//        objectObjectHashMap.put("error",error);
-//        objectObjectHashMap.put("size",parser.size());
         return AjaxResult.success(true);
-}
+    }
+
     @SaCheckLogin
-@PostMapping("/ArtistSongList/{id}/{br}")
-public AjaxResult ArtistSongList(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br){
+    @PostMapping("/ArtistSongList/{id}/{br}")
+    public AjaxResult ArtistSongList(@PathVariable("id") Integer id, @PathVariable(value = "br", required = false) Integer br) {
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
-        if(br!=null){
+        if (br != null) {
             for (KwBrType value : values) {
-                if (value.getBit().intValue()==br.intValue()) {
-                    nowbr=value;
+                if (value.getBit().intValue() == br.intValue()) {
+                    nowbr = value;
                     break;
                 }
             }
