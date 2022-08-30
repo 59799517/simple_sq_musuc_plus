@@ -330,7 +330,7 @@ public class ALLController {
      * @return
      */
     @SaCheckLogin
-    @GetMapping("/parserUrlAndDownload")
+    @PostMapping("/parserUrlAndDownload")
     public AjaxResult parserUrl(String url, Integer br, Boolean isAudioBook, String bookName, String artist) throws IOException {
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
