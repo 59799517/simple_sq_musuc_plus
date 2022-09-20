@@ -326,13 +326,18 @@ public class ALLController {
     /**
      * 解析单单
      *
-     * @param url
+     * @param data
      * @return
      */
     @SaCheckLogin
     @PostMapping("/parserUrlAndDownload")
-    public AjaxResult parserUrl(String url, Integer br, Boolean isAudioBook, String bookName, String artist) throws IOException {
-        log.info("开始下载{}--{}--{}--{}",url,br,bookName,artist);
+    public AjaxResult parserUrl(@RequestBody HashMap<String, String> data) throws IOException {
+        String url = data.get("url");
+        Integer br = Integer.valueOf(data.get("br"));
+        Boolean isAudioBook = Boolean.valueOf(data.get("isAudioBook"));
+        String bookName = data.get("url");
+        String artist = data.get("url");
+
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
         if (br != null) {
@@ -345,7 +350,15 @@ public class ALLController {
         } else {
             nowbr = KwBrType.FLAC_2000;
         }
-        urlMusicPlayListParser.parser(url, nowbr, isAudioBook, bookName, artist);
+        KwBrType finalNowbr = nowbr;
+        threadPoolTaskExecutor.execute(() -> {
+            try {
+                urlMusicPlayListParser.parser(url, finalNowbr, isAudioBook, bookName, artist);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
         return AjaxResult.success(true);
     }
 
