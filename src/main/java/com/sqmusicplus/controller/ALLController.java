@@ -335,8 +335,8 @@ public class ALLController {
         String url = data.get("url");
         Integer br = Integer.valueOf(data.get("br"));
         Boolean isAudioBook = Boolean.valueOf(data.get("isAudioBook"));
-        String bookName = data.get("url");
-        String artist = data.get("url");
+        String bookName = data.get("bookName");
+        String artist = data.get("artist");
 
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
