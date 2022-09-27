@@ -1,3 +1,5 @@
+## 有什么功能需要可以issues 有必要的我会加上去
+
 ## 项目描述
 
 下载音乐工具，可以当普通的音乐下载工具使用，支持，flac，ape，mp3等格式的下载（根据码率不同）， 下载的歌曲目录结构支持emby 与 subsonic 类的服务，下载文件支持文件标签识别，歌词下载。
@@ -41,9 +43,7 @@ https://support.emby.media/support/solutions/articles/44001159113-music-naming
 
 后期可能实现功能
 
-### 有声下载
 
-### 有声整理（文件名称与文件夹整理）
 
 
 
