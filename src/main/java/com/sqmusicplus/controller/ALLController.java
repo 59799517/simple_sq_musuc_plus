@@ -2,10 +2,8 @@ package com.sqmusicplus.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.sqmusicplus.config.AjaxResult;
 import com.sqmusicplus.config.MusicConfig;
-import com.sqmusicplus.controller.dto.PlayUrlDTO;
 import com.sqmusicplus.entity.Artists;
 import com.sqmusicplus.entity.DownloadEntity;
 import com.sqmusicplus.entity.Music;
@@ -117,29 +115,31 @@ public class ALLController {
 
     /**
      * 获取下载链接(播放连接)
-     * @param music
+     *
+     * @param id id
+     * @param br 码率
      * @return
      */
     @SaCheckLogin
-    @PostMapping("getplayUrl")
-    public AjaxResult getplayUrl(@RequestBody PlayUrlDTO music){
-            JSONObject other = music.getOther();
-            SearchMusicResult.AbslistDTO kwdata = other.toJavaObject(SearchMusicResult.AbslistDTO.class);
-            KwBrType[] values = KwBrType.values();
-            KwBrType br = KwBrType.MP3_320;
-            if(music.getBit()!=null){
-                for (KwBrType value : values) {
-                    if (value.getBit().intValue()==music.getBit().intValue()) {
-                        br=value;
-                        break;
-                    }
+    @PostMapping("getplayUrl/{id}/{br}")
+    public AjaxResult getplayUrl(@PathVariable("id") String id, @PathVariable(value = "br", required = false) Integer br) {
+
+        KwBrType[] values = KwBrType.values();
+        KwBrType nowbr = KwBrType.MP3_320;
+        if (br != null) {
+            for (KwBrType value : values) {
+                if (value.getBit().intValue() == br.intValue()) {
+                    nowbr = value;
+                    break;
                 }
             }
-
-            Music music1 = searchHander.queryMusicInfoBySongId(Integer.parseInt(kwdata.getMusicrid().replaceAll("MUSIC_",""))).setPlayUrl(searchHander.downloadUrl(kwdata.getMusicrid().replaceAll("MUSIC_",""), br));
-            log.info("获取下载链接{}",music1);
-            return AjaxResult.success(music1);
+        } else {
+            nowbr = KwBrType.FLAC_2000;
         }
+        String s = searchHander.downloadUrl(id, nowbr);
+        log.info("获取下载链接{}", s);
+        return AjaxResult.success("成功", s);
+    }
 
     /**
      * 搜索歌手
