@@ -1,0 +1,24 @@
+#1.指定基础镜像，并且必须是第一条指令
+FROM alpinelinux/alpine-gitlab-ci
+
+#2.指明该镜像的作者和其电子邮件
+MAINTAINER SQ "59799517@qq.com"
+
+ADD openjdk-17.0.1_linux-x64_bin.tar.gz  /usr/local/jre17
+
+
+#setup java env
+ENV JAVA_HOME=/usr/local/jre17
+ENV PATH=$PATH:$JAVA_HOME/bin
+ENV CALSSPATH=$JAVA_HOME/jre/lib/rt.jar:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+
+EXPOSE 8083
+ARG JAR_FILE
+VOLUME ["/music"]
+VOLUME ["/config"]
+USER root
+ADD ./simple-MusicServer-0.0.2-Beta.jar  /app.jar
+ADD ./entrypoint.sh  /entrypoint/entrypoint.sh
+
+CMD ["chmod u+x /entrypoint/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint/entrypoint.sh"]

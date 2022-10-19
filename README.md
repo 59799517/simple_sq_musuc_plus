@@ -25,10 +25,11 @@ https://support.emby.media/support/solutions/articles/44001159113-music-naming
 
 ## 打包docker方法
 
+
 1. 删除旧的包 docker rmi sqmusicplusserver
 2. 打包新的 docker build -t sqmusicplusserver .
 3. 运行 docker run -d --name="sqmusicplusserver"   -p 8022:8083 -v /mnt/user/media/newmusic:/music -v
-   /mnt/user/appdata/sqmusic:/sqmusic sqmusicplusserver
+   /mnt/user/appdata/sqmusic:/config sqmusicplusserver
 
 ### 运行图：
 
