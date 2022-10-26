@@ -47,7 +47,7 @@ public class Init implements ApplicationRunner {
             if (aBoolean) {
                 log.info("subsonic服务连接正常");
             } else {
-                configService.update(new UpdateWrapper<SqConfig>().eq("config_keyu", "plug.subsonic.start").set("config_keyu"))
+                configService.update(new UpdateWrapper<SqConfig>().eq("config_key", "plug.subsonic.start").set("config_key", "false"));
             }
             ArrayList<SubsonicPlayList> subsonicPlayList = subsonicHander.getSubsonicPlayList();
             for (SubsonicPlayList playList : subsonicPlayList) {

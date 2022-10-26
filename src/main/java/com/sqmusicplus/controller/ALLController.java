@@ -17,7 +17,6 @@ import com.sqmusicplus.utils.EhCacheUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,10 +48,6 @@ public class ALLController {
     @Autowired
     private SqConfigService configService;
 
-    @Value("${user.username}")
-    String username;
-    @Value("${user.password}")
-    String password;
 
 
 
@@ -418,7 +413,9 @@ public class ALLController {
 
     @RequestMapping(value = "login", produces = "text/html")
     public String Login(String username, String password, HttpServletResponse response) throws IOException {
-        if (this.username.equals(username) && this.password.equals(password)) {
+        SqConfig suser = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.username"));
+        SqConfig spwd = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.password"));
+        if (suser.getConfigValue().equals(username) && spwd.getConfigValue().equals(password)) {
             StpUtil.login(10001);
             response.sendRedirect("/index.html");
         }
