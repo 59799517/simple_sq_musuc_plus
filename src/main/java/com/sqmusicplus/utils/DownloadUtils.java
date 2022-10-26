@@ -116,9 +116,7 @@ public class DownloadUtils {
             if (onComplete!=null){
                 download.setOnComplete(onComplete);
             }
-
             download.start();
-
         }
 
 //    public static void download(String url, String path, String fileName,Consumer<File> onSuccess) {

@@ -27,10 +27,20 @@
             diskPersistent="true"
             overflowToDisk="true"
             memoryStoreEvictionPolicy="LRU">
-        <cacheEventListenerFactory class="com.sqmusicplus.config.RunCacheEventListener" />
+        <cacheEventListenerFactory class="com.sqmusicplus.config.RunCacheEventListener"/>
     </cache>
     <cache
             name="over"
+            maxElementsInMemory="5000000"
+            eternal="true"
+            diskPersistent="true"
+            overflowToDisk="true"
+            memoryStoreEvictionPolicy="LRU">
+        <cacheEventListenerFactory class="com.sqmusicplus.config.OverCacheEventListener"/>
+
+    </cache>
+    <cache
+            name="subsonic"
             maxElementsInMemory="5000000"
             eternal="true"
             diskPersistent="true"

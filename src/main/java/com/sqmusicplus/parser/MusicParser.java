@@ -1,4 +1,4 @@
-package com.sqmusicplus.listener;
+package com.sqmusicplus.parser;
 
 import com.sqmusicplus.entity.ParserEntity;
 

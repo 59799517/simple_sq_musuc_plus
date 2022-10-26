@@ -33,6 +33,7 @@ public class DownloadEntity implements Serializable {
     String albumname;
     String errorMsg;
     Boolean audioBook;
+    String addSubsonicPlayListName;
 
 
     public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname) {
@@ -42,7 +43,16 @@ public class DownloadEntity implements Serializable {
         this.artistname = artistname;
         this.albumname = albumname;
         this.audioBook = false;
+    }
 
+    public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname, String addSubsonicPlayListName) {
+        this.musicid = musicid;
+        this.kwBrType = kwBrType;
+        this.musicname = musicname;
+        this.artistname = artistname;
+        this.albumname = albumname;
+        this.audioBook = false;
+        this.addSubsonicPlayListName = addSubsonicPlayListName;
     }
 
     public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname, Boolean audioBook) {
@@ -52,5 +62,27 @@ public class DownloadEntity implements Serializable {
         this.artistname = artistname;
         this.albumname = albumname;
         this.audioBook = audioBook;
+    }
+
+    public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname, Boolean audioBook, String addSubsonicPlayListName) {
+        this.musicid = musicid;
+        this.kwBrType = kwBrType;
+        this.musicname = musicname;
+        this.artistname = artistname;
+        this.albumname = albumname;
+        this.audioBook = audioBook;
+        this.addSubsonicPlayListName = addSubsonicPlayListName;
+
+    }
+
+    public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname, String errorMsg, Boolean audioBook, String addSubsonicPlayListName) {
+        this.musicid = musicid;
+        this.kwBrType = kwBrType;
+        this.musicname = musicname;
+        this.artistname = artistname;
+        this.albumname = albumname;
+        this.errorMsg = errorMsg;
+        this.audioBook = audioBook;
+        this.addSubsonicPlayListName = addSubsonicPlayListName;
     }
 }

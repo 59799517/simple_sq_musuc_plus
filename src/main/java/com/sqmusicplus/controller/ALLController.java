@@ -2,19 +2,17 @@ package com.sqmusicplus.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.sqmusicplus.config.AjaxResult;
-import com.sqmusicplus.config.MusicConfig;
-import com.sqmusicplus.entity.Artists;
-import com.sqmusicplus.entity.DownloadEntity;
-import com.sqmusicplus.entity.Music;
-import com.sqmusicplus.entity.ParserEntity;
-import com.sqmusicplus.listener.KwUrlMusicPlayListParser;
-import com.sqmusicplus.listener.TextMusicPlayListParser;
+import com.sqmusicplus.entity.*;
+import com.sqmusicplus.parser.KwUrlMusicPlayListParser;
+import com.sqmusicplus.parser.TextMusicPlayListParser;
 import com.sqmusicplus.plug.kw.entity.SearchAlbumResult;
 import com.sqmusicplus.plug.kw.entity.SearchArtistResult;
 import com.sqmusicplus.plug.kw.entity.SearchMusicResult;
 import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.hander.KWSearchHander;
+import com.sqmusicplus.service.SqConfigService;
 import com.sqmusicplus.utils.EhCacheUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +47,7 @@ public class ALLController {
     @Autowired
     private KwUrlMusicPlayListParser urlMusicPlayListParser;
     @Autowired
-    private MusicConfig musicConfig;
+    private SqConfigService configService;
 
     @Value("${user.username}")
     String username;
@@ -86,21 +84,23 @@ public class ALLController {
 
     /**
      * 下载单曲到服务器
+     *
      * @param br 码率 156498
      * @return
      */
     @SaCheckLogin
-        @PostMapping("/musicDownload/{id}/{br}")
-    public AjaxResult musicDownload(@PathVariable("id") String id,@PathVariable(value = "br",required = false) Integer br,@RequestBody(required = false) Music music){
-        if (music==null){
-          music =   searchHander.queryMusicInfoBySongId(Integer.valueOf(id));
+    @PostMapping("/musicDownload/{id}/{br}")
+    public AjaxResult musicDownload(@PathVariable("id") String id, @PathVariable(value = "br", required = false) Integer br, @RequestBody(required = false) Music music, String subsonicPlayListName) {
+
+        if (music == null) {
+            music = searchHander.queryMusicInfoBySongId(Integer.valueOf(id));
         }
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
-        if(br!=null){
+        if (br != null) {
             for (KwBrType value : values) {
-                if (value.getBit().intValue()==br.intValue()) {
-                    nowbr=value;
+                if (value.getBit().intValue() == br.intValue()) {
+                    nowbr = value;
                     break;
                 }
             }
@@ -109,7 +109,7 @@ public class ALLController {
         }
         KwBrType finalNowbr = nowbr;
         Music finalMusic = music;
-        threadPoolTaskExecutor.execute(()->searchHander.musicDownload(id, finalNowbr, finalMusic));
+        threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(id, finalNowbr, finalMusic, subsonicPlayListName));
         return AjaxResult.success(true);
     }
 
@@ -280,32 +280,7 @@ public class ALLController {
         return AjaxResult.success(true);
     }
 
-    @RequestMapping(value = "login", produces = "text/html")
-    public String Login(String username, String password, HttpServletResponse response) throws IOException {
-        if (this.username.equals(username) && this.password.equals(password)) {
-            StpUtil.login(10001);
-            response.sendRedirect("/index.html");
-        }
-        String html = "<!DOCTYPE html>\n" +
-                "<html lang=\"zh\">\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\">\n" +
-                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
-                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "    <title>登录</title>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <h2>登录</h2>\n" +
-                "     <div> 登录失败:请输入用户名密码</div>       \n" +
-                "    <form name=\"form\" method=\"post\" action=\"/login\">\n" +
-                "    <div>用户名：<input type=\"text\" name=\"username\"></div>\n" +
-                "    <div>密码：<input  type=\"password\" name=\"password\"></div>\n" +
-                "    <div><button type=\"submit\">登录</button></div>\n" +
-                "</form>\n" +
-                "</body>\n" +
-                "</html>";
-        return html;
-    }
+
     @RequestMapping("isLogin")
     public String isLogin() {
         return "当前会话是否登录：" + StpUtil.isLogin();
@@ -373,6 +348,8 @@ public class ALLController {
     public AjaxResult downloadParser(@RequestBody HashMap<String, String> data) throws IOException {
         String text = data.get("text");
         String br = data.get("br");
+        String subsonicPlayListName = data.get("subsonicPlayListName");
+
         List<ParserEntity> parser = textMusicPlayListParser.parser(text);
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
@@ -393,7 +370,7 @@ public class ALLController {
                 if (music!=null){
                     //成功了
                     music.setMusicArtists(parserEntity.getArtistsName());
-                    threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
+                    threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music, subsonicPlayListName));
                 } else {
                     log.error("没有查询到歌曲：" + parserEntity);
                 }
@@ -415,25 +392,55 @@ public class ALLController {
                     break;
                 }
             }
-        }else {
-            nowbr=KwBrType.FLAC_2000;
+        } else {
+            nowbr = KwBrType.FLAC_2000;
         }
-    KwBrType finalNowbr = nowbr;
-    threadPoolTaskExecutor.execute(()->{
-        List<Music> musics = searchHander.queryAllArtistSongList(id, 1000, 1);
-        for (Music music : musics) {
-            if (musicConfig.getIgnoreAccompaniment()){
-                if (music.getMusicName().contains("(伴奏)")||music.getMusicName().contains("(试听版)")||music.getMusicName().contains("(片段)")){
-                    continue;
-                }
-            }
-            threadPoolTaskExecutor.execute(()->searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
+        KwBrType finalNowbr = nowbr;
+        SqConfig accompaniment = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.ignore.accompaniment"));
 
-        }
-    });
+        threadPoolTaskExecutor.execute(() -> {
+            List<Music> musics = searchHander.queryAllArtistSongList(id, 1000, 1);
+            for (Music music : musics) {
+                if (Boolean.getBoolean(accompaniment.getConfigValue())) {
+                    if (music.getMusicName().contains("(伴奏)") || music.getMusicName().contains("(试听版)") || music.getMusicName().contains("(片段)")) {
+                        continue;
+                    }
+                }
+                threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
+
+            }
+        });
 
         return AjaxResult.success(true);
 
+    }
+
+
+    @RequestMapping(value = "login", produces = "text/html")
+    public String Login(String username, String password, HttpServletResponse response) throws IOException {
+        if (this.username.equals(username) && this.password.equals(password)) {
+            StpUtil.login(10001);
+            response.sendRedirect("/index.html");
+        }
+        String html = "<!DOCTYPE html>\n" +
+                "<html lang=\"zh\">\n" +
+                "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
+                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "    <title>登录</title>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <h2>登录</h2>\n" +
+                "     <div> 登录失败:请输入用户名密码</div>       \n" +
+                "    <form name=\"form\" method=\"post\" action=\"/login\">\n" +
+                "    <div>用户名：<input type=\"text\" name=\"username\"></div>\n" +
+                "    <div>密码：<input  type=\"password\" name=\"password\"></div>\n" +
+                "    <div><button type=\"submit\">登录</button></div>\n" +
+                "</form>\n" +
+                "</body>\n" +
+                "</html>";
+        return html;
     }
 }
 

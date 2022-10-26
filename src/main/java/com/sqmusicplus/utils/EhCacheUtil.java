@@ -28,19 +28,15 @@ public class EhCacheUtil {
     public static final String ERROR_DOWNLOAD = "error";
     //进行中
     public static final String RUN_DOWNLOAD = "run";
+    //需要同步的任务
+    public static final String SUBSONIC_SYNC = "subsonic";
+
     /**
      * 所有任务名称
      */
-    public static final String PARSER_TASK_DOWNLOAD = "parser_task";
     private static CacheManager cacheManager = SpringContextUtil
             .getBean(CacheManager.class);
 
-    /**
-     * 获取SYS_CACHE缓存
-     */
-//    public static Object get(String cacheName,String key) {
-//        return get(cacheName, key);
-//    }
 
     /**
      * 取出固定个数的缓存数据
@@ -73,19 +69,6 @@ public class EhCacheUtil {
         return element == null ? null : element.getObjectValue();
     }
 
-    /**
-     * 写入SYS_CACHE缓存
-     *
-     * @param key
-     * @return
-     */
-//    public static void put(String key, Object value) {
-//        put(key, value, null);
-//    }
-
-//    public static void put(String key, Object value, Integer liveTime) {
-//        put(SYS_CACHE, key, value, liveTime);
-//    }
 
     public static void put(String cacheName, String key, Object value, Integer liveTime) {
         Element element = new Element(key, value);

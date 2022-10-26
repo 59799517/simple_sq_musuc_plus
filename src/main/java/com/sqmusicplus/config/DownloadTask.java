@@ -1,5 +1,8 @@
 package com.sqmusicplus.config;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.sqmusicplus.entity.SqConfig;
+import com.sqmusicplus.service.SqConfigService;
 import com.sqmusicplus.utils.EhCacheUtil;
 import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -21,26 +24,28 @@ import java.util.Set;
 public class DownloadTask {
 
     @Autowired
-    MusicConfig musicConfig;
+    private SqConfigService configService;
 
 
-    public void execute(){
+    public void execute() {
+        SqConfig downloadSize_c = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.download.size"));
+        Integer downloadSize = Integer.valueOf(downloadSize_c.getConfigValue());
         List<Object> run_download = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
         for (Object o : run_download) {
-            if (o==null){
+            if (o == null) {
                 run_download.remove(null);
             }
         }
-        if (run_download.size()>=0&&run_download.size()<musicConfig.getDownloadSize()){
+        if (run_download.size() >= 0 && run_download.size() < downloadSize) {
             List<Object> ready_download = EhCacheUtil.values(EhCacheUtil.READY_DOWNLOAD);
             //有准备下载的
-            if (ready_download.size()>0){
+            if (ready_download.size() > 0) {
                 //可以添加到任务
-                int addsize = musicConfig.getDownloadSize() - run_download.size();
+                int addsize = downloadSize - run_download.size();
                 Set<String> keys = EhCacheUtil.keys(EhCacheUtil.READY_DOWNLOAD, addsize);
                 for (String key : keys) {
-                    if (StringUtils.isEmpty(key)){
-                        EhCacheUtil.remove(EhCacheUtil.READY_DOWNLOAD,key);
+                    if (StringUtils.isEmpty(key)) {
+                        EhCacheUtil.remove(EhCacheUtil.READY_DOWNLOAD, key);
                         continue;
                     }
                     //删除待下

@@ -1,6 +1,13 @@
 package com.sqmusicplus.config;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.sqmusicplus.entity.DownloadEntity;
+import com.sqmusicplus.entity.SqConfig;
+import com.sqmusicplus.plug.subsonic.SubsonicHander;
+import com.sqmusicplus.plug.subsonic.config.NowPlayList;
+import com.sqmusicplus.plug.subsonic.entity.SubsonicPlayList;
+import com.sqmusicplus.service.SqConfigService;
 import com.sqmusicplus.utils.EhCacheUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +16,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,15 +30,31 @@ import java.util.List;
 @Configuration
 public class Init implements ApplicationRunner {
     @Autowired
-    MusicConfig musicConfig;
+    private DownloadTask downloadTask;
     @Autowired
-    DownloadTask downloadTask;
+    private SqConfigService configService;
+    @Autowired
+    private SubsonicHander subsonicHander;
     @Value("${server.port}")
     private String port;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        log.info(musicConfig.toString());
+        SqConfig init_download = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.init.download"));
+        SqConfig subsonic = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "plug.subsonic.start"));
+        if (Boolean.getBoolean(subsonic.getConfigValue())) {
+            Boolean aBoolean = subsonicHander.checkLoginInfo();
+            if (aBoolean) {
+                log.info("subsonic服务连接正常");
+            } else {
+                configService.update(new UpdateWrapper<SqConfig>().eq("config_keyu", "plug.subsonic.start").set("config_keyu"))
+            }
+            ArrayList<SubsonicPlayList> subsonicPlayList = subsonicHander.getSubsonicPlayList();
+            for (SubsonicPlayList playList : subsonicPlayList) {
+                NowPlayList.NOW_PLAYLIST.put(playList.getName(), playList);
+                log.info("subsonic加载歌单-{}", playList.getName());
+            }
+        }
         log.info("启动完毕：http://localhost:{}", port);
         List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
         for (Object value : values) {
@@ -42,7 +66,7 @@ public class Init implements ApplicationRunner {
 
             }
         }
-        if (musicConfig.getInitDownload()){
+        if (Boolean.getBoolean(init_download.getConfigValue())) {
             downloadTask.execute();
         }
     }
