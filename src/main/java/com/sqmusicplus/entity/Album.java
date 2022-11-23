@@ -24,7 +24,7 @@ public class Album  implements Serializable {
     /**
      * 主键
      */
-
+    private String albumId;
     /**
      * 专辑名称
      */
@@ -44,6 +44,10 @@ public class Album  implements Serializable {
      * 专辑歌手
      */
     private String albumArtists;
+    /**
+     * 专辑歌手id
+     */
+    private String albumArtistId;
 
     /**
      * 专辑图片
@@ -53,7 +57,7 @@ public class Album  implements Serializable {
     /**
      * 其他  给插件提供
      */
-    private Object other;
+    private String other;
     /**
      * 专辑音乐
      */

@@ -27,7 +27,7 @@ public class Music  implements Serializable {
     /**
      * 歌曲标识
      */
-    private Integer id;
+    private String id;
 
     /**
      * 歌曲名称

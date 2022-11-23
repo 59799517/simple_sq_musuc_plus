@@ -1,5 +1,6 @@
 package com.sqmusicplus.plug.entity;
 
+import com.sqmusicplus.plug.base.SearchType;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -35,4 +36,8 @@ public class PlugSearchResult<T> {
      * 搜索结果
      */
     private List<T> records;
+    /**
+     * 搜索类型
+     */
+    private SearchType searchType;
 }

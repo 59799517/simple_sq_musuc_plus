@@ -1,6 +1,6 @@
 package com.sqmusicplus.entity;
 
-import com.sqmusicplus.plug.kw.enums.KwBrType;
+import com.sqmusicplus.plug.base.PlugBrType;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
@@ -26,28 +26,52 @@ public class DownloadEntity implements Serializable {
 //    Consumer<File> onSuccess;
 //    Consumer<Download.Failure> onFailure;
 //    Music music;
-    String musicid ;
-    KwBrType kwBrType;
+    /**
+     * 音乐id（唯一标识）
+     */
+    String musicid;
+    /**
+     * 音乐类型
+     */
+    PlugBrType brType;
+    /**
+     * 歌曲名称
+     */
     String musicname;
+    /**
+     * 歌手名称
+     */
     String artistname;
+    /**
+     * 专辑名称
+     */
     String albumname;
+    /**
+     * 错误信息
+     */
     String errorMsg;
+    /**
+     * 是否是有声读物类型
+     */
     Boolean audioBook;
+    /**
+     * 添加到Subsonic服务中的歌单名称
+     */
     String addSubsonicPlayListName;
 
 
-    public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname) {
+    public DownloadEntity(String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname) {
         this.musicid = musicid;
-        this.kwBrType = kwBrType;
+        this.brType = kwBrType;
         this.musicname = musicname;
         this.artistname = artistname;
         this.albumname = albumname;
         this.audioBook = false;
     }
 
-    public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname, String addSubsonicPlayListName) {
+    public DownloadEntity(String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, String addSubsonicPlayListName) {
         this.musicid = musicid;
-        this.kwBrType = kwBrType;
+        this.brType = kwBrType;
         this.musicname = musicname;
         this.artistname = artistname;
         this.albumname = albumname;
@@ -55,18 +79,18 @@ public class DownloadEntity implements Serializable {
         this.addSubsonicPlayListName = addSubsonicPlayListName;
     }
 
-    public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname, Boolean audioBook) {
+    public DownloadEntity(String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, Boolean audioBook) {
         this.musicid = musicid;
-        this.kwBrType = kwBrType;
+        this.brType = kwBrType;
         this.musicname = musicname;
         this.artistname = artistname;
         this.albumname = albumname;
         this.audioBook = audioBook;
     }
 
-    public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname, Boolean audioBook, String addSubsonicPlayListName) {
+    public DownloadEntity(String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, Boolean audioBook, String addSubsonicPlayListName) {
         this.musicid = musicid;
-        this.kwBrType = kwBrType;
+        this.brType = kwBrType;
         this.musicname = musicname;
         this.artistname = artistname;
         this.albumname = albumname;
@@ -75,9 +99,9 @@ public class DownloadEntity implements Serializable {
 
     }
 
-    public DownloadEntity(String musicid, KwBrType kwBrType, String musicname, String artistname, String albumname, String errorMsg, Boolean audioBook, String addSubsonicPlayListName) {
+    public DownloadEntity(String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, String errorMsg, Boolean audioBook, String addSubsonicPlayListName) {
         this.musicid = musicid;
-        this.kwBrType = kwBrType;
+        this.brType = kwBrType;
         this.musicname = musicname;
         this.artistname = artistname;
         this.albumname = albumname;

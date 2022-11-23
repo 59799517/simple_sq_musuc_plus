@@ -1,7 +1,5 @@
 package com.sqmusicplus.plug.kw.hander;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.IORuntimeException;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ejlchina.okhttps.HttpUtils;
@@ -16,14 +14,12 @@ import com.sqmusicplus.plug.utils.LrcUtils;
 import com.sqmusicplus.service.SqConfigService;
 import com.sqmusicplus.utils.DownloadUtils;
 import com.sqmusicplus.utils.EhCacheUtil;
-import com.sqmusicplus.utils.MusicUtils;
 import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -129,30 +125,30 @@ public class KWSearchHander {
     }
 
 
-//    public List<Music> queryAllArtistSongList(Integer artistid ,Integer pageNumber){
-//        ArrayList<Music> music = new ArrayList<>();
-//        Integer pn=pageNumber!=null?pageNumber:0;
-//        String s = config.getArtistSongListUrl().replaceAll("#\\{pn}", pn.toString())
-//                .replaceAll("#\\{pagesize}", "1000")
-//                .replaceAll("#\\{artistid}", artistid.toString());
-//        ArtistSongListResult artistSongListResult = DownloadUtils.getHttp().sync(s).get().getBody().toBean(ArtistSongListResult.class);
-//        pn = Integer.valueOf(artistSongListResult.getPn());
-//        Integer total = Integer.valueOf(artistSongListResult.getTotal());
-//        Integer getSize = (total%1000)==0?total/1000:(total/1000)+1;
-//        List<ArtistSongListResult.MusiclistDTO> musiclist = artistSongListResult.getMusiclist();
-//        List<Music> collect = musiclist.stream().map(abslistDTO -> {
-//            String album = StringUtils.isEmpty(abslistDTO.getAlbum())?"其他":abslistDTO.getAlbum();
-//            String aartist = abslistDTO.getAartist().split("&")[0];
-//            String url = (config.getSongCoverUrl() + abslistDTO.getWebAlbumpicShort()).replaceAll("/120", "/500");
-//            return new Music().setMusicName(abslistDTO.getName()).setMusicAlbum(album).setMusicArtists(aartist).setMusicImage(url).setOther(JSONObject.parseObject(JSONObject.toJSONString(abslistDTO))).setSearchMusicId(abslistDTO.getMusicrid());
-//        }).collect(Collectors.toList());
-//        if (getSize.intValue()-1==pn){
-//            music.addAll(collect);
-//            return music;
-//        }else{
-//           return
-//        }
-//    }
+    public List<Music> queryAllArtistSongList(Integer artistid, Integer pageNumber) {
+        ArrayList<Music> music = new ArrayList<>();
+        Integer pn = pageNumber != null ? pageNumber : 0;
+        String s = config.getArtistSongListUrl().replaceAll("#\\{pn}", pn.toString())
+                .replaceAll("#\\{pagesize}", "1000")
+                .replaceAll("#\\{artistid}", artistid.toString());
+        ArtistSongListResult artistSongListResult = DownloadUtils.getHttp().sync(s).get().getBody().toBean(ArtistSongListResult.class);
+        pn = Integer.valueOf(artistSongListResult.getPn());
+        Integer total = Integer.valueOf(artistSongListResult.getTotal());
+        Integer getSize = (total % 1000) == 0 ? total / 1000 : (total / 1000) + 1;
+        List<ArtistSongListResult.MusiclistDTO> musiclist = artistSongListResult.getMusiclist();
+        List<Music> collect = musiclist.stream().map(abslistDTO -> {
+            String album = StringUtils.isEmpty(abslistDTO.getAlbum()) ? "其他" : abslistDTO.getAlbum();
+            String aartist = abslistDTO.getAartist().split("&")[0];
+            String url = (config.getSongCoverUrl() + abslistDTO.getWebAlbumpicShort()).replaceAll("/120", "/500");
+            return new Music().setMusicName(abslistDTO.getName()).setMusicAlbum(album).setMusicArtists(aartist).setMusicImage(url).setOther(JSONObject.parseObject(JSONObject.toJSONString(abslistDTO))).setSearchMusicId(abslistDTO.getMusicrid());
+        }).collect(Collectors.toList());
+        if (getSize.intValue() - 1 == pn) {
+            music.addAll(collect);
+            return music;
+        } else {
+            return
+        }
+    }
 
 
     /**
@@ -289,6 +285,7 @@ public class KWSearchHander {
         return downloadurl;
     }
 
+
     /**
      * 获取下载（播放连接）自动匹配码率（最小320 小于则返回null）
      *
@@ -332,31 +329,31 @@ public class KWSearchHander {
     }
 
 
-    /**
-     * 自动匹配艺术家获取艺术家信息
-     *
-     * @param artistname 歌手名称
-     * @return 歌手信息
-     */
-    public Artists autoQueryArtist(String artistname) {
-        String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", "0")
-                .replaceAll("#\\{pagesize}", "1")
-                .replaceAll("#\\{searchKey}", artistname)
-                .replaceAll("#\\{searchType}", KwSearchType.ARTIST.getValue());
-        SearchArtistResult searchArtistResult = DownloadUtils.getHttp().sync(searchUrl)
-                .get()                          // GET请求
-                .getBody()                      // 响应报文体
-                .toBean(SearchArtistResult.class);
-        List<SearchArtistResult.AbslistDTO> abslist = searchArtistResult.getAbslist();
-        SearchArtistResult.AbslistDTO abslistDTO = abslist.stream().iterator().next();
-        Artists artists = new Artists();
-        artists.setMusicArtistsName(abslistDTO.getArtist())
-                .setMusicArtistsAlias(abslistDTO.getAartist())
-                .setMusicArtistsPhoto(abslistDTO.getHtsPicpath().replaceAll("/240", "/500"))
-                .setMusicArtistsDescribe(abslistDTO.getDesc())
-                .setOther(abslistDTO);
-        return artists;
-    }
+//    /**
+//     * 自动匹配艺术家获取艺术家信息
+//     *
+//     * @param artistname 歌手名称
+//     * @return 歌手信息
+//     */
+//    public Artists autoQueryArtist(String artistname) {
+//        String searchUrl = config.getSearchUrl().replaceAll("#\\{pn}", "0")
+//                .replaceAll("#\\{pagesize}", "1")
+//                .replaceAll("#\\{searchKey}", artistname)
+//                .replaceAll("#\\{searchType}", KwSearchType.ARTIST.getValue());
+//        SearchArtistResult searchArtistResult = DownloadUtils.getHttp().sync(searchUrl)
+//                .get()                          // GET请求
+//                .getBody()                      // 响应报文体
+//                .toBean(SearchArtistResult.class);
+//        List<SearchArtistResult.AbslistDTO> abslist = searchArtistResult.getAbslist();
+//        SearchArtistResult.AbslistDTO abslistDTO = abslist.stream().iterator().next();
+//        Artists artists = new Artists();
+//        artists.setMusicArtistsName(abslistDTO.getArtist())
+//                .setMusicArtistsAlias(abslistDTO.getAartist())
+//                .setMusicArtistsPhoto(abslistDTO.getHtsPicpath().replaceAll("/240", "/500"))
+//                .setMusicArtistsDescribe(abslistDTO.getDesc())
+//                .setOther(abslistDTO);
+//        return artists;
+//    }
 
     /**
      * 根据歌手id查询歌手信息
@@ -408,7 +405,7 @@ public class KWSearchHander {
      *
      * @param songName   歌名
      * @param artists    歌手
-     * @param conformity
+     * @param conformity 是否必须是该歌手的歌曲
      * @return 歌曲信息
      */
     public Music AutoqueryMusic(String songName, String artists, boolean conformity) {
@@ -462,159 +459,159 @@ public class KWSearchHander {
         return null;
     }
 
-    /**
-     * 保存文件到服务器中
-     *
-     * @param downloadEntity 下载信息
-     * @return 保存后文件id
-     */
+//    /**
+//     * 保存文件到服务器中
+//     *
+//     * @param downloadEntity 下载信息
+//     * @return 保存后文件id
+//     */
+//
+//
+//    public String saveToFile(DownloadEntity downloadEntity) {
+//        try {
+//            //获取歌曲详情
+//            Music music = queryMusicInfoBySongId(Integer.valueOf(downloadEntity.getMusicid()));
+//            String musicPath = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.download.path")).getConfigValue();
+//            File file = new File(musicPath);
+//            //使用传递的名称
+//            if (StringUtils.isNotEmpty(downloadEntity.getArtistname())) {
+//                music.setMusicArtists(downloadEntity.getArtistname().trim());
+//            } else {
+//                music.setMusicArtists(music.getMusicArtists().trim());
+//            }
+//            //过滤非法字符
+//            music.setMusicName(music.getMusicName().replaceAll("<[^>]*>", ""));
+//            if (StringUtils.isEmpty(music.getMusicAlbum())) {
+//                music.setMusicAlbum("other");
+//            } else {
+//                if (downloadEntity.getAudioBook()) {
+//                    music.setMusicAlbum(downloadEntity.getAlbumname().trim());
+//                }
+//            }
+//            //下载位置
+//            String basepath = music.getMusicArtists().trim() + File.separator + music.getMusicAlbum().trim() + File.separator;
+//            HashMap<String, String> stringStringHashMap = autoDownloadUrl(downloadEntity.getMusicid() + "", downloadEntity.getKwBrType());
+//            File type = new File(file, basepath + music.getMusicName().trim() + " - " + music.getMusicArtists().trim() + "." + stringStringHashMap.get("type"));
+//            log.debug("开始下载---->{}", music.getMusicName());
+//            if (Boolean.valueOf(configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.override.download")).getConfigValue())) {
+//                if (type.exists()) {
+//                    EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
+//                    EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+//                    return null;
+//                }
+//            }
+//            if (StringUtils.isEmpty(stringStringHashMap.get("url"))) {
+//                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
+//                EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+//                log.debug("下载失败{}", music.getMusicName());
+//                return null;
+//            }
+//            DownloadUtils.download(stringStringHashMap.get("url"), type, onSuccess -> {
+//                Integer albumID = music.getAlbumId();
+//                Integer artistsID = music.getArtistsId();
+//                Artists artists = autoQueryArtist(artistsID);
+//                artists.setOther(JSONObject.toJSONString(artists.getOther()));
+//                String downloadurl = (config.getSearheads() + artists.getMusicArtistsPhoto()).replaceAll("/120", "/500");
+//                String downliadpath = musicPath + File.separator + music.getMusicArtists().trim();
+//                //人物图片
+//                File Artistsfile = new File(downliadpath + File.separator + "cover.jpg");
+//                if (!Artistsfile.exists() && !downloadEntity.getAudioBook()) {
+//                    try {
+//                        DownloadUtils.download(downloadurl, downliadpath, onArtistsPhoto -> {
+//                            try {
+//                                File cover = FileUtil.rename(onArtistsPhoto, "cover", true, true);
+//                                FileUtil.copy(cover, new File(downliadpath + File.separator + "folder.jpg"), true);
+//                            } catch (Exception e) {
+//                                FileUtil.del(onArtistsPhoto);
+//                            }
+//                            artists.setMusicArtistsPhoto("cover");
+//                        });
+//                    } catch (Exception e) {
+//                    }
+//                }
+//                //专辑图片
+//                Album album = queryAlbumsInfoInfoByAlbumsId(albumID);
+//                String albumImg = album.getAlbumImg();
+//                if (downloadEntity.getAudioBook()) {
+//                    album.setAlbumName(downloadEntity.getAlbumname().trim());
+//                }
+//                Boolean downloadalubimage = true;
+//                if (StringUtils.isEmpty(albumImg)) {
+//                    downloadalubimage = false;
+//                }
+//                String imagePath = musicPath + File.separator + music.getMusicArtists().trim() + File.separator + music.getMusicAlbum().trim();
+//                if (StringUtils.isEmpty(album.getAlbumName()) && music.getMusicAlbum().trim().equals("other")) {
+//                    FileUtil.copy(Artistsfile, new File(imagePath + File.separator + "cover.jpg"), true);
+//                }
+//                File albumfile = new File(imagePath + File.separator + "cover.jpg");
+//                //专辑图片下载与标签写入
+//                if (!albumfile.exists() || downloadalubimage) {
+//                    try {
+//                        DownloadUtils.download(albumImg, imagePath, onAlbumImg -> {
+//                            File cover = null;
+//                            try {
+//                                cover = FileUtil.rename(onAlbumImg, "cover", true, true);
+//                                if (downloadEntity.getAudioBook()) {
+//                                    FileUtil.copyFile(cover, Artistsfile);
+//                                }
+//                            } catch (Exception e) {
+//                                FileUtil.del(onAlbumImg);
+//                            }
+//                            album.setAlbumImg("cover");
+//                            extracted(music, onSuccess, cover, downloadEntity);
+//                        });
+//                    } catch (Exception e) {
+//                        extracted(music, onSuccess, albumfile, downloadEntity);
+//                    }
+//                } else {
+//                    extracted(music, onSuccess, albumfile, downloadEntity);
+//                }
+//            }, onFailure -> {
+//                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
+//                EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+//                log.debug("下载失败{}", music.getMusicName());
+//            });
+//
+//        } catch (Exception e) {
+//            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
+//            EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+//        }
+//        return null;
+//    }
 
-
-    public String saveToFile(DownloadEntity downloadEntity) {
-        try {
-            //获取歌曲详情
-            Music music = queryMusicInfoBySongId(Integer.valueOf(downloadEntity.getMusicid()));
-            String musicPath = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.download.path")).getConfigValue();
-            File file = new File(musicPath);
-            //使用传递的名称
-            if (StringUtils.isNotEmpty(downloadEntity.getArtistname())) {
-                music.setMusicArtists(downloadEntity.getArtistname().trim());
-            } else {
-                music.setMusicArtists(music.getMusicArtists().trim());
-            }
-            //过滤非法字符
-            music.setMusicName(music.getMusicName().replaceAll("<[^>]*>", ""));
-            if (StringUtils.isEmpty(music.getMusicAlbum())) {
-                music.setMusicAlbum("other");
-            } else {
-                if (downloadEntity.getAudioBook()) {
-                    music.setMusicAlbum(downloadEntity.getAlbumname().trim());
-                }
-            }
-            //下载位置
-            String basepath = music.getMusicArtists().trim() + File.separator + music.getMusicAlbum().trim() + File.separator;
-            HashMap<String, String> stringStringHashMap = autoDownloadUrl(downloadEntity.getMusicid() + "", downloadEntity.getKwBrType());
-            File type = new File(file, basepath + music.getMusicName().trim() + " - " + music.getMusicArtists().trim() + "." + stringStringHashMap.get("type"));
-            log.debug("开始下载---->{}", music.getMusicName());
-            if (Boolean.valueOf(configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.override.download")).getConfigValue())) {
-                if (type.exists()) {
-                    EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-                    EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-                    return null;
-                }
-            }
-            if (StringUtils.isEmpty(stringStringHashMap.get("url"))) {
-                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-                EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-                log.debug("下载失败{}", music.getMusicName());
-                return null;
-            }
-            DownloadUtils.download(stringStringHashMap.get("url"), type, onSuccess -> {
-                Integer albumID = music.getAlbumId();
-                Integer artistsID = music.getArtistsId();
-                Artists artists = autoQueryArtist(artistsID);
-                artists.setOther(JSONObject.toJSONString(artists.getOther()));
-                String downloadurl = (config.getStarheads() + artists.getMusicArtistsPhoto()).replaceAll("/120", "/500");
-                String downliadpath = musicPath + File.separator + music.getMusicArtists().trim();
-                //人物图片
-                File Artistsfile = new File(downliadpath + File.separator + "cover.jpg");
-                if (!Artistsfile.exists() && !downloadEntity.getAudioBook()) {
-                    try {
-                        DownloadUtils.download(downloadurl, downliadpath, onArtistsPhoto -> {
-                            try {
-                                File cover = FileUtil.rename(onArtistsPhoto, "cover", true, true);
-                                FileUtil.copy(cover, new File(downliadpath + File.separator + "folder.jpg"), true);
-                            } catch (Exception e) {
-                                FileUtil.del(onArtistsPhoto);
-                            }
-                            artists.setMusicArtistsPhoto("cover");
-                        });
-                    } catch (Exception e) {
-                    }
-                }
-                //专辑图片
-                Album album = queryAlbumsInfoInfoByAlbumsId(albumID);
-                String albumImg = album.getAlbumImg();
-                if (downloadEntity.getAudioBook()) {
-                    album.setAlbumName(downloadEntity.getAlbumname().trim());
-                }
-                Boolean downloadalubimage = true;
-                if (StringUtils.isEmpty(albumImg)) {
-                    downloadalubimage = false;
-                }
-                String imagePath = musicPath + File.separator + music.getMusicArtists().trim() + File.separator + music.getMusicAlbum().trim();
-                if (StringUtils.isEmpty(album.getAlbumName()) && music.getMusicAlbum().trim().equals("other")) {
-                    FileUtil.copy(Artistsfile, new File(imagePath + File.separator + "cover.jpg"), true);
-                }
-                File albumfile = new File(imagePath + File.separator + "cover.jpg");
-                //专辑图片下载与标签写入
-                if (!albumfile.exists() || downloadalubimage) {
-                    try {
-                        DownloadUtils.download(albumImg, imagePath, onAlbumImg -> {
-                            File cover = null;
-                            try {
-                                cover = FileUtil.rename(onAlbumImg, "cover", true, true);
-                                if (downloadEntity.getAudioBook()) {
-                                    FileUtil.copyFile(cover, Artistsfile);
-                                }
-                            } catch (Exception e) {
-                                FileUtil.del(onAlbumImg);
-                            }
-                            album.setAlbumImg("cover");
-                            extracted(music, onSuccess, cover, downloadEntity);
-                        });
-                    } catch (Exception e) {
-                        extracted(music, onSuccess, albumfile, downloadEntity);
-                    }
-                } else {
-                    extracted(music, onSuccess, albumfile, downloadEntity);
-                }
-            }, onFailure -> {
-                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-                EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-                log.debug("下载失败{}", music.getMusicName());
-            });
-
-        } catch (Exception e) {
-            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-            EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-        }
-        return null;
-    }
-
-    /**
-     * 根据歌曲情况写入到歌曲标签
-     *
-     * @param music
-     * @param onSuccess
-     * @param albumfile
-     * @param downloadEntity
-     */
-    private void extracted(Music music, File onSuccess, File albumfile, DownloadEntity downloadEntity) {
-        //创建歌词
-        try {
-            if (StringUtils.isNotEmpty(music.getMusicLyric())) {
-                String name = FileUtil.getPrefix(onSuccess);
-                log.debug("lrc地址{}", onSuccess.getParentFile() + File.separator + name + ".lrc");
-                FileUtil.writeBytes(music.getMusicLyric().getBytes(), onSuccess.getParentFile() + File.separator + name + ".lrc");
-            }
-        } catch (IORuntimeException e) {
-            log.error(e.getMessage());
-        }
-        //修改文件
-        try {
-            MusicUtils.setMediaFileInfo(onSuccess, music.getMusicName(), music.getMusicAlbum(), music.getMusicArtists(), "SqMusic", music.getMusicLyric(), albumfile);
-            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-            EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-            log.debug("下载成功{}", music.getMusicName());
-        } catch (Exception e) {
-            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-            EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-            log.debug("下载错误{}  ----------> {}", music.getMusicName(), e.getMessage());
-            log.error(e.getMessage());
-            e.printStackTrace();
-        }
-    }
+//    /**
+//     * 根据歌曲情况写入到歌曲标签
+//     *
+//     * @param music
+//     * @param onSuccess
+//     * @param albumfile
+//     * @param downloadEntity
+//     */
+//    private void extracted(Music music, File onSuccess, File albumfile, DownloadEntity downloadEntity) {
+//        //创建歌词
+//        try {
+//            if (StringUtils.isNotEmpty(music.getMusicLyric())) {
+//                String name = FileUtil.getPrefix(onSuccess);
+//                log.debug("lrc地址{}", onSuccess.getParentFile() + File.separator + name + ".lrc");
+//                FileUtil.writeBytes(music.getMusicLyric().getBytes(), onSuccess.getParentFile() + File.separator + name + ".lrc");
+//            }
+//        } catch (IORuntimeException e) {
+//            log.error(e.getMessage());
+//        }
+//        //修改文件
+//        try {
+//            MusicUtils.setMediaFileInfo(onSuccess, music.getMusicName(), music.getMusicAlbum(), music.getMusicArtists(), "SqMusic", music.getMusicLyric(), albumfile);
+//            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
+//            EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+//            log.debug("下载成功{}", music.getMusicName());
+//        } catch (Exception e) {
+//            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
+//            EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+//            log.debug("下载错误{}  ----------> {}", music.getMusicName(), e.getMessage());
+//            log.error(e.getMessage());
+//            e.printStackTrace();
+//        }
+//    }
 
     public void downloadAlbumByAlbumID(Integer albumid, KwBrType kwBrType, String artist) {
         downloadAlbumByAlbumID(albumid, kwBrType, artist, false, null);

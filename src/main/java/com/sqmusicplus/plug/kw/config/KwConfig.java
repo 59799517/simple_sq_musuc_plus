@@ -1,5 +1,6 @@
 package com.sqmusicplus.plug.kw.config;
 
+import com.sqmusicplus.plug.base.config.PlugConfig;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -14,17 +15,14 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "kw")
-public class KwConfig {
-
-    private String id;
-    private String name;
+public class KwConfig extends PlugConfig {
     private String SearchUrl;
     private String BangMenuUrl;
     private String BangInfoUrl;
     private String downloadurl;
     private String SongInfoUrl;
     private String SongCoverUrl;
-    private String Starheads;
+    private String Searheads;
     private String ArtistInfoUrl;
     private String AlbumListUrl;
     private String AlbumInfoUrl;
@@ -33,4 +31,8 @@ public class KwConfig {
     private String PlayListInfo;
 
 
+    @Override
+    public String getStringPlugSetName() {
+        return getId() + ":" + getName();
+    }
 }
