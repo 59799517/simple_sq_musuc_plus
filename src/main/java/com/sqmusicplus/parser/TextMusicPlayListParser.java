@@ -22,7 +22,11 @@ public class TextMusicPlayListParser extends TextParser {
         String[] split = msg.split("\n");
         return Arrays.stream(split).map(m -> {
             String[] sa = m.split("-");
-            return new ParserEntity().setSourceName("text").setSongName(sa[0]).setArtistsName(sa[1]);
+            try {
+                return new ParserEntity().setSourceName("text").setSongName(sa[0]).setArtistsName(sa[1]);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                return  new ParserEntity().setSourceName("text").setSongName(m).setArtistsName("");
+            }
         }).collect(Collectors.toList());
 
     }

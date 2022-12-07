@@ -1,19 +1,25 @@
 package com.sqmusicplus.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.sqmusicplus.config.AjaxResult;
 import com.sqmusicplus.entity.*;
 import com.sqmusicplus.parser.KwUrlMusicPlayListParser;
 import com.sqmusicplus.parser.TextMusicPlayListParser;
+import com.sqmusicplus.plug.entity.PlugSearchMusicResult;
+import com.sqmusicplus.plug.entity.PlugSearchResult;
+import com.sqmusicplus.plug.entity.SearchKeyData;
 import com.sqmusicplus.plug.kw.entity.SearchAlbumResult;
 import com.sqmusicplus.plug.kw.entity.SearchArtistResult;
 import com.sqmusicplus.plug.kw.entity.SearchMusicResult;
 import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.hander.KWSearchHander;
+import com.sqmusicplus.plug.kw.hander.NKwSearchHander;
 import com.sqmusicplus.service.SqConfigService;
 import com.sqmusicplus.utils.EhCacheUtil;
+import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,7 +43,8 @@ import java.util.List;
 @RequestMapping()
 public class ALLController {
     @Autowired
-    private KWSearchHander searchHander;
+//    private KWSearchHander searchHander;
+    private NKwSearchHander searchHander;
     @Autowired
     @Qualifier("threadPoolTaskExecutor")
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
@@ -61,8 +68,9 @@ public class ALLController {
     @SaCheckLogin
     @GetMapping("/searchMusic/{keyword}/{pageSize}/{pageIndex}")
     public AjaxResult searchMusic(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
-        SearchMusicResult searchMusicResult = searchHander.queryMusic(keyword, pageIndex - 1, pageSize);
-        return AjaxResult.success(searchMusicResult);
+        SearchKeyData searchKeyData = new SearchKeyData().setPageIndex(pageIndex - 1).setPageSize(pageSize).setSearchkey(keyword);
+        PlugSearchResult<PlugSearchMusicResult> plugSearchMusicResultPlugSearchResult = searchHander.querySongByName(searchKeyData);
+        return AjaxResult.success(plugSearchMusicResultPlugSearchResult);
     }
 
     /**
@@ -73,7 +81,7 @@ public class ALLController {
     @SaCheckLogin
     @GetMapping("/musicInfo/{id}")
     public AjaxResult musicInfo(@PathVariable("id") Integer id){
-        Music music = searchHander.queryMusicInfoBySongId(id);
+        Music music = searchHander.querySongById(id.toString());
         return AjaxResult.success(music);
     }
 
@@ -88,7 +96,7 @@ public class ALLController {
     public AjaxResult musicDownload(@PathVariable("id") String id, @PathVariable(value = "br", required = false) Integer br, @RequestBody(required = false) Music music, String subsonicPlayListName) {
 
         if (music == null) {
-            music = searchHander.queryMusicInfoBySongId(Integer.valueOf(id));
+            music = searchHander.querySongById(id);
         }
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
@@ -276,10 +284,6 @@ public class ALLController {
     }
 
 
-    @RequestMapping("isLogin")
-    public String isLogin() {
-        return "当前会话是否登录：" + StpUtil.isLogin();
-    }
 
     /**
      * 解析单单
@@ -307,6 +311,7 @@ public class ALLController {
         Boolean isAudioBook = Boolean.valueOf(data.get("isAudioBook"));
         String bookName = data.get("bookName");
         String artist = data.get("artist");
+        String playListName = data.get("playListName");
 
         KwBrType[] values = KwBrType.values();
         KwBrType nowbr = KwBrType.MP3_320;
@@ -323,7 +328,7 @@ public class ALLController {
         KwBrType finalNowbr = nowbr;
         threadPoolTaskExecutor.execute(() -> {
             try {
-                urlMusicPlayListParser.parser(url, finalNowbr, isAudioBook, bookName, artist);
+                urlMusicPlayListParser.parser(url, finalNowbr, isAudioBook, bookName, artist,playListName);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -365,7 +370,13 @@ public class ALLController {
                 if (music!=null){
                     //成功了
                     music.setMusicArtists(parserEntity.getArtistsName());
-                    threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music, subsonicPlayListName));
+                    if (StringUtils.isEmpty(subsonicPlayListName)){
+                        threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
+                    }else{
+                        threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music, subsonicPlayListName));
+                    }
+
+
                 } else {
                     log.error("没有查询到歌曲：" + parserEntity);
                 }
@@ -411,8 +422,8 @@ public class ALLController {
     }
 
 
-    @RequestMapping(value = "login", produces = "text/html")
-    public String Login(String username, String password, HttpServletResponse response) throws IOException {
+    @RequestMapping(value = "loginHtml", produces = "text/html")
+    public String LoginHtml(String username, String password, HttpServletResponse response) throws IOException {
         SqConfig suser = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.username"));
         SqConfig spwd = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.password"));
         if (suser.getConfigValue().equals(username) && spwd.getConfigValue().equals(password)) {
@@ -439,6 +450,31 @@ public class ALLController {
                 "</html>";
         return html;
     }
+
+    @RequestMapping(value = "login",method = RequestMethod.POST)
+    public AjaxResult login(@RequestBody HashMap<String,String> data )  {
+        String username = data.get("username");
+        String password = data.get("password");
+        if (StringUtils.isEmpty(username)||StringUtils.isEmpty(password)){
+            return AjaxResult.error("登录失败");
+        }
+        SqConfig suser = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.username"));
+        SqConfig spwd = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.password"));
+        if (suser.getConfigValue().equals(username) && spwd.getConfigValue().equals(password)) {
+            StpUtil.login(9527);
+            SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
+           return AjaxResult.success(tokenInfo);
+        }else{
+            AjaxResult.error("账号密码错误");
+        }
+        return AjaxResult.error("登录失败");
+    }
+
+    @RequestMapping(value = "isLogin")
+    public AjaxResult isLogin() {
+        return  StpUtil.isLogin()?AjaxResult.success("登录有效",true):AjaxResult.error("过期",false);
+    }
+
 }
 
 

@@ -4,6 +4,7 @@ import com.sqmusicplus.entity.Music;
 import com.sqmusicplus.plug.kw.enums.DownloadPlaylistType;
 import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.hander.KWSearchHander;
+import com.sqmusicplus.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -29,7 +30,7 @@ public class KwUrlMusicPlayListParser {
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
 
-    public void parser(String url, KwBrType br, Boolean isAudioBook, String bookName, String artist) throws IOException {
+    public void parser(String url, KwBrType br, Boolean isAudioBook, String bookName, String artist,String playListName) throws IOException {
         DownloadPlaylistType playlistType = getPlaylistType(url);
         if (playlistType.getType() == DownloadPlaylistType.playlist.getType()) {
             String[] split = url.split("/");
@@ -43,7 +44,12 @@ public class KwUrlMusicPlayListParser {
                 }
             } else {
                 for (Music music : musics) {
-                    threadPoolTaskExecutor.execute(() -> kwSearchHander.musicDownload(music.getSearchMusicId(), br, music));
+                    if (StringUtils.isEmpty(playListName)){
+                        threadPoolTaskExecutor.execute(() -> kwSearchHander.musicDownload(music.getSearchMusicId(), br, music));
+                    }else{
+                        threadPoolTaskExecutor.execute(() -> kwSearchHander.musicDownload(music.getSearchMusicId(), br, music,playListName));
+
+                    }
                 }
             }
 

@@ -1,6 +1,7 @@
 package com.sqmusicplus.plug.entity;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -10,6 +11,7 @@ import lombok.Data;
  * Description: 搜索关键字对象
  */
 @Data
+@Accessors(chain = true)
 public class SearchKeyData {
 
     /**

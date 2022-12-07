@@ -2,6 +2,7 @@ package com.sqmusicplus.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.sqmusicplus.config.AjaxResult;
 import com.sqmusicplus.entity.SqConfig;
 import com.sqmusicplus.service.SqConfigService;
@@ -31,7 +32,6 @@ public class SetController {
      *
      * @return
      */
-    @SaCheckLogin
     @GetMapping("/getSetList")
     public AjaxResult getSetList(String configKey) {
         if (StringUtils.isEmpty(configKey)) {
@@ -55,7 +55,14 @@ public class SetController {
                 config.setConfigValue(substring);
             }
         }
-        boolean b = configService.updateById(config);
+        boolean b = false;
+        if (config.getConfigId()==null){
+            UpdateWrapper<SqConfig> sqConfigUpdateWrapper = new UpdateWrapper<>();
+            sqConfigUpdateWrapper.eq(SqConfig.COL_CONFIG_KEY, config.getConfigKey()).set(SqConfig.COL_CONFIG_VALUE, config.getConfigValue());
+             b = configService.update(sqConfigUpdateWrapper);
+        }else{
+             b = configService.updateById(config);
+        }
         return AjaxResult.success("成功", b);
     }
 

@@ -161,6 +161,9 @@
                     <include>**/*.js</include>
                     <include>**/*.css</include>
                     <include>**/*.html</include>
+                    <include>**/*.json</include>
+                    <include>**/*.otf</include>
+                    <include>**/*.ttf</include>
                 </includes>
                 <filtering>true</filtering>
             </resource>

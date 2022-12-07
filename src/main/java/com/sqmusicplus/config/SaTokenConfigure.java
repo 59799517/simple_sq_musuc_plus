@@ -22,11 +22,16 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     public SaServletFilter getSaServletFilter() {
         return new SaServletFilter()
                 .addInclude("/**")
-                .addExclude("/login", "/favicon.ico")
+                .addExclude("/login", "/favicon.ico","/isLogin","/set/getSetList")
                 .setAuth(obj -> {
-                    if(StpUtil.isLogin() == false) {
-                        SaHolder.getResponse().redirect("/login?username=&password=");
+                    if(SaHolder.getRequest().getMethod().equals("OPTIONS")){
+                        SaHolder.getResponse().setStatus(200);
                         SaRouter.back();
+                    }else{
+                        if(StpUtil.isLogin() == false) {
+//                            SaHolder.getResponse().setStatus(401);
+                            SaRouter.back();
+                        }
                     }
                 });
     }
