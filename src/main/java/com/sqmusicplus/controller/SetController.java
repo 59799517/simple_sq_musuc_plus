@@ -1,17 +1,25 @@
 package com.sqmusicplus.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.sqmusicplus.config.AjaxResult;
 import com.sqmusicplus.entity.SqConfig;
+import com.sqmusicplus.plug.base.PlugBrType;
+import com.sqmusicplus.plug.base.SearchType;
 import com.sqmusicplus.service.SqConfigService;
 import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @Classname SetController
@@ -65,5 +73,29 @@ public class SetController {
         }
         return AjaxResult.success("成功", b);
     }
+    @GetMapping("/getSearchType")
+    public AjaxResult getSearchType(){
+        SearchType[] values = SearchType.values();
+        JSONArray objects = new JSONArray();
+        for (SearchType value : values) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put(value.getName(),value.getValue());
+            objects.add(jsonObject);
+        }
+        return  AjaxResult.success("成功", objects);
+    }
+    @GetMapping("/getSearchTypeBrType")
+    public AjaxResult getSearchTypeBrType(){
+        JSONObject jsonObject = new JSONObject();
+
+        PlugBrType[] values = PlugBrType.values();
+        Set<String> collect = Arrays.stream(SearchType.values()).map(SearchType::getValue).collect(Collectors.toSet());
+        for (String s : collect) {
+            List<String> collect1 = Arrays.stream(values).filter(e -> e.getSearchType().istype(s)).map(PlugBrType::getValue).collect(Collectors.toList());
+            jsonObject.put(s,collect1);
+        }
+        return  AjaxResult.success("成功", jsonObject);
+    }
+
 
 }

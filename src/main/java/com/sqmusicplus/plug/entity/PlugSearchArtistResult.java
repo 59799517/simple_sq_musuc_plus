@@ -14,19 +14,37 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class PlugSearchArtistResult {
 
-    String artistName;
+    private String artistName;
+    /**
+     * 专辑名称
+     */
+    private String albumName;
+
     /**
      * 歌手id
      */
-    String artistid;
+    private String artistid;
+
+    /**
+     * 专辑id
+     */
+    private String albumid;
+    /**
+     * 搜索类型
+     */
+    private String searchType;
     /**
      * 歌曲图片（必须是完整的url地址）
      */
-    String pic;
+    private String pic;
+    /**
+     * 总个数
+     */
+    String total;
     /**
      * 其余信息（插件特殊参数） 尽量避免使用
      */
-    String oter;
+    private String oter;
 
 
 }

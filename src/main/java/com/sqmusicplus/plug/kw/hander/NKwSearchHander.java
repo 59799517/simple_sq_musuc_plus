@@ -1,23 +1,25 @@
 package com.sqmusicplus.plug.kw.hander;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ejlchina.okhttps.HttpUtils;
-import com.sqmusicplus.entity.Album;
-import com.sqmusicplus.entity.Artists;
-import com.sqmusicplus.entity.DownloadEntity;
-import com.sqmusicplus.entity.Music;
+import com.sqmusicplus.entity.*;
 import com.sqmusicplus.plug.base.PlugBrType;
 import com.sqmusicplus.plug.base.SearchType;
 import com.sqmusicplus.plug.base.hander.SearchHanderAbstract;
 import com.sqmusicplus.plug.entity.*;
 import com.sqmusicplus.plug.kw.config.KwConfig;
 import com.sqmusicplus.plug.kw.entity.*;
+import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.enums.KwSearchType;
 import com.sqmusicplus.plug.utils.Base64Coder;
 import com.sqmusicplus.plug.utils.KuwoDES;
 import com.sqmusicplus.plug.utils.LrcUtils;
 import com.sqmusicplus.utils.DownloadUtils;
+import com.sqmusicplus.utils.EhCacheUtil;
+import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -67,16 +70,19 @@ public class NKwSearchHander extends SearchHanderAbstract {
                 .setAlbumid(e.getAlbumid())
                 .setArtistName(e.getArtist())
                 .setArtistid(e.getArtistid())
-                .setId(e.getMusicrid())
-                .setName(e.getName()).setPic(getConfig().getSearheads() + e.getWebAlbumpicShort())
+                .setId(e.getMusicrid().replaceAll("MUSIC_",""))
+                .setSearchType(searchKeyData.getSearchType())
+                .setName(e.getName()).setPic(getConfig().getSongCoverUrl() + e.getWebAlbumpicShort())
                 .setOter(JSONObject.toJSONString(e))));
         PlugSearchResult<PlugSearchMusicResult> plugSearchResult = new PlugSearchResult<>();
         plugSearchResult.setSearchIndex(searchKeyData.getPageIndex())
                 .setSearchSize(searchKeyData.getPageSize())
-                .setSearchType(getSearchType())
+                .setSearchType(searchKeyData.getSearchType())
                 .setSearchTotal(searchMusicResult.getTotal())
                 .setSearchKeyWork(searchKeyData.getSearchkey())
                 .setRecords(plugSearchMusicResults);
+
+        plugSearchResult.setSearchType(searchKeyData.getSearchType());
         return plugSearchResult;
     }
 
@@ -94,15 +100,21 @@ public class NKwSearchHander extends SearchHanderAbstract {
 
         searchArtistResult.getAbslist().forEach(e -> plugSearchArtistResults.add(new PlugSearchArtistResult().setArtistName(e.getArtist())
                 .setArtistid(e.getArtistid())
+                .setSearchType(searchKeyData.getSearchType())
                 .setPic(e.getHtsPicpath().replaceAll("/240", "/500"))
-                .setOter(JSONObject.toJSONString(e))));
+                        .setArtistName(e.getArtist())
+                .setOter(JSONObject.toJSONString(e))
+                 .setTotal(e.getAlbumnum()))
+        );
+
         PlugSearchResult<PlugSearchArtistResult> plugSearchResult = new PlugSearchResult<>();
         plugSearchResult.setSearchIndex(searchKeyData.getPageIndex())
                 .setSearchSize(searchKeyData.getPageSize())
-                .setSearchType(getSearchType())
+                .setSearchType(searchKeyData.getSearchType())
                 .setSearchTotal(Integer.valueOf(searchArtistResult.getTotal()))
                 .setSearchKeyWork(searchKeyData.getSearchkey())
                 .setRecords(plugSearchArtistResults);
+        plugSearchResult.setSearchType(searchKeyData.getSearchType());
         return plugSearchResult;
     }
 
@@ -121,14 +133,16 @@ public class NKwSearchHander extends SearchHanderAbstract {
                 .setAlbumid(e.getAlbumid())
                 .setArtistName(e.getArtist())
                 .setArtistid(e.getArtistid())
-                .setPic(e.getPic())));
+                .setSearchType(searchKeyData.getSearchType())
+                .setPic(config.getSongCoverUrl()+e.getPic())));
         PlugSearchResult<PlugSearchAlbumResult> plugSearchResult = new PlugSearchResult<>();
         plugSearchResult.setSearchIndex(searchKeyData.getPageIndex())
                 .setSearchSize(searchKeyData.getPageSize())
-                .setSearchType(getSearchType())
+                .setSearchType(searchKeyData.getSearchType())
                 .setSearchTotal(Integer.valueOf(searchAlbumResult.getTotal()))
                 .setSearchKeyWork(searchKeyData.getSearchkey())
                 .setRecords(plugSearchAlbumResults);
+        plugSearchResult.setSearchType( searchKeyData.getSearchType());
         return plugSearchResult;
     }
 
@@ -153,7 +167,7 @@ public class NKwSearchHander extends SearchHanderAbstract {
         if (lrclist != null && lrclist.size() > 0) {
             Lrc = LrcUtils.krcTolrc(lrclist, album, artist, songName);
         }
-        return new Music().setMusicImage(s).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(artist).setMusicName(songName).setOther(JSONObject.parseObject(JSONObject.toJSONString(data))).setMusicDuration(Integer.parseInt(duration)).setAlbumId(Integer.valueOf(albumId)).setArtistsId(Integer.valueOf(artistId));
+        return new Music().setId(songinfo.getId()).setMusicImage(s).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(artist).setMusicName(songName).setOther(JSONObject.parseObject(JSONObject.toJSONString(data))).setMusicDuration(Integer.parseInt(duration)).setAlbumId(Integer.valueOf(albumId)).setArtistsId(Integer.valueOf(artistId));
     }
 
     @Override
@@ -295,18 +309,210 @@ public class NKwSearchHander extends SearchHanderAbstract {
     @Override
     public DownloadEntity downloadSong(String musicid, PlugBrType brType, String musicname, String artistname, String albumname, Boolean isAudioBook, String addSubsonicPlayListName) {
         Music music = querySongById(musicid);
-        DownloadEntity downloadEntity = new DownloadEntity(musicid, brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, null);
+        DownloadEntity downloadEntity = new DownloadEntity(musicid, brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
         return downloadEntity;
     }
 
     @Override
-    public DownloadEntity downloadAlbum(String albumsId, PlugBrType brType) {
-        return null;
+    public DownloadEntity downloadSong(Music music ,PlugBrType brType,Boolean isAudioBook, String addSubsonicPlayListName) {
+        DownloadEntity downloadEntity = new DownloadEntity(music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
+        return downloadEntity;
+    }
+
+    @Override
+    public DownloadEntity downloadSong(Music music, PlugBrType brType, String addSubsonicPlayListName) {
+        DownloadEntity downloadEntity = new DownloadEntity(music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), false, addSubsonicPlayListName);
+        return downloadEntity;
+    }
+
+    @Override
+    public  ArrayList<DownloadEntity> downloadAlbum(String albumsId, PlugBrType brType,String addSubsonicPlayListName,String artist, Boolean isAudioBook, String albumName) {
+        ArrayList<DownloadEntity> downloadEntities = new ArrayList<>();
+        AtomicReference<String> change = new AtomicReference<>(artist);
+
+        String searchUrl = config.getAlbumInfoUrl().replaceAll("#\\{albumid}", albumsId);
+        AlbumInfoResult albumInfoResult = DownloadUtils.getHttp().sync(searchUrl)
+                .get()                          // GET请求
+                .getBody()                      // 响应报文体
+                .toBean(AlbumInfoResult.class);
+        List<AlbumInfoResult.MusiclistDTO> musiclist = albumInfoResult.getMusiclist();
+
+        SqConfig accompaniment = getConfigService().getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.ignore.accompaniment"));
+        SqConfig matchAlbumSinger = getConfigService().getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.strong.match.album.singer"));
+        SqConfig albumSingerUnity = getConfigService().getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.album.singer.unity"));
+
+        musiclist.forEach(md -> {
+            if (Boolean.getBoolean(accompaniment.getConfigValue())) {
+                if (md.getName().contains("(伴奏)") || md.getName().contains("(试听版)") || md.getName().contains("(片段)")) {
+                    return;
+                }
+            }
+            if (Boolean.getBoolean(matchAlbumSinger.getConfigValue()) && !isAudioBook) {
+                if (!md.getArtist().contains(change.get())) {
+                    return;
+                }
+            }
+            if (!Boolean.getBoolean(albumSingerUnity.getConfigValue()) && !isAudioBook) {
+                change.set(md.getArtist());
+            }
+            if (isAudioBook) {
+                downloadEntities.add(new DownloadEntity(md.getId(), brType, md.getName(), artist, albumName, isAudioBook));
+            } else {
+                //添加到缓存
+                downloadEntities.add(new DownloadEntity(md.getId(), brType, md.getName(), change.get(), albumInfoResult.getName()));
+            }
+
+        });
+        return downloadEntities;
+    }
+
+    @Override
+    public List<DownloadEntity> downloadArtistAllSong(String artistId, PlugBrType brType,String addSubsonicPlayListName) {
+        List<Music> music = queryAllArtistSongList(artistId, 0);
+        ArrayList<DownloadEntity> downloadEntities = new ArrayList<>();
+        SqConfig accompaniment = getConfigService().getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.ignore.accompaniment"));
+        music.forEach(e->{
+            if (Boolean.getBoolean(accompaniment.getConfigValue())) {
+                if (e.getMusicName().contains("(伴奏)") || e.getMusicName().contains("(试听版)") || e.getMusicName().contains("(片段)")) {
+                    return;
+                }
+            }
+            downloadEntities.add(downloadSong(e,brType,addSubsonicPlayListName));
+        } );
+        return downloadEntities;
+    }
+
+    @Override
+    public List<DownloadEntity> downloadArtistAllAlbum(String artistId, PlugBrType brType, String addSubsonicPlayListName) {
+        ArrayList<DownloadEntity> downloadEntities = new ArrayList<>();
+        List<Album> albumsByArtist = getAlbumsByArtist(artistId,0,0);
+        List<String> collect = albumsByArtist.stream().map(e -> e.getAlbumId()).collect(Collectors.toList());
+        collect.forEach(e->downloadEntities.addAll(downloadAlbum(e,brType,addSubsonicPlayListName,null,false,null)));
+        return downloadEntities;
     }
 
     @Override
     public KwConfig getConfig() {
         return config;
+    }
+
+
+    /**
+     * 获取全部歌曲（酷我有无专辑音乐）
+     * @param artistid 专辑id
+     * @param pageSize 每页长度
+     * @param pageIndex 页码
+     * @return
+     */
+    public ImmutableTriple<String, String, List<Music>> queryArtistSongList(String artistid, Integer pageSize, Integer pageIndex) {
+        String s = config.getArtistSongListUrl().replaceAll("#\\{pn}", pageIndex.toString())
+                .replaceAll("#\\{pagesize}", pageSize.toString())
+                .replaceAll("#\\{artistid}", artistid);
+        ArtistSongListResult artistSongListResult = DownloadUtils.getHttp().sync(s).get().getBody().toBean(ArtistSongListResult.class);
+        String total = artistSongListResult.getTotal();
+        String pn = artistSongListResult.getPn();
+        List<ArtistSongListResult.MusiclistDTO> musiclist = artistSongListResult.getMusiclist();
+        List<Music> collect = musiclist.stream().map(abslistDTO -> {
+            String album = StringUtils.isEmpty(abslistDTO.getAlbum().trim()) ? "无专辑" : abslistDTO.getAlbum().trim();
+            String aartist = artistSongListResult.getArtist().trim();
+            String url = (config.getSongCoverUrl() + abslistDTO.getWebAlbumpicShort()).replaceAll("/120", "/500");
+            return new Music().setMusicName(abslistDTO.getName()).setMusicAlbum(album).setMusicArtists(aartist).setMusicImage(url).setOther(JSONObject.parseObject(JSONObject.toJSONString(abslistDTO))).setSearchMusicId(abslistDTO.getMusicrid());
+        }).collect(Collectors.toList());
+        ImmutableTriple<String, String, List<Music>> stringStringListImmutableTriple = new ImmutableTriple<>(total, pn, collect);
+        return stringStringListImmutableTriple;
+    }
+
+    /**
+     * @param artistid  id
+     * @param pageSize  长度
+     * @param pageIndex 页码(起始为1)
+     * @return
+     */
+    public List<Music> queryAllArtistSongList(String artistid, Integer pageSize, Integer pageIndex) {
+        pageIndex--;
+        ImmutableTriple<String, String, List<Music>> stringStringListImmutableTriple = queryArtistSongList(artistid, pageSize, pageIndex);
+        Integer total = Integer.valueOf(stringStringListImmutableTriple.getLeft());
+        int countsize = total % pageSize == 0 ? total / pageSize : total / pageSize + 1;
+        List<Music> collect = stringStringListImmutableTriple.getRight();
+        for (int i = 1; i < countsize; i++) {
+            pageIndex++;
+            ImmutableTriple<String, String, List<Music>> tempTriple = queryArtistSongList(artistid, pageSize, pageIndex);
+            collect.addAll(tempTriple.getRight());
+        }
+        return collect;
+
+    }
+
+    /**
+     * 获取歌手全部歌曲
+     * @param artistid 歌手id
+     * @param pageNumber 起始页码（默认为0 ---》酷我是从0开始的页码）
+     * @return
+     */
+    public List<Music> queryAllArtistSongList(String artistid, Integer pageNumber) {
+        ArrayList<Music> music = new ArrayList<>();
+        Integer pn = pageNumber != null ? pageNumber : 0;
+        String s = config.getArtistSongListUrl().replaceAll("#\\{pn}", pn.toString())
+                .replaceAll("#\\{pagesize}", "1000")
+                .replaceAll("#\\{artistid}", artistid);
+        ArtistSongListResult artistSongListResult = DownloadUtils.getHttp().sync(s).get().getBody().toBean(ArtistSongListResult.class);
+        pn = Integer.valueOf(artistSongListResult.getPn());
+        Integer total = Integer.valueOf(artistSongListResult.getTotal());
+        Integer getSize = (total % 1000) == 0 ? total / 1000 : (total / 1000) + 1;
+        List<ArtistSongListResult.MusiclistDTO> musiclist = artistSongListResult.getMusiclist();
+        List<Music> collect = musiclist.stream().map(abslistDTO -> {
+            String album = StringUtils.isEmpty(abslistDTO.getAlbum()) ? "其他" : abslistDTO.getAlbum();
+            String aartist = abslistDTO.getAartist().split("&")[0];
+            String url = (config.getSongCoverUrl() + abslistDTO.getWebAlbumpicShort()).replaceAll("/120", "/500");
+            return new Music().setMusicName(abslistDTO.getName()).setMusicAlbum(album).setMusicArtists(aartist).setMusicImage(url).setOther(JSONObject.parseObject(JSONObject.toJSONString(abslistDTO))).setSearchMusicId(abslistDTO.getMusicrid());
+        }).collect(Collectors.toList());
+        if (getSize.intValue() - 1 == pn) {
+            music.addAll(collect);
+            return music;
+        }
+        if (StringUtils.isEmpty(collect)){
+            return null;
+        }
+        return music;
+    }
+
+
+    public ImmutableTriple<String, String, List<Music>> getPlayInfoList(String id, Integer pageSize, Integer pageIndex) {
+        String playListInfo = config.getPlayListInfo();
+        String searchUrl = playListInfo.replaceAll("#\\{pn}", pageIndex.toString())
+                .replaceAll("#\\{pagesize}", pageSize.toString())
+                .replaceAll("#\\{id}", id);
+
+        PlayListInfoResult playListInfoResult = DownloadUtils.getHttp().sync(searchUrl)
+                .get()                          // GET请求
+                .getBody()                      // 响应报文体
+                .toBean(PlayListInfoResult.class);
+        String total = playListInfoResult.getTotal();
+        String pn = playListInfoResult.getPn();
+        List<PlayListInfoResult.MusiclistDTO> musiclist = playListInfoResult.getMusiclist();
+
+        List<Music> collect = musiclist.stream().map(abslistDTO -> {
+            String album = StringUtils.isEmpty(abslistDTO.getAlbum().trim()) ? "无专辑" : abslistDTO.getAlbum().trim();
+            String aartist = abslistDTO.getArtist().trim();
+            return new Music().setMusicName(abslistDTO.getName()).setMusicAlbum(album).setMusicArtists(aartist).setOther(JSONObject.parseObject(JSONObject.toJSONString(abslistDTO))).setSearchMusicId(abslistDTO.getId());
+        }).collect(Collectors.toList());
+        ImmutableTriple<String, String, List<Music>> stringStringListImmutableTriple = new ImmutableTriple<>(total, pn, collect);
+        return stringStringListImmutableTriple;
+    }
+
+    public List<Music> queryAllPlayInfoList(String playListId, Integer pageSize, Integer pageIndex) {
+        pageIndex--;
+        ImmutableTriple<String, String, List<Music>> stringStringListImmutableTriple = getPlayInfoList(playListId, pageSize, pageIndex);
+        Integer total = Integer.valueOf(stringStringListImmutableTriple.getLeft());
+        int countsize = total % pageSize == 0 ? total / pageSize : total / pageSize + 1;
+        List<Music> collect = stringStringListImmutableTriple.getRight();
+        for (int i = 1; i < countsize; i++) {
+            pageIndex++;
+            ImmutableTriple<String, String, List<Music>> tempTriple = getPlayInfoList(playListId, pageSize, pageIndex);
+            collect.addAll(tempTriple.getRight());
+        }
+        return collect;
+
     }
 
 

@@ -1,7 +1,7 @@
 package com.sqmusicplus.config;
 
 import com.sqmusicplus.entity.DownloadEntity;
-import com.sqmusicplus.plug.kw.hander.KWSearchHander;
+import com.sqmusicplus.plug.kw.hander.NKwSearchHander;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -23,7 +23,7 @@ import java.util.Properties;
 public class RunCacheEventListener extends CacheEventListenerFactory implements net.sf.ehcache.event.CacheEventListener{
 
     @Autowired
-    KWSearchHander searchHander;
+    NKwSearchHander searchHander;
     @Autowired
     DownloadTask downloadTask;
 
@@ -41,7 +41,7 @@ public class RunCacheEventListener extends CacheEventListenerFactory implements 
     @Override
     public void notifyElementPut(Ehcache cache, Element element) throws CacheException {
         DownloadEntity downloadEntity = (DownloadEntity) element.getObjectValue();
-        searchHander.saveToFile(downloadEntity);
+        searchHander.dnonloadAndSaveToFile(downloadEntity);
     }
 
     @Override

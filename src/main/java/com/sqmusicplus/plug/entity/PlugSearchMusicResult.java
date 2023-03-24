@@ -51,6 +51,11 @@ public class PlugSearchMusicResult {
     String lyricId;
 
     /**
+     * 搜索类型
+     */
+    String  searchType;
+
+    /**
      * 其余信息（插件特殊参数） 尽量避免使用
      */
     String oter;

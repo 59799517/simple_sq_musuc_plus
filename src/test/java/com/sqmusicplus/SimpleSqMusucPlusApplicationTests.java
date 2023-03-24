@@ -1,5 +1,6 @@
 package com.sqmusicplus;
 
+import com.github.plexpt.chatgpt.Chatbot;
 import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.utils.Base64Coder;
 import com.sqmusicplus.plug.utils.KuwoDES;
@@ -54,4 +55,14 @@ class SimpleSqMusucPlusApplicationTests {
 //        downloadurl= s1.split("\n")[2].split("=")[1].split("\r")[0];
     }
 
+
+
+    @Test
+    public void test444(){
+        Chatbot chatbot = new Chatbot("66b8ad9af9a8a5a6aaee8b677f94b9abbeb7be8287028a56fc6fae3bcd1ca23d%7C900b7ad2ca771355fd051817bec4250bca1dee825a92370883a916291ab5cf1d","dl6L3k4i7f_X1RROYlIzkdIYd9MzrE4MD0PoPldHLT8-1670997498-0-1-d99e8b5e.97042d73.e4336541-160","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.46");
+        Map<String, Object> chatResponse = chatbot.getChatResponse("hello");
+        System.out.println(chatResponse.get("message"));
+
+
+    }
 }

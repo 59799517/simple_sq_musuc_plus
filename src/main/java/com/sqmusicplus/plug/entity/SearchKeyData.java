@@ -19,6 +19,10 @@ public class SearchKeyData {
      */
     String searchkey;
     /**
+     * 搜索类型
+     */
+    String searchType;
+    /**
      * 页码
      */
     Integer pageIndex;

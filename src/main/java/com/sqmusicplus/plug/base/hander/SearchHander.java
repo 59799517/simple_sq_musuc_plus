@@ -9,6 +9,7 @@ import com.sqmusicplus.plug.base.SearchType;
 import com.sqmusicplus.plug.entity.PlugSearchResult;
 import com.sqmusicplus.plug.entity.SearchKeyData;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -140,15 +141,53 @@ public interface SearchHander<T> {
     DownloadEntity downloadSong(String musicid, PlugBrType brType, String musicname, String artistname, String albumname, Boolean isAudioBook, String addSubsonicPlayListName);
 
     /**
-     * 下载整张专辑
      *
-     * @param albumsId
-     * @param brType
+     * @param music 歌曲信息
+     * @param brType 拉率
+     * @param isAudioBook 是否是书籍类型
+     * @param addSubsonicPlayListName 需要添加的歌单名称
      * @return
      */
-    DownloadEntity downloadAlbum(String albumsId, PlugBrType brType);
+    DownloadEntity downloadSong(Music music ,PlugBrType brType,Boolean isAudioBook, String addSubsonicPlayListName);
 
+    /**
+     *
+     * @param music 添加的歌曲
+     * @param brType 下载清晰度（码率）
+     * @param addSubsonicPlayListName 需要添加的歌单名称
+     * @return
+     */
+    DownloadEntity downloadSong(Music music, PlugBrType brType,String addSubsonicPlayListName);
 
+    /**
+     *
+     * @param albumsId 专辑id
+     * @param brType 码率
+     * @param addSubsonicPlayListName 加入的歌单名称
+     * @param artist 歌手名称（有些歌曲是多人可以传递后使用这里的值修改歌曲中的歌手）
+     * @param isAudioBook 是否是 有声书
+     * @param albumName 专辑名称（会替换歌曲现有专辑名称----->有声书需要传书籍名称）
+     * @return
+     */
+    ArrayList<DownloadEntity> downloadAlbum(String albumsId, PlugBrType brType, String addSubsonicPlayListName, String artist, Boolean isAudioBook, String albumName);
+
+    /**
+     * 下载歌手全部歌曲
+     * @param artistId 歌手id
+     * @param brType 码率
+     * @param addSubsonicPlayListName 添加到的歌单名称
+     * @return
+     */
+    List<DownloadEntity> downloadArtistAllSong(String artistId, PlugBrType brType,String addSubsonicPlayListName);
+
+    /**
+     * 下载歌手全部歌曲
+     * @param artistId 歌手id
+     * @param brType 码率
+     * @param addSubsonicPlayListName 添加到的歌单名称
+     * @return
+     */
+    List<DownloadEntity> downloadArtistAllAlbum(String artistId, PlugBrType brType,String addSubsonicPlayListName);
     /**
      * 保存歌曲到文件并写入标签(下载歌曲)
      *

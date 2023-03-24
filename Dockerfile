@@ -1,7 +1,15 @@
-FROM openjdk:17.0.2-jdk-oracle
-EXPOSE 8083
-ARG JAR_FILE
-VOLUME ["/music"]
-VOLUME ["/config"]
-ADD ./simple-MusicServer-0.0.2-Beta.jar  /app.jar
-ENTRYPOINT ["java", "-jar","/app.jar"]
+FROM tomcat:8.5.87-jre17-temurin-focal
+
+#接口地址
+EXPOSE 8080
+
+MAINTAINER 59799517@qq.com
+
+COPY ./web /usr/local/tomcat/webapps/ROOT
+COPY ./sw.war /usr/local/tomcat/webapps/sw.war
+#缓存地址
+VOLUME ["/cache/sqmusic/config/cache"]
+#日志地址
+VOLUME ["/cache/sqmusic/config/logs"]
+
+ENTRYPOINT ["catalina.sh", "run"]

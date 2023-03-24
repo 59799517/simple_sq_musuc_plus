@@ -6,17 +6,16 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.sqmusicplus.config.AjaxResult;
 import com.sqmusicplus.entity.*;
-import com.sqmusicplus.parser.KwUrlMusicPlayListParser;
+import com.sqmusicplus.entity.vo.*;
 import com.sqmusicplus.parser.TextMusicPlayListParser;
-import com.sqmusicplus.plug.entity.PlugSearchMusicResult;
-import com.sqmusicplus.plug.entity.PlugSearchResult;
-import com.sqmusicplus.plug.entity.SearchKeyData;
+import com.sqmusicplus.parser.UrlMusicPlayListParser;
+import com.sqmusicplus.plug.base.PlugBrType;
+import com.sqmusicplus.plug.base.SearchType;
+import com.sqmusicplus.plug.entity.*;
 import com.sqmusicplus.plug.kw.entity.SearchAlbumResult;
-import com.sqmusicplus.plug.kw.entity.SearchArtistResult;
-import com.sqmusicplus.plug.kw.entity.SearchMusicResult;
 import com.sqmusicplus.plug.kw.enums.KwBrType;
-import com.sqmusicplus.plug.kw.hander.KWSearchHander;
 import com.sqmusicplus.plug.kw.hander.NKwSearchHander;
+import com.sqmusicplus.plug.utils.TypeUtils;
 import com.sqmusicplus.service.SqConfigService;
 import com.sqmusicplus.utils.EhCacheUtil;
 import com.sqmusicplus.utils.StringUtils;
@@ -28,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -51,7 +51,7 @@ public class ALLController {
     @Autowired
     private TextMusicPlayListParser textMusicPlayListParser;
     @Autowired
-    private KwUrlMusicPlayListParser urlMusicPlayListParser;
+    private UrlMusicPlayListParser urlMusicPlayListParser;
     @Autowired
     private SqConfigService configService;
 
@@ -66,11 +66,12 @@ public class ALLController {
      * @return
      */
     @SaCheckLogin
-    @GetMapping("/searchMusic/{keyword}/{pageSize}/{pageIndex}")
-    public AjaxResult searchMusic(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
-        SearchKeyData searchKeyData = new SearchKeyData().setPageIndex(pageIndex - 1).setPageSize(pageSize).setSearchkey(keyword);
-        PlugSearchResult<PlugSearchMusicResult> plugSearchMusicResultPlugSearchResult = searchHander.querySongByName(searchKeyData);
-        return AjaxResult.success(plugSearchMusicResultPlugSearchResult);
+    @GetMapping("/searchMusic/{searchType}/{keyword}/{pageSize}/{pageIndex}")
+    public AjaxResult searchMusic(@PathVariable("searchType") String searchType,@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
+        SearchKeyData searchKeyData = new SearchKeyData().setPageIndex(pageIndex - 1).setPageSize(pageSize).setSearchkey(keyword).setSearchType(searchType);
+            PlugSearchResult<PlugSearchMusicResult> plugSearchMusicResultPlugSearchResult = searchHander.querySongByName(searchKeyData);
+            return AjaxResult.success(plugSearchMusicResultPlugSearchResult);
+
     }
 
     /**
@@ -78,71 +79,69 @@ public class ALLController {
      * @param id 搜素的id
      * @return
      */
-    @SaCheckLogin
-    @GetMapping("/musicInfo/{id}")
-    public AjaxResult musicInfo(@PathVariable("id") Integer id){
-        Music music = searchHander.querySongById(id.toString());
-        return AjaxResult.success(music);
-    }
+//    @SaCheckLogin
+//    @GetMapping("/musicInfo/{id}")
+//    public AjaxResult musicInfo(@PathVariable("id") Integer id){
+//        Music music = searchHander.querySongById(id.toString());
+//        return AjaxResult.success(music);
+//    }
 
     /**
-     * 下载单曲到服务器
      *
-     * @param br 码率 156498
+     * @param downloadSong
      * @return
      */
     @SaCheckLogin
-    @PostMapping("/musicDownload/{id}/{br}")
-    public AjaxResult musicDownload(@PathVariable("id") String id, @PathVariable(value = "br", required = false) Integer br, @RequestBody(required = false) Music music, String subsonicPlayListName) {
-
+    @PostMapping("/musicDownload")
+    public AjaxResult musicDownload( @RequestBody DownloadSongEntity downloadSong) {
+        Music music = downloadSong.getMusic();
         if (music == null) {
-            music = searchHander.querySongById(id);
+             music = searchHander.querySongById(downloadSong.getId());
         }
-        KwBrType[] values = KwBrType.values();
-        KwBrType nowbr = KwBrType.MP3_320;
-        if (br != null) {
-            for (KwBrType value : values) {
-                if (value.getBit().intValue() == br.intValue()) {
-                    nowbr = value;
-                    break;
-                }
-            }
-        }else {
-            nowbr=KwBrType.FLAC_2000;
+        PlugBrType plugType;
+        if (StringUtils.isEmpty(downloadSong.getPlugTypeValue())){
+             plugType = TypeUtils.getPlugType(downloadSong.getPlugType(), downloadSong.getBr());
+        }else{
+            plugType = TypeUtils.getPlugType(downloadSong.getPlugType(), downloadSong.getPlugTypeValue());
         }
-        KwBrType finalNowbr = nowbr;
+
+
         Music finalMusic = music;
-        threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(id, finalNowbr, finalMusic, subsonicPlayListName));
+        PlugBrType finalPlugType = plugType;
+        threadPoolTaskExecutor.execute(() -> {
+            DownloadEntity downloadEntity = searchHander.downloadSong(finalMusic.getId(), finalPlugType, finalMusic.getMusicName(), finalMusic.getMusicArtists(), finalMusic.getMusicAlbum(), false, downloadSong.getSubsonicPlayListName());
+                    EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+        });
         return AjaxResult.success(true);
     }
 
-    /**
-     * 获取下载链接(播放连接)
-     *
-     * @param id id
-     * @param br 码率
-     * @return
-     */
-    @SaCheckLogin
-    @PostMapping("getplayUrl/{id}/{br}")
-    public AjaxResult getplayUrl(@PathVariable("id") String id, @PathVariable(value = "br", required = false) Integer br) {
-
-        KwBrType[] values = KwBrType.values();
-        KwBrType nowbr = KwBrType.MP3_320;
-        if (br != null) {
-            for (KwBrType value : values) {
-                if (value.getBit().intValue() == br.intValue()) {
-                    nowbr = value;
-                    break;
-                }
-            }
-        } else {
-            nowbr = KwBrType.FLAC_2000;
-        }
-        String s = searchHander.downloadUrl(id, nowbr);
-        log.info("获取下载链接{}", s);
-        return AjaxResult.success("成功", s);
-    }
+//    /**
+//     * 获取下载链接(播放连接)
+//     *
+//     * @param id id
+//     * @param br 码率
+//     * @return
+//     */
+//    @SaCheckLogin
+//    @PostMapping("getplayUrl/{id}/{br}")
+//    public AjaxResult getplayUrl(@PathVariable("id") String id, @PathVariable(value = "br", required = false) Integer br) {
+//
+//        KwBrType[] values = KwBrType.values();
+//        KwBrType nowbr = KwBrType.MP3_320;
+//        if (br != null) {
+//            for (KwBrType value : values) {
+//                if (value.getBit().intValue() == br.intValue()) {
+//                    nowbr = value;
+//                    break;
+//                }
+//            }
+//        } else {
+//            nowbr = KwBrType.FLAC_2000;
+//        }
+//        String s = searchHander.downloadUrl(id, nowbr);
+//        log.info("获取下载链接{}", s);
+//        return AjaxResult.success("成功", s);
+//    }
 
     /**
      * 搜索歌手
@@ -152,35 +151,28 @@ public class ALLController {
      * @return
      */
     @SaCheckLogin
-    @GetMapping("/searchArtist/{keyword}/{pageSize}/{pageIndex}")
-    public AjaxResult searchArtist(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
-        SearchArtistResult searchArtistResult = searchHander.queryArtist(keyword, pageIndex - 1, pageSize);
-        return AjaxResult.success(searchArtistResult);
+    @GetMapping("/searchArtist/{searchType}/{keyword}/{pageSize}/{pageIndex}")
+    public AjaxResult searchArtist(@PathVariable("searchType") String searchType,@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
+        SearchKeyData searchKeyData = new SearchKeyData().setSearchkey(keyword).setPageSize(pageSize).setPageIndex(pageIndex - 1).setSearchType(searchType);
+        PlugSearchResult<PlugSearchArtistResult> plugSearchArtistResultPlugSearchResult = searchHander.queryArtistByName(searchKeyData);
+        return AjaxResult.success(plugSearchArtistResultPlugSearchResult);
     }
     /**
-     * 下载歌手全部歌曲到服务器
-     * @param br 码率
+     * 下载歌手全部专辑歌曲到服务器
+     * @param downlaodAlubm 下载信息
      * @return
      */
     @SaCheckLogin
-    @PostMapping("/ArtistDownload/{id}/{br}")
-    public AjaxResult ArtistDownload(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br){
-        Artists artists = searchHander.autoQueryArtist(id);
-        String artist = artists.getMusicArtistsName();
-        KwBrType[] values = KwBrType.values();
-        KwBrType nowbr = KwBrType.MP3_320;
-        if(br!=null){
-            for (KwBrType value : values) {
-                if (value.getBit().intValue()==br.intValue()) {
-                    nowbr=value;
-                    break;
-                }
-            }
-        }else {
-            nowbr=KwBrType.FLAC_2000;
+    @PostMapping("/ArtistDownload")
+    public AjaxResult ArtistDownload(@RequestBody DownlaodArtis downlaodAlubm){
+        PlugBrType plugType=null;
+        if (StringUtils.isEmpty(downlaodAlubm.getPlugTypeValue())){
+            plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getBr());
+        }else{
+            plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getPlugTypeValue());
         }
-        KwBrType finalNowbr = nowbr;
-        threadPoolTaskExecutor.execute(()->searchHander.downloadAllMusicByArtistid(id, finalNowbr,artist));
+        List<DownloadEntity> downloadEntities = searchHander.downloadArtistAllAlbum(downlaodAlubm.getId(),plugType,null);
+        downloadEntities.forEach(e->EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, e.getMusicid(), e));
         return AjaxResult.success(true);
     }
     /**
@@ -191,33 +183,28 @@ public class ALLController {
      * @return
      */
     @SaCheckLogin
-    @GetMapping("/searchAlbum/{keyword}/{pageSize}/{pageIndex}")
-    public AjaxResult searchAlbum(@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
-        SearchAlbumResult searchAlbumResult = searchHander.queryAlbumsInfoByAlbumsName(keyword, pageIndex - 1, pageSize);
-        return AjaxResult.success(searchAlbumResult);
+    @GetMapping("/searchAlbum/{searchType}/{keyword}/{pageSize}/{pageIndex}")
+    public AjaxResult searchAlbum(@PathVariable("searchType") String searchType,@PathVariable("keyword") String keyword,@PathVariable("pageSize") Integer pageSize,@PathVariable("pageIndex") Integer pageIndex ){
+        SearchKeyData searchKeyData = new SearchKeyData().setSearchkey(keyword).setPageSize(pageSize).setPageIndex(pageIndex - 1).setSearchType(searchType);
+        PlugSearchResult<PlugSearchAlbumResult> plugSearchAlbumResultPlugSearchResult = searchHander.queryAlbumByName(searchKeyData);
+        return AjaxResult.success(plugSearchAlbumResultPlugSearchResult);
     }
     /**
      * 下载歌手全部歌曲到服务器
-     * @param br 码率
+     * @param downlaodAlubm 下载信息
      * @return
      */
     @SaCheckLogin
-    @PostMapping("/AlbumDownload/{id}/{br}")
-    public AjaxResult AlbumDownload(@PathVariable("id") Integer id,@PathVariable(value = "br",required = false) Integer br,@RequestBody Music music){
-        KwBrType[] values = KwBrType.values();
-        KwBrType nowbr = KwBrType.MP3_320;
-        if(br!=null){
-            for (KwBrType value : values) {
-                if (value.getBit().intValue()==br.intValue()) {
-                    nowbr=value;
-                    break;
-                }
-            }
-        }else {
-            nowbr=KwBrType.FLAC_2000;
+    @PostMapping("/AlbumDownload")
+    public AjaxResult AlbumDownload(@RequestBody DownlaodAlubm downlaodAlubm){
+        PlugBrType plugType=null;
+        if (StringUtils.isEmpty(downlaodAlubm.getPlugTypeValue())){
+            plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getBr());
+        }else{
+            plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getPlugTypeValue());
         }
-        KwBrType finalNowbr = nowbr;
-        threadPoolTaskExecutor.execute(()->searchHander.downloadAlbumByAlbumID(id, finalNowbr,null));
+        ArrayList<DownloadEntity> downloadEntities = searchHander.downloadAlbum(downlaodAlubm.getId(), plugType, downlaodAlubm.getSubsonicPlayListName(), "", false, "");
+        downloadEntities.forEach(e->EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, e.getMusicid(), e));
         return AjaxResult.success(true);
     }
     @SaCheckLogin
@@ -305,30 +292,10 @@ public class ALLController {
      */
     @SaCheckLogin
     @PostMapping("/parserUrlAndDownload")
-    public AjaxResult parserUrl(@RequestBody HashMap<String, String> data) throws IOException {
-        String url = data.get("url");
-        Integer br = Integer.valueOf(data.get("br"));
-        Boolean isAudioBook = Boolean.valueOf(data.get("isAudioBook"));
-        String bookName = data.get("bookName");
-        String artist = data.get("artist");
-        String playListName = data.get("playListName");
-
-        KwBrType[] values = KwBrType.values();
-        KwBrType nowbr = KwBrType.MP3_320;
-        if (br != null) {
-            for (KwBrType value : values) {
-                if (value.getBit().intValue() == br.intValue()) {
-                    nowbr = value;
-                    break;
-                }
-            }
-        } else {
-            nowbr = KwBrType.FLAC_2000;
-        }
-        KwBrType finalNowbr = nowbr;
+    public AjaxResult parserUrl( @RequestBody DownlaodParserUrl data) throws IOException {
         threadPoolTaskExecutor.execute(() -> {
             try {
-                urlMusicPlayListParser.parser(url, finalNowbr, isAudioBook, bookName, artist,playListName);
+                urlMusicPlayListParser.parser(data);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -345,111 +312,115 @@ public class ALLController {
      */
     @SaCheckLogin
     @PostMapping("/downloadParser")
-    public AjaxResult downloadParser(@RequestBody HashMap<String, String> data) throws IOException {
-        String text = data.get("text");
-        String br = data.get("br");
-        String subsonicPlayListName = data.get("subsonicPlayListName");
-
+    public AjaxResult downloadParser(@RequestBody DownlaodParserText data) throws IOException {
+        String text = data.getText();
+        String subsonicPlayListName = data.getSubsonicPlayListName();
         List<ParserEntity> parser = textMusicPlayListParser.parser(text);
-        KwBrType[] values = KwBrType.values();
-        KwBrType nowbr = KwBrType.MP3_320;
-        if (br != null) {
-            for (KwBrType value : values) {
-                if (value.getBit().intValue() == Integer.valueOf(br)) {
-                    nowbr = value;
-                    break;
-                }
-            }
-        }else {
-            nowbr=KwBrType.FLAC_2000;
-        }
-        KwBrType finalNowbr = nowbr;
+        PlugBrType plugType = TypeUtils.getPlugType(data.getPlugType(), data.getBr());
         threadPoolTaskExecutor.execute(()->{
             for (ParserEntity parserEntity : parser) {
-                Music music = searchHander.AutoqueryMusic(parserEntity.getSongName(), parserEntity.getArtistsName(), true);
-                if (music!=null){
-                    //成功了
-                    music.setMusicArtists(parserEntity.getArtistsName());
-                    if (StringUtils.isEmpty(subsonicPlayListName)){
-                        threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
-                    }else{
-                        threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music, subsonicPlayListName));
+
+                PlugSearchResult<PlugSearchMusicResult> plugSearchMusicResultPlugSearchResult = null;
+                try {
+                    plugSearchMusicResultPlugSearchResult = searchHander.querySongByName(new SearchKeyData().setSearchkey(parserEntity.getSongName() + " " + parserEntity.getArtistsName()).setPageIndex(0).setPageSize(5));
+                    String id = "";
+                    Music music =null;
+                    List<PlugSearchMusicResult> records = plugSearchMusicResultPlugSearchResult.getRecords();
+                    for (PlugSearchMusicResult record : records) {
+                        if (parserEntity.getArtistsName().trim().equals(record.getArtistName().trim())){
+                             id = record.getId();
+                             music = searchHander.querySongById(id);
+                             break;
+                        }
+                    }
+                    if (music!=null){
+                        //成功了
+                        Music finalMusic = music;
+                        music.setMusicArtists(parserEntity.getArtistsName());
+                        if (StringUtils.isEmpty(subsonicPlayListName)){
+                            threadPoolTaskExecutor.execute(() -> {
+                                DownloadEntity downloadEntity = searchHander.downloadSong(finalMusic, plugType, false, subsonicPlayListName);
+                                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+                                    });
+                        }else{
+                            threadPoolTaskExecutor.execute(() ->{
+                                DownloadEntity downloadEntity = searchHander.downloadSong(finalMusic, plugType, true, subsonicPlayListName);
+                                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+                            } );
+                        }
+                    } else {
+                        log.error("没有查询到歌曲：" + parserEntity);
                     }
 
-
-                } else {
-                    log.error("没有查询到歌曲：" + parserEntity);
+                } catch (Exception e) {
+                    log.error("没有查询出错：" + parserEntity+"  "+e.getMessage());
+                    continue;
                 }
             }
-
         });
         return AjaxResult.success(true);
     }
 
     @SaCheckLogin
-    @PostMapping("/ArtistSongList/{id}/{br}")
-    public AjaxResult ArtistSongList(@PathVariable("id") Integer id, @PathVariable(value = "br", required = false) Integer br) {
-        KwBrType[] values = KwBrType.values();
-        KwBrType nowbr = KwBrType.MP3_320;
-        if (br != null) {
-            for (KwBrType value : values) {
-                if (value.getBit().intValue() == br.intValue()) {
-                    nowbr = value;
-                    break;
-                }
-            }
-        } else {
-            nowbr = KwBrType.FLAC_2000;
-        }
-        KwBrType finalNowbr = nowbr;
+    @PostMapping("/ArtistSongList")
+    public AjaxResult ArtistSongList(@RequestBody DownlaodArtis downlaodArtis) {
+
         SqConfig accompaniment = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.ignore.accompaniment"));
 
-        threadPoolTaskExecutor.execute(() -> {
-            List<Music> musics = searchHander.queryAllArtistSongList(id, 1000, 1);
-            for (Music music : musics) {
-                if (Boolean.getBoolean(accompaniment.getConfigValue())) {
-                    if (music.getMusicName().contains("(伴奏)") || music.getMusicName().contains("(试听版)") || music.getMusicName().contains("(片段)")) {
-                        continue;
+        PlugBrType plugType = TypeUtils.getPlugType(downlaodArtis.getPlugType(), downlaodArtis.getBr());
+        if (plugType.getSearchType().getValue().equals(SearchType.WK.getValue())){
+            threadPoolTaskExecutor.execute(() -> {
+                List<Music> musics = searchHander.queryAllArtistSongList(downlaodArtis.getId(), 1000, 0);
+                for (Music music : musics) {
+                    if (Boolean.getBoolean(accompaniment.getConfigValue())) {
+                        if (music.getMusicName().contains("(伴奏)") || music.getMusicName().contains("(试听版)") || music.getMusicName().contains("(片段)")) {
+                            continue;
+                        }
                     }
+                    threadPoolTaskExecutor.execute(() -> searchHander.downloadSong(music, plugType, ""));
                 }
-                threadPoolTaskExecutor.execute(() -> searchHander.musicDownload(music.getSearchMusicId(), finalNowbr, music));
-
-            }
-        });
-
-        return AjaxResult.success(true);
-
-    }
-
-
-    @RequestMapping(value = "loginHtml", produces = "text/html")
-    public String LoginHtml(String username, String password, HttpServletResponse response) throws IOException {
-        SqConfig suser = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.username"));
-        SqConfig spwd = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.password"));
-        if (suser.getConfigValue().equals(username) && spwd.getConfigValue().equals(password)) {
-            StpUtil.login(10001);
-            response.sendRedirect("/index.html");
+            });
+            return AjaxResult.success(true);
+        }else{
+            return AjaxResult.error("咋不支持");
         }
-        String html = "<!DOCTYPE html>\n" +
-                "<html lang=\"zh\">\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\">\n" +
-                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
-                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "    <title>登录</title>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <h2>登录</h2>\n" +
-                "     <div> 登录失败:请输入用户名密码</div>       \n" +
-                "    <form name=\"form\" method=\"post\" action=\"/login\">\n" +
-                "    <div>用户名：<input type=\"text\" name=\"username\"></div>\n" +
-                "    <div>密码：<input  type=\"password\" name=\"password\"></div>\n" +
-                "    <div><button type=\"submit\">登录</button></div>\n" +
-                "</form>\n" +
-                "</body>\n" +
-                "</html>";
-        return html;
+
+
+
+
+//        return AjaxResult.success(true);
+
     }
+
+
+//    @RequestMapping(value = "loginHtml", produces = "text/html")
+//    public String LoginHtml(String username, String password, HttpServletResponse response) throws IOException {
+//        SqConfig suser = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.username"));
+//        SqConfig spwd = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.password"));
+//        if (suser.getConfigValue().equals(username) && spwd.getConfigValue().equals(password)) {
+//            StpUtil.login(10001);
+//            response.sendRedirect("/index.html");
+//        }
+//        String html = "<!DOCTYPE html>\n" +
+//                "<html lang=\"zh\">\n" +
+//                "<head>\n" +
+//                "    <meta charset=\"UTF-8\">\n" +
+//                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
+//                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+//                "    <title>登录</title>\n" +
+//                "</head>\n" +
+//                "<body>\n" +
+//                "    <h2>登录</h2>\n" +
+//                "     <div> 登录失败:请输入用户名密码</div>       \n" +
+//                "    <form name=\"form\" method=\"post\" action=\"/login\">\n" +
+//                "    <div>用户名：<input type=\"text\" name=\"username\"></div>\n" +
+//                "    <div>密码：<input  type=\"password\" name=\"password\"></div>\n" +
+//                "    <div><button type=\"submit\">登录</button></div>\n" +
+//                "</form>\n" +
+//                "</body>\n" +
+//                "</html>";
+//        return html;
+//    }
 
     @RequestMapping(value = "login",method = RequestMethod.POST)
     public AjaxResult login(@RequestBody HashMap<String,String> data )  {

@@ -1,13 +1,13 @@
 server:
-  port: 8083
+  port: 8080
 spring:
   datasource:
-    url: jdbc:sqlite:/cache/sqmusic/config/db/sqmusic.db
+    url: jdbc:sqlite::resource:sqlite/sqmusic.db
     driver-class-name: org.sqlite.JDBC
     username:
     password:
   profiles:
-    active: plug,music
+    active: plug
   mvc:
     static-path-pattern: /**
   web:

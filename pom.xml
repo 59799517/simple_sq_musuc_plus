@@ -10,9 +10,11 @@
     </parent>
     <groupId>com.sqmusicplus</groupId>
     <artifactId>simple-MusicServer</artifactId>
-    <version>0.0.2-Beta</version>
+    <version>1.0.2-Beta</version>
+    <packaging>war</packaging>
     <name>simple_sq_musuc_plus</name>
     <description>simple_sq_musuc_plus</description>
+
     <properties>
         <java.version>17</java.version>
 <!--        <mybatis-plus-spring-boot.version>3.5.1</mybatis-plus-spring-boot.version>-->
@@ -25,6 +27,19 @@
         <fastjson.version>1.2.83</fastjson.version>
     </properties>
     <dependencies>
+<!--war依赖-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-jasper</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -49,6 +64,7 @@
         <dependency>
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache</artifactId>
+            <version>2.10.9.2</version>
         </dependency>
 
         <dependency>
@@ -147,8 +163,17 @@
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.5.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+<!--            <version>5.3.16</version>-->
+        </dependency>
 
-
+        <dependency>
+            <groupId>com.github.plexpt</groupId>
+            <artifactId>chatgpt</artifactId>
+            <version>1.1.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -164,22 +189,54 @@
                     <include>**/*.json</include>
                     <include>**/*.otf</include>
                     <include>**/*.ttf</include>
+                    <include>**/*.ttf</include>
                 </includes>
                 <filtering>true</filtering>
             </resource>
 
         </resources>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.7.1</version>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--                <version>2.7.1</version>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <!--修改版本-->
                 <version>3.1.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>com.sqmusicplus.SimpleSqMusucPlusApplication</mainClass>
+                        </manifest>
+                        <manifestEntries>
+                            <Class-Path>.</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+        <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <warName>${project.artifactId}</warName>
+                </configuration>
+           </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
 

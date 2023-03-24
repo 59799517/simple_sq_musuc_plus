@@ -23,6 +23,7 @@ public class SqConfig implements Serializable {
     public static final String COL_CONFIG_NAME = "config_name";
     public static final String COL_CONFIG_VALUE = "config_value";
     public static final String COL_CONFIG_KEY = "config_key";
+    public static final String COL_TYPE = "type";
     @TableId(value = "config_id", type = IdType.AUTO)
     private Integer configId;
     @TableField(value = "config_name")
@@ -31,4 +32,6 @@ public class SqConfig implements Serializable {
     private String configValue;
     @TableField(value = "config_key")
     private String configKey;
+    @TableField(value = "type")
+    private String type;
 }

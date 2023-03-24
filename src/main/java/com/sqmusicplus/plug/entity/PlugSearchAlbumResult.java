@@ -28,13 +28,22 @@ public class PlugSearchAlbumResult {
      */
     String pic;
     /**
+     * 总数
+     */
+    String total;
+    /**
      * 专辑名称
      */
     String albumName;
+
     /**
      * 专辑id
      */
     String albumid;
+    /**
+     * 搜索类型
+     */
+    private String searchType;
 
     /**
      * 其余信息（插件特殊参数） 尽量避免使用

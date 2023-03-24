@@ -16,6 +16,9 @@ import java.util.List;
 public abstract class MusicParser implements MusicPlayListParser {
     @Override
     public List<ParserEntity> parser(String msg) throws IOException {
+
+
+
         return null;
     }
 }
