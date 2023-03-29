@@ -16,4 +16,24 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "mg")
 public class MgConfig {
     private String SearchUrl;
+
+    private String SongInfoUrl;
+
+    private String ArtistInfoUrl;
+
+    private String AlbumInfoUrl;
+
+    private String ArtistAlbumListUrl;
+
+    private String  AlbumIdConvert;
+
+    private String AlbumListUrl;
+
+    private String SongCoverUrl;
+
+    private String DownloadUrl;
+
+    private String DownloadUrlPrefix;
+
+    private String ArtistSongListUrl;
 }

@@ -111,7 +111,7 @@ public class Music  implements Serializable {
     /**
      * 专辑编号
      */
-    private Integer albumId;
+    private String albumId;
     /**
      * 歌手编号
      */

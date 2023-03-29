@@ -1,6 +1,8 @@
 package com.sqmusicplus.entity;
 
 import com.sqmusicplus.plug.base.PlugBrType;
+import com.sqmusicplus.plug.base.hander.SearchHander;
+import com.sqmusicplus.plug.base.hander.SearchHanderAbstract;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
@@ -60,16 +62,20 @@ public class DownloadEntity implements Serializable {
     String addSubsonicPlayListName;
 
 
-    public DownloadEntity(String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname) {
+    SearchHanderAbstract searchHander;
+
+
+    public DownloadEntity(SearchHanderAbstract SearchHander ,String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname) {
         this.musicid = musicid;
         this.brType = kwBrType;
         this.musicname = musicname;
         this.artistname = artistname;
         this.albumname = albumname;
         this.audioBook = false;
+        this.searchHander = SearchHander;
     }
 
-    public DownloadEntity(String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, String addSubsonicPlayListName) {
+    public DownloadEntity(SearchHanderAbstract SearchHander ,String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, String addSubsonicPlayListName) {
         this.musicid = musicid;
         this.brType = kwBrType;
         this.musicname = musicname;
@@ -77,18 +83,20 @@ public class DownloadEntity implements Serializable {
         this.albumname = albumname;
         this.audioBook = false;
         this.addSubsonicPlayListName = addSubsonicPlayListName;
+        this.searchHander = SearchHander;
     }
 
-    public DownloadEntity(String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, Boolean audioBook) {
+    public DownloadEntity(SearchHanderAbstract SearchHander ,String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, Boolean audioBook) {
         this.musicid = musicid;
         this.brType = kwBrType;
         this.musicname = musicname;
         this.artistname = artistname;
         this.albumname = albumname;
         this.audioBook = audioBook;
+        this.searchHander = SearchHander;
     }
 
-    public DownloadEntity(String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, Boolean audioBook, String addSubsonicPlayListName) {
+    public DownloadEntity(SearchHanderAbstract SearchHander ,String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, Boolean audioBook, String addSubsonicPlayListName) {
         this.musicid = musicid;
         this.brType = kwBrType;
         this.musicname = musicname;
@@ -96,10 +104,11 @@ public class DownloadEntity implements Serializable {
         this.albumname = albumname;
         this.audioBook = audioBook;
         this.addSubsonicPlayListName = addSubsonicPlayListName;
+        this.searchHander = SearchHander;
 
     }
 
-    public DownloadEntity(String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, String errorMsg, Boolean audioBook, String addSubsonicPlayListName) {
+    public DownloadEntity(SearchHanderAbstract SearchHander ,String musicid, PlugBrType kwBrType, String musicname, String artistname, String albumname, String errorMsg, Boolean audioBook, String addSubsonicPlayListName) {
         this.musicid = musicid;
         this.brType = kwBrType;
         this.musicname = musicname;
@@ -108,5 +117,18 @@ public class DownloadEntity implements Serializable {
         this.errorMsg = errorMsg;
         this.audioBook = audioBook;
         this.addSubsonicPlayListName = addSubsonicPlayListName;
+        this.searchHander = SearchHander;
+    }
+
+    public DownloadEntity(SearchHanderAbstract SearchHander ,String musicid, PlugBrType brType, String musicname, String artistname, String albumname, String errorMsg, Boolean audioBook, String addSubsonicPlayListName, SearchHanderAbstract searchHander) {
+        this.musicid = musicid;
+        this.brType = brType;
+        this.musicname = musicname;
+        this.artistname = artistname;
+        this.albumname = albumname;
+        this.errorMsg = errorMsg;
+        this.audioBook = audioBook;
+        this.addSubsonicPlayListName = addSubsonicPlayListName;
+        this.searchHander = searchHander;
     }
 }

@@ -31,14 +31,32 @@ kw:
   #歌单详情
   PlayListInfo: http://nplserver.kuwo.cn/pl.svc?op=getlistinfo&pid=#{id}&pn=#{pn}&rn=#{pagesize}&encode=utf8&keyset=pl2012&vipver=MUSIC_9.1.1.2_BCS2&newver=1
 migu:
+  #  不需要登录
+  islogin: false
 #  搜索
-  SearchUrl: http://m.music.migu.cn/migu/remoting/scr_search_tag?rows=#{pageSize}&type=2&keyword=#{searchKey}&pgc=#{pageNo}
+  SearchUrl: http://m.music.migu.cn/migu/remoting/scr_search_tag?rows=#{pageSize}&type=#{searchType}&keyword=#{searchKey}&pgc=#{pageNo}
 #  歌曲信息以及下载链接
-  SongInfoUrl: http://c.musicapp.migu.cn/MIGUM2.0/v1.0/content/resourceinfo.do?copyrightId=69910406417&resourceType=3
+  SongInfoUrl: http://c.musicapp.migu.cn/MIGUM2.0/v1.0/content/resourceinfo.do?copyrightId=#{musicId}&resourceType=3
 #歌词
   SongLyricUrl: http://music.migu.cn/v3/api/music/audioPlayer/getLyric?copyrightId=69910406417
-#  下载前缀替换ftp://IP
-  DownloadUrl: https://freetyst.nf.migu.cn/
+# 歌手信息
+  ArtistInfoUrl: https://m.music.migu.cn/migu/remoting/cms_artist_detail_tag?artistId=#{artistid}
+#专辑信息
+  AlbumInfoUrl: https://app.c.nf.migu.cn/MIGUM3.0/resource/album/v2.0?albumId=#{albumid}
+#  专辑列表
+  ArtistAlbumListUrl: https://app.pd.nf.migu.cn/MIGUM3.0/bmw/singer/album/v1.0?pageNo=#{pageNo}&singerId=#{artistid}
+# 特殊专辑id转换
+  AlbumIdConvert: https://app.c.nf.migu.cn/MIGUM3.0/resource/dalbum/v2.0?dAlbumId=#{albumid}
+# 专辑列表
+  AlbumListUrl: https://app.u.nf.migu.cn/resource/album/song/v2.0?albumId=#{albumid}&pageNo=#{pageNo}
+# 图片前缀
+  SongCoverUrl: http://d.musicapp.migu.cn
+# 下载链接
+  DownloadUrl: http://c.musicapp.migu.cn/MIGUM2.0/v1.0/content/resourceinfo.do?copyrightId=#{musicId}&resourceType=2
+# 下载链接前缀
+  DownloadUrlPrefix: https://freetyst.nf.migu.cn/
+#  歌手全部歌曲搜索
+  ArtistSongListUrl: https://app.pd.nf.migu.cn/MIGUM3.0/bmw/singer/song/v1.0?pageNo=#{pageNo}&singerId=#{artistid}&type=1
 
 subsonic:
   #  检查是否能通讯

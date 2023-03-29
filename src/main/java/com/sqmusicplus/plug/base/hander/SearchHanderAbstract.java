@@ -28,7 +28,7 @@ import java.util.HashMap;
  */
 @Service
 @Slf4j
-public abstract class SearchHanderAbstract<T> implements SearchHander<T> {
+public abstract class SearchHanderAbstract<T> implements SearchHander<T>{
 
     @Autowired
     private SqConfigService configService;
@@ -41,11 +41,13 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> {
         this.configService = configService;
     }
 
+
     @Override
     public void dnonloadAndSaveToFile(DownloadEntity downloadEntity) {
         try {
+            SearchHanderAbstract searchHander = downloadEntity.getSearchHander();
             //获取歌曲详情
-            Music music = querySongById(downloadEntity.getMusicid());
+            Music music = searchHander.querySongById(downloadEntity.getMusicid());
             String musicPath = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.download.path")).getConfigValue();
             File file = new File(musicPath);
             //使用传递的名称
@@ -65,7 +67,7 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> {
             }
             //下载位置
             String basepath = music.getMusicArtists().trim() + File.separator + music.getMusicAlbum().trim() + File.separator;
-            HashMap<String, String> stringStringHashMap = getDownloadUrl(downloadEntity.getMusicid() + "", downloadEntity.getBrType());
+            HashMap<String, String> stringStringHashMap = searchHander.getDownloadUrl(downloadEntity.getMusicid() + "", downloadEntity.getBrType());
             File type = new File(file, basepath + music.getMusicName().trim() + " - " + music.getMusicArtists().trim() + "." + stringStringHashMap.get("type"));
             log.debug("开始下载---->{}", music.getMusicName());
             if (Boolean.valueOf(configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.override.download")).getConfigValue())) {
@@ -82,16 +84,16 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> {
                 return;
             }
             DownloadUtils.download(stringStringHashMap.get("url"), type, onSuccess -> {
-                Integer albumID = music.getAlbumId();
+                String albumID = music.getAlbumId();
                 Integer artistsID = music.getArtistsId();
-                Artists artists = queryArtistById(artistsID.toString());
+                Artists artists = searchHander.queryArtistById(artistsID.toString());
                 artists.setOther(JSONObject.toJSONString(artists.getOther()));
                 String getSearheads = "";
                 try {
-                    getSearheads = ReflectUtil.invoke(getConfig(), "getSearheads");
+                    getSearheads = ReflectUtil.invoke(searchHander.getConfig(), "getSearheads");
                 } catch (UtilException ignored) {
                 }
-                String downloadurl = (getSearheads + artists.getMusicArtistsPhoto()).replaceAll("/120", "/500");
+                String downloadurl = getSearheads + artists.getMusicArtistsPhoto();
                 String downliadpath = musicPath + File.separator + music.getMusicArtists().trim();
                 //人物图片
                 File Artistsfile = new File(downliadpath + File.separator + "cover.jpg");
@@ -110,7 +112,7 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> {
                     }
                 }
                 //专辑图片
-                Album album = queryAlbumById(albumID.toString());
+                Album album = searchHander.queryAlbumById(albumID.toString());
                 String albumImg = album.getAlbumImg();
                 if (downloadEntity.getAudioBook()) {
                     album.setAlbumName(downloadEntity.getAlbumname().trim());

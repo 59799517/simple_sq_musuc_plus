@@ -81,7 +81,6 @@ public class NKwSearchHander extends SearchHanderAbstract {
                 .setSearchTotal(searchMusicResult.getTotal())
                 .setSearchKeyWork(searchKeyData.getSearchkey())
                 .setRecords(plugSearchMusicResults);
-
         plugSearchResult.setSearchType(searchKeyData.getSearchType());
         return plugSearchResult;
     }
@@ -167,7 +166,7 @@ public class NKwSearchHander extends SearchHanderAbstract {
         if (lrclist != null && lrclist.size() > 0) {
             Lrc = LrcUtils.krcTolrc(lrclist, album, artist, songName);
         }
-        return new Music().setId(songinfo.getId()).setMusicImage(s).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(artist).setMusicName(songName).setOther(JSONObject.parseObject(JSONObject.toJSONString(data))).setMusicDuration(Integer.parseInt(duration)).setAlbumId(Integer.valueOf(albumId)).setArtistsId(Integer.valueOf(artistId));
+        return new Music().setId(songinfo.getId()).setMusicImage(s).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(artist).setMusicName(songName).setOther(JSONObject.parseObject(JSONObject.toJSONString(data))).setMusicDuration(Integer.parseInt(duration)).setAlbumId(albumId).setArtistsId(Integer.valueOf(artistId));
     }
 
     @Override
@@ -260,7 +259,7 @@ public class NKwSearchHander extends SearchHanderAbstract {
         List<AlbumInfoResult.MusiclistDTO> musiclist = albumInfoResult.getMusiclist();
         ArrayList<Music> music = new ArrayList<>();
         musiclist.forEach(e -> {
-            music.add(new Music().setAlbumId(Integer.valueOf(albumInfoResult.getAlbumid()))
+            music.add(new Music().setAlbumId(albumInfoResult.getAlbumid())
                     .setMusicAlbum(albumInfoResult.getName())
                     .setMusicName(e.getName())
                     .setId(e.getId())
@@ -309,19 +308,19 @@ public class NKwSearchHander extends SearchHanderAbstract {
     @Override
     public DownloadEntity downloadSong(String musicid, PlugBrType brType, String musicname, String artistname, String albumname, Boolean isAudioBook, String addSubsonicPlayListName) {
         Music music = querySongById(musicid);
-        DownloadEntity downloadEntity = new DownloadEntity(musicid, brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
+        DownloadEntity downloadEntity = new DownloadEntity(this,musicid, brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
         return downloadEntity;
     }
 
     @Override
     public DownloadEntity downloadSong(Music music ,PlugBrType brType,Boolean isAudioBook, String addSubsonicPlayListName) {
-        DownloadEntity downloadEntity = new DownloadEntity(music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
+        DownloadEntity downloadEntity = new DownloadEntity(this,music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
         return downloadEntity;
     }
 
     @Override
     public DownloadEntity downloadSong(Music music, PlugBrType brType, String addSubsonicPlayListName) {
-        DownloadEntity downloadEntity = new DownloadEntity(music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), false, addSubsonicPlayListName);
+        DownloadEntity downloadEntity = new DownloadEntity(this,music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), false, addSubsonicPlayListName);
         return downloadEntity;
     }
 
@@ -356,10 +355,10 @@ public class NKwSearchHander extends SearchHanderAbstract {
                 change.set(md.getArtist());
             }
             if (isAudioBook) {
-                downloadEntities.add(new DownloadEntity(md.getId(), brType, md.getName(), artist, albumName, isAudioBook));
+                downloadEntities.add(new DownloadEntity(this,md.getId(), brType, md.getName(), artist, albumName, isAudioBook));
             } else {
                 //添加到缓存
-                downloadEntities.add(new DownloadEntity(md.getId(), brType, md.getName(), change.get(), albumInfoResult.getName()));
+                downloadEntities.add(new DownloadEntity(this,md.getId(), brType, md.getName(), change.get(), albumInfoResult.getName()));
             }
 
         });
