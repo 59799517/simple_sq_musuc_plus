@@ -3,6 +3,8 @@ package com.sqmusicplus.plug.mg.hander;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ejlchina.data.Mapper;
+import com.ejlchina.okhttps.HttpUtils;
+import com.ejlchina.okhttps.OkHttps;
 import com.sqmusicplus.entity.*;
 import com.sqmusicplus.plug.base.PlugBrType;
 import com.sqmusicplus.plug.base.SearchType;
@@ -13,16 +15,19 @@ import com.sqmusicplus.plug.mg.config.MgConfig;
 import com.sqmusicplus.plug.mg.entity.*;
 import com.sqmusicplus.plug.mg.enums.MgBrType;
 import com.sqmusicplus.plug.mg.enums.MgSearchType;
+import com.sqmusicplus.plug.utils.LrcUtils;
 import com.sqmusicplus.utils.DownloadUtils;
 import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * @Classname MgHander
@@ -34,7 +39,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @Slf4j
-public class MgHander extends SearchHanderAbstract {
+
+public class MgHander extends SearchHanderAbstract  {
+
+
+    private static final long serialVersionUID = 1L;
 
 
     @Autowired
@@ -55,12 +64,14 @@ public class MgHander extends SearchHanderAbstract {
     @Override
     public PlugSearchResult querySongByName(SearchKeyData searchKeyData) {
         String url = mgConfig.getSearchUrl();
-        url = url.replace("#\\{searchKey}", searchKeyData.getSearchkey());
-        url = url.replace("#\\{pageNo}", searchKeyData.getPageIndex().toString());
-        url = url.replace("#\\{pageSize}", searchKeyData.getPageSize().toString());
-        url = url.replace("#\\{searchType}", MgSearchType.MUSIC.getValue().toString());
+        url = url.replaceAll("#\\{searchKey}", searchKeyData.getSearchkey());
+        url = url.replaceAll("#\\{pageNo}", searchKeyData.getPageIndex().toString());
+        url = url.replaceAll("#\\{pageSize}", searchKeyData.getPageSize().toString());
+        url = url.replaceAll("#\\{searchType}", MgSearchType.MUSIC.getValue().toString());
         log.info("咪咕搜索：url:{}",url);
-        MgSearchMusicResult mgSearchMusicResult = DownloadUtils.getHttp().sync(url).get().getBody().toBean(MgSearchMusicResult.class);
+//        String s = DownloadUtils.OKBaseHttp(url);
+//        MgSearchMusicResult mgSearchMusicResult = JSONObject.parseObject(s, MgSearchMusicResult.class);
+        MgSearchMusicResult mgSearchMusicResult = DownloadUtils.getHttp().sync(url).addHeader("Referer","https://m.music.migu.cn").bodyType(OkHttps.JSON).get().getBody().toBean(MgSearchMusicResult.class);
         ArrayList<PlugSearchMusicResult> plugSearchMusicResults = new ArrayList<>();
         for (MgSearchMusicResult.MusicsDTO music : mgSearchMusicResult.getMusics()) {
             PlugSearchMusicResult plugSearchMusicResult = new PlugSearchMusicResult();
@@ -91,12 +102,12 @@ public class MgHander extends SearchHanderAbstract {
     @Override
     public PlugSearchResult<PlugSearchArtistResult> queryArtistByName(SearchKeyData searchKeyData) {
         String url = mgConfig.getSearchUrl();
-        url = url.replace("#\\{searchKey}", searchKeyData.getSearchkey());
-        url = url.replace("#\\{pageNo}", searchKeyData.getPageIndex().toString());
-        url = url.replace("#\\{pageSize}", searchKeyData.getPageSize().toString());
-        url = url.replace("#\\{searchType}", MgSearchType.ARTIST.getValue().toString());
+        url = url.replaceAll("#\\{searchKey}", searchKeyData.getSearchkey());
+        url = url.replaceAll("#\\{pageNo}", searchKeyData.getPageIndex().toString());
+        url = url.replaceAll("#\\{pageSize}", searchKeyData.getPageSize().toString());
+        url = url.replaceAll("#\\{searchType}", MgSearchType.ARTIST.getValue().toString());
         log.info("咪咕歌手搜索：url:{}",url);
-        MgSearchArtistResult mgSearchArtistResult = DownloadUtils.getHttp().sync(url).get().getBody().toBean(MgSearchArtistResult.class);
+        MgSearchArtistResult mgSearchArtistResult = DownloadUtils.getHttp().sync(url).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgSearchArtistResult.class);
         ArrayList<PlugSearchArtistResult> plugSearchMusicResults = new ArrayList<>();
         for (MgSearchArtistResult.ArtistsDTO artist : mgSearchArtistResult.getArtists()) {
             PlugSearchArtistResult plugSearchArtistResult = new PlugSearchArtistResult();
@@ -120,12 +131,12 @@ public class MgHander extends SearchHanderAbstract {
     @Override
     public PlugSearchResult<PlugSearchAlbumResult> queryAlbumByName(SearchKeyData searchKeyData) {
         String url = mgConfig.getSearchUrl();
-        url = url.replace("#\\{searchKey}", searchKeyData.getSearchkey());
-        url = url.replace("#\\{pageNo}", searchKeyData.getPageIndex().toString());
-        url = url.replace("#\\{pageSize}", searchKeyData.getPageSize().toString());
-        url = url.replace("#\\{searchType}", MgSearchType.ALBUM.getValue().toString());
+        url = url.replaceAll("#\\{searchKey}", searchKeyData.getSearchkey());
+        url = url.replaceAll("#\\{pageNo}", searchKeyData.getPageIndex().toString());
+        url = url.replaceAll("#\\{pageSize}", searchKeyData.getPageSize().toString());
+        url = url.replaceAll("#\\{searchType}", MgSearchType.ALBUM.getValue().toString());
         log.info("咪咕专辑搜索：url:{}",url);
-        MgSearchAlbumResult mgSearchAlbumResult = DownloadUtils.getHttp().sync(url).get().getBody().toBean(MgSearchAlbumResult.class);
+        MgSearchAlbumResult mgSearchAlbumResult = DownloadUtils.getHttp().sync(url).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgSearchAlbumResult.class);
         ArrayList<PlugSearchAlbumResult> plugSearchMusicResults = new ArrayList<>();
         for (MgSearchAlbumResult.AlbumsDTO album : mgSearchAlbumResult.getAlbums()) {
             PlugSearchAlbumResult plugSearchAlbumResult = new PlugSearchAlbumResult();
@@ -148,10 +159,9 @@ public class MgHander extends SearchHanderAbstract {
     @Override
     public Music querySongById(String SongId) {
         String url = mgConfig.getSongInfoUrl();
-        url = url.replace("#\\{musicId}", SongId);
+        url = url.replaceAll("#\\{musicId}", SongId);
         log.info("咪咕歌曲信息：url:{}",url);
-        Music music = new Music();
-        MgSongInfoResult mgSongInfoResult = DownloadUtils.getHttp().sync(url).get().getBody().toBean(MgSongInfoResult.class);
+        MgSongInfoResult mgSongInfoResult = DownloadUtils.getHttp().sync(url).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgSongInfoResult.class);
         //歌手 名称
         String singer = mgSongInfoResult.getResource().get(0).getSinger();
         //歌手id
@@ -166,7 +176,10 @@ public class MgHander extends SearchHanderAbstract {
         String albumId = mgSongInfoResult.getResource().get(0).getAlbumId();
         //歌词url
         String lrcUrl = mgSongInfoResult.getResource().get(0).getLrcUrl();
-        String Lrc = DownloadUtils.getHttp().sync(lrcUrl).get().getBody().toByteString().toString();
+
+        String Lrc = DownloadUtils.getHttp().sync(lrcUrl).get().getBody().toByteString().utf8();
+        Lrc = LrcUtils.mgLrcTolrc(Lrc);
+
         //图片
         String img = mgSongInfoResult.getResource().get(0).getAlbumImgs().get(0).getImg();
         return new Music().setId(copyrightId).setMusicImage(img).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(singer).setMusicName(songName).setAlbumId(albumId).setArtistsId(Integer.valueOf(singerId));
@@ -175,9 +188,9 @@ public class MgHander extends SearchHanderAbstract {
 
     @Override
     public Artists queryArtistById(String artistId) {
-        String replace = mgConfig.getArtistInfoUrl().replace("#\\{artistId}", artistId);
+        String replace = mgConfig.getArtistInfoUrl().replaceAll("#\\{artistid}", artistId);
         log.info("咪咕歌手信息：url:{}",replace);
-        MgArtisInfoResult mgArtisInfoResult = DownloadUtils.getHttp().sync(replace).get().getBody().toBean(MgArtisInfoResult.class);
+        MgArtisInfoResult mgArtisInfoResult = DownloadUtils.getHttp().sync(replace).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgArtisInfoResult.class);
         String artistId1 = mgArtisInfoResult.getData().getArtistId();
         String artistName = mgArtisInfoResult.getData().getArtistName();
         String localArtistPicL = mgArtisInfoResult.getData().getLocalArtistPicL();
@@ -194,8 +207,8 @@ public class MgHander extends SearchHanderAbstract {
 
     @Override
     public Album queryAlbumById(String albumId) {
-        String replace = mgConfig.getAlbumInfoUrl().replace("#\\{albumid}", albumId);
-        MgAlbumInfoResult mgAlbumInfoResult = DownloadUtils.getHttp().sync(replace).get().getBody().toBean(MgAlbumInfoResult.class);
+        String replace = mgConfig.getAlbumInfoUrl().replaceAll("#\\{albumid}", albumId);
+        MgAlbumInfoResult mgAlbumInfoResult = DownloadUtils.getHttp().sync(replace).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgAlbumInfoResult.class);
         Album album = new Album();
         String albumId1 = mgAlbumInfoResult.getData().getAlbumId();
         String albumName = mgAlbumInfoResult.getData().getTitle();
@@ -226,11 +239,11 @@ public class MgHander extends SearchHanderAbstract {
         //固定且无法修改
         pageSize=10;
         String artistAlbumListUrl = mgConfig.getArtistAlbumListUrl();
-        artistAlbumListUrl = artistAlbumListUrl.replace("#\\{artistId}", artistId);
-        artistAlbumListUrl = artistAlbumListUrl.replace("#\\{pageNo}", pageIndex.toString());
-        artistAlbumListUrl = artistAlbumListUrl.replace("#\\{pageSize}", pageSize.toString());
+        artistAlbumListUrl = artistAlbumListUrl.replaceAll("#\\{artistid}", artistId);
+        artistAlbumListUrl = artistAlbumListUrl.replaceAll("#\\{pageNo}", pageIndex.toString());
+        artistAlbumListUrl = artistAlbumListUrl.replaceAll("#\\{pageSize}", pageSize.toString());
         log.info("咪咕歌手专辑信息：url:{}",artistAlbumListUrl);
-        MgArtistAlbumResult mgArtistAlbumResult = DownloadUtils.getHttp().sync(artistAlbumListUrl).get().getBody().toBean(MgArtistAlbumResult.class);
+        MgArtistAlbumResult mgArtistAlbumResult = DownloadUtils.getHttp().sync(artistAlbumListUrl).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgArtistAlbumResult.class);
         List<Album> albums = new ArrayList<>();
 
         if (!mgArtistAlbumResult.getData().getContents().isEmpty()) {
@@ -245,9 +258,9 @@ public class MgHander extends SearchHanderAbstract {
                 if (contains) {
                     String resId = content.getResId();
                     String albumIdConvert = mgConfig.getAlbumIdConvert();
-                    albumIdConvert = albumIdConvert.replace("#\\{albumId}", resId);
+                    albumIdConvert = albumIdConvert.replaceAll("#\\{albumid}", resId);
                     log.info("咪咕歌手专辑信息：url:{}",albumIdConvert);
-                    MgAlbumIdConvertResult mgAlbumIdConvertResult = DownloadUtils.getHttp().sync(albumIdConvert).get().getBody().toBean(MgAlbumIdConvertResult.class);
+                    MgAlbumIdConvertResult mgAlbumIdConvertResult = DownloadUtils.getHttp().sync(albumIdConvert).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgAlbumIdConvertResult.class);
                     Album album = new Album();
                     String albumId1 = mgAlbumIdConvertResult.getData().getMaterialId();
                     String albumName = mgAlbumIdConvertResult.getData().getTitle();
@@ -267,8 +280,8 @@ public class MgHander extends SearchHanderAbstract {
                 }else{
                  //直接拿去专辑信息
                     String resId = content.getResId();
-                    String replace = mgConfig.getAlbumInfoUrl().replace("#\\{albumid}", resId);
-                    MgAlbumInfoResult mgAlbumInfoResult = DownloadUtils.getHttp().sync(replace).get().getBody().toBean(MgAlbumInfoResult.class);
+                    String replace = mgConfig.getAlbumInfoUrl().replaceAll("#\\{albumid}", resId);
+                    MgAlbumInfoResult mgAlbumInfoResult = DownloadUtils.getHttp().sync(replace).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgAlbumInfoResult.class);
                     Album album = new Album();
                     String albumId1 = mgAlbumInfoResult.getData().getAlbumId();
                     String albumName = mgAlbumInfoResult.getData().getTitle();
@@ -305,10 +318,10 @@ public class MgHander extends SearchHanderAbstract {
         String albumListUrl = mgConfig.getAlbumListUrl();
         String songCoverUrl = mgConfig.getSongCoverUrl();
 
-        albumListUrl = albumListUrl.replace("#\\{albumId}", albumsId);
-        albumListUrl = albumListUrl.replace("#\\{pageNo}", pageNo + "");
+        albumListUrl = albumListUrl.replaceAll("#\\{albumid}", albumsId);
+        albumListUrl = albumListUrl.replaceAll("#\\{pageNo}", pageNo + "");
         log.info("咪咕专辑歌曲信息：url:{}",albumListUrl);
-        MgAlbumListResult mgAlbumListResult = DownloadUtils.getHttp().sync(albumListUrl).get().getBody().toBean(MgAlbumListResult.class);
+        MgAlbumListResult mgAlbumListResult = DownloadUtils.getHttp().sync(albumListUrl).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgAlbumListResult.class);
         List<MgAlbumListResult.DataDTO.SongListDTO> songList = mgAlbumListResult.getData().getSongList();
         //总条数
         totalCount = mgAlbumListResult.getData().getTotalCount();
@@ -328,10 +341,10 @@ public class MgHander extends SearchHanderAbstract {
         //循环请求
         for (int i = 2; i <= totalPage; i++) {
             String albumListUrl1 = mgConfig.getAlbumListUrl();
-            albumListUrl1 = albumListUrl1.replace("#\\{albumId}", albumsId);
-            albumListUrl1 = albumListUrl1.replace("#\\{pageNo}", i + "");
+            albumListUrl1 = albumListUrl1.replaceAll("#\\{albumid}", albumsId);
+            albumListUrl1 = albumListUrl1.replaceAll("#\\{pageNo}", i + "");
             log.info("咪咕专辑歌曲信息：url:{}",albumListUrl1);
-            MgAlbumListResult mgAlbumListResult1 = DownloadUtils.getHttp().sync(albumListUrl1).get().getBody().toBean(MgAlbumListResult.class);
+            MgAlbumListResult mgAlbumListResult1 = DownloadUtils.getHttp().sync(albumListUrl1).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgAlbumListResult.class);
             List<MgAlbumListResult.DataDTO.SongListDTO> songList1 = mgAlbumListResult1.getData().getSongList();
             songList1.forEach(e->{
                 music.add(new Music().setAlbumId(e.getAlbumId())
@@ -363,9 +376,9 @@ public class MgHander extends SearchHanderAbstract {
         //等级
         String value = brType.getValue();
         String downloadUrl = mgConfig.getDownloadUrl();
-        downloadUrl = downloadUrl.replace("#\\{musicId}", musicId);
+        downloadUrl = downloadUrl.replaceAll("#\\{musicId}", musicId);
         log.info("咪咕下载地址：url:{}",downloadUrl);
-        MgDownloadResult mgDownloadResult = DownloadUtils.getHttp().sync(downloadUrl).get().getBody().toBean(MgDownloadResult.class);
+        MgDownloadResult mgDownloadResult = DownloadUtils.getHttp().sync(downloadUrl).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgDownloadResult.class);
         HashMap<String, String> objectObjectHashMap = null;
         if (StringUtils.isNotEmpty(mgDownloadResult.getResource())) {
             List<MgDownloadResult.ResourceDTO.NewRateFormatsDTO> newRateFormats = mgDownloadResult.getResource().get(0).getNewRateFormats();
@@ -374,6 +387,17 @@ public class MgHander extends SearchHanderAbstract {
                     value="SQ";
                 }
                 List<MgDownloadResult.ResourceDTO.RateFormatsDTO> rateFormats = mgDownloadResult.getResource().get(0).getRateFormats();
+
+                List<String> collect = rateFormats.stream().map(e -> e.getFormatType()).collect(Collectors.toList());
+                boolean contains = collect.contains(value);
+                if (!contains) {
+                    value=null;
+                    value =  collect.contains("SQ")?"SQ":null;
+                    value =  collect.contains("HQ")&&value==null?"HQ":value;
+                    value =  collect.contains("PQ")&&value==null?"PQ":value;
+                    value =  collect.contains("LQ")&&value==null?"LQ":value;
+                }
+
                 for (MgDownloadResult.ResourceDTO.RateFormatsDTO rateFormat : rateFormats) {
                     String formatType = rateFormat.getFormatType();
                     //如果SQ码率存在则使用不存在则使用HQ
@@ -407,20 +431,30 @@ public class MgHander extends SearchHanderAbstract {
 
                 }
             }else{
+                List<String> collect = newRateFormats.stream().map(e -> e.getFormatType()).collect(Collectors.toList());
+                boolean contains = collect.contains(value);
+                if (!contains) {
+                    value=null;
+                    value =  collect.contains("ZQ")?"ZQ":null;
+                    value =  collect.contains("SQ")&&value==null?"SQ":value;
+                    value =  collect.contains("HQ")&&value==null?"HQ":value;
+                    value =  collect.contains("PQ")&&value==null?"PQ":value;
+                    value =  collect.contains("LQ")&&value==null?"LQ":value;
+                }
                 for (MgDownloadResult.ResourceDTO.NewRateFormatsDTO rateFormat : newRateFormats) {
                     String formatType = rateFormat.getFormatType();
                     //新的FLAC是ZQ 旧的是SQ
                     if (objectObjectHashMap==null&&formatType.equals("ZQ")&&formatType.equals(value)) {
                         objectObjectHashMap = new HashMap<>();
                         objectObjectHashMap.put("url", rateFormat.getAndroidUrl());
-                        objectObjectHashMap.put("type", rateFormat.getFileType());
+                        objectObjectHashMap.put("type", rateFormat.getAndroidFileType());
                         objectObjectHashMap.put("bit", MgBrType.FLAC_2000.getValue());
                         value="SQ";
                     }
                     if (objectObjectHashMap==null&&formatType.equals("SQ")&&formatType.equals(value)) {
                         objectObjectHashMap = new HashMap<>();
                         objectObjectHashMap.put("url", rateFormat.getAndroidUrl());
-                        objectObjectHashMap.put("type", rateFormat.getFileType());
+                        objectObjectHashMap.put("type", rateFormat.getAndroidFileType());
                         objectObjectHashMap.put("bit", MgBrType.FLAC_2000.getValue());
                         value="HQ";
                     }
@@ -522,10 +556,10 @@ public class MgHander extends SearchHanderAbstract {
     public List<DownloadEntity> downloadArtistAllSong(String artistId, PlugBrType brType, String addSubsonicPlayListName) {
         List<DownloadEntity> downloadEntities = new ArrayList<>();
         String artistSongListUrl = mgConfig.getArtistSongListUrl();
-        artistSongListUrl = artistSongListUrl.replace("{artistId}", artistId);
-        artistSongListUrl = artistSongListUrl.replace("{pageNo}", "1");
+        artistSongListUrl = artistSongListUrl.replaceAll("#\\{artistId}", artistId);
+        artistSongListUrl = artistSongListUrl.replaceAll("#\\{pageNo}", "1");
         log.info("咪咕歌手歌曲信息：url:{}",artistSongListUrl);
-        MgArtistSongList mgArtistSongList = DownloadUtils.getHttp().sync(artistSongListUrl).get().getBody().toBean(MgArtistSongList.class);
+        MgArtistSongList mgArtistSongList = DownloadUtils.getHttp().sync(artistSongListUrl).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgArtistSongList.class);
         MgArtistSongList.DataDTO.HeaderDTO header = mgArtistSongList.getData().getHeader();
         List<MgArtistSongList.DataDTO.ContentsDTO.CContentsDTO> contents = mgArtistSongList.getData().getContents().get(0).getContents();
         contents.forEach(md -> {

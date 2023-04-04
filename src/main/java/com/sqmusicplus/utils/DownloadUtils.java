@@ -3,10 +3,11 @@ package com.sqmusicplus.utils;
 import com.ejlchina.okhttps.Process;
 import com.ejlchina.okhttps.*;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.ConnectionPool;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
+import org.jsoup.Jsoup;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -132,6 +133,27 @@ public class DownloadUtils {
 //        download(url,file,null,onSuccess,onFailure);
 //    }
 
+
+
+    public static String  OKBaseHttp(String url){
+
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                .build();
+        MediaType mediaType = MediaType.parse("text/plain");
+        RequestBody body = RequestBody.create(mediaType, "");
+        Request request = new Request.Builder()
+                .url("http://m.music.migu.cn/migu/remoting/scr_search_tag?rows=10&type=2&keyword=xingqing&pgc=0")
+                .method("GET", body)
+                .addHeader("Cookie", "JSESSIONID=8F0F4A61ACFEE98F3EBA56CB7AD5A517; CookieID=D55IR5HIY88X7R1EY44JCMULPGDS1M51")
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        } catch (IOException e) {
+            return null;
+        }
+
+    }
 
 
 

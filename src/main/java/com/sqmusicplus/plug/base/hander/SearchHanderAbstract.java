@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.HashMap;
 
 /**
@@ -28,7 +29,7 @@ import java.util.HashMap;
  */
 @Service
 @Slf4j
-public abstract class SearchHanderAbstract<T> implements SearchHander<T>{
+public abstract class SearchHanderAbstract<T> implements SearchHander<T> , Serializable {
 
     @Autowired
     private SqConfigService configService;
@@ -37,9 +38,6 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T>{
         return configService;
     }
 
-    public void setConfigService(SqConfigService configService) {
-        this.configService = configService;
-    }
 
 
     @Override

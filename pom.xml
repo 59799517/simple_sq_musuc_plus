@@ -19,6 +19,7 @@
         <java.version>17</java.version>
 <!--        <mybatis-plus-spring-boot.version>3.5.1</mybatis-plus-spring-boot.version>-->
         <okhttps.version>3.5.1</okhttps.version>
+        <jsoup.version>1.15.3</jsoup.version>
         <jave-all-deps.version>3.3.1</jave-all-deps.version>
         <jaudiotagger.version>2.0.3</jaudiotagger.version>
         <hutool.version>5.8.2</hutool.version>
@@ -113,6 +114,15 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+<!-- 爬虫工具-->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup.version}</version>
+        </dependency>
+
+
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>logging-interceptor</artifactId>

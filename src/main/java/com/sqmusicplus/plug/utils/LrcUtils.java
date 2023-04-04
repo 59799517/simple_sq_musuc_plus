@@ -77,4 +77,19 @@ public class LrcUtils {
 
     }
 
+    public static  String mgLrcTolrc(String lrc){
+        //歌曲信息
+        String[] split = lrc.split("\r\n");
+        StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer.append("[ti:"+split[1]+"]\n" +
+                "[by: SqMusic]\n" +
+                "[offset:0]\n");
+        for (int i = 4; i < split.length; i++) {
+            stringBuffer.append(split[i]);
+        }
+        return stringBuffer.toString();
+
+
+    }
+
 }

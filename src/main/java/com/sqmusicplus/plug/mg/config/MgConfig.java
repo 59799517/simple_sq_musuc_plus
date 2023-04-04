@@ -36,4 +36,6 @@ public class MgConfig {
     private String DownloadUrlPrefix;
 
     private String ArtistSongListUrl;
+
+    private String SongLyricUrl;
 }
