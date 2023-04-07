@@ -374,7 +374,7 @@ public class ALLController {
     /**
      * 解析单单
      *
-     * @param data { text：“内容”，taskName：“任务名”}
+     * @param data { text：“内容”，plugType：“插件类型”，br：“品质”，subsonicPlayListName：“歌单名称”}
      * @return
      */
     @SaCheckLogin

@@ -113,7 +113,9 @@ public class MgHander extends SearchHanderAbstract  {
             PlugSearchArtistResult plugSearchArtistResult = new PlugSearchArtistResult();
             plugSearchArtistResult.setArtistName(artist.getTitle());
             plugSearchArtistResult.setArtistid(artist.getId());
+            plugSearchArtistResult.setArtistName(artist.getTitle());
             plugSearchArtistResult.setPic(artist.getArtistPicL());
+            plugSearchArtistResult.setTotal(artist.getAlbumNum()+"");
             plugSearchArtistResult.setSearchType(SearchType.MG.getValue());
             plugSearchArtistResult.setOter(JSONObject.toJSONString(artist));
             plugSearchMusicResults.add(plugSearchArtistResult);
@@ -142,7 +144,11 @@ public class MgHander extends SearchHanderAbstract  {
             PlugSearchAlbumResult plugSearchAlbumResult = new PlugSearchAlbumResult();
             plugSearchAlbumResult.setAlbumName(album.getTitle());
             plugSearchAlbumResult.setAlbumid(album.getId());
+            plugSearchAlbumResult.setTotal(album.getSongNum()+"");
             plugSearchAlbumResult.setPic(album.getAlbumPicL());
+            plugSearchAlbumResult.setArtistName(album.getSinger().stream().map(MgSearchAlbumResult.AlbumsDTO.SingerDTO::getName).collect(Collectors.joining(",")));
+            plugSearchAlbumResult.setArtistid(album.getSinger().stream().map(MgSearchAlbumResult.AlbumsDTO.SingerDTO::getId).collect(Collectors.joining(",")));
+
             plugSearchAlbumResult.setSearchType(SearchType.MG.getValue());
             plugSearchMusicResults.add(plugSearchAlbumResult);
         }
