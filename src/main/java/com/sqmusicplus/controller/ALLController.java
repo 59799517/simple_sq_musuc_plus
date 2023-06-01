@@ -13,8 +13,6 @@ import com.sqmusicplus.plug.base.PlugBrType;
 import com.sqmusicplus.plug.base.SearchType;
 import com.sqmusicplus.plug.base.hander.SearchHanderAbstract;
 import com.sqmusicplus.plug.entity.*;
-import com.sqmusicplus.plug.kw.entity.SearchAlbumResult;
-import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.hander.NKwSearchHander;
 import com.sqmusicplus.plug.mg.hander.MgHander;
 import com.sqmusicplus.plug.utils.TypeUtils;
