@@ -10,13 +10,11 @@ import com.sqmusicplus.plug.base.hander.SearchHanderAbstract;
 import com.sqmusicplus.plug.entity.*;
 import com.sqmusicplus.plug.kw.config.KwConfig;
 import com.sqmusicplus.plug.kw.entity.*;
-import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.kw.enums.KwSearchType;
 import com.sqmusicplus.plug.utils.Base64Coder;
 import com.sqmusicplus.plug.utils.KuwoDES;
 import com.sqmusicplus.plug.utils.LrcUtils;
 import com.sqmusicplus.utils.DownloadUtils;
-import com.sqmusicplus.utils.EhCacheUtil;
 import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -273,7 +271,22 @@ public class NKwSearchHander extends SearchHanderAbstract {
     @Override
     public HashMap<String, String> getDownloadUrl(String musicId, PlugBrType brType) {
         String downloadurl = config.getDownloadurl();
-        String s = "user=e3cc098fd4c59ce2&android_id=e3cc098fd4c59ce2&prod=kwplayer_ar_9.3.1.3&corp=kuwo&newver=2&vipver=9.3.1.3&source=kwplayer_ar_9.3.1.3_qq.apk&p2p=1&notrace=0&type=convert_url2&br=#{brvalue}&format=flac|mp3|aac&sig=0&rid=#{musicId}&priority=bitrate&loginUid=435947810&network=WIFI&loginSid=1694167478&mode=download&uid=658048466";
+        String s = "";
+
+        if (brType.getType().equals("flac")) {
+            s = "corp=kuwo&p2p=1&type=convert_url2&format=flac&rid=${id}";
+        } else if (brType.getType().equals("ape")) {
+          s = "corp=kuwo&p2p=1&type=convert_url2&format=ape&rid=${id}";
+        } else if (brType.getValue().equals("320kmp3")) {
+            //320 MP3
+            s = "corp=kuwo&p2p=1&type=convert_url2&format=mp3&rid=${id}&mode=download";
+        }else if (brType.getValue().equals("128kmp3")){
+            s = "corp=kuwo&p2p=1&type=convert_url2&format=mp3|aac&rid=${id}";
+        } else {
+            //未知类型就限定flac格式
+            s = "corp=kuwo&p2p=1&type=convert_url2&format=flac&rid=${id}";
+        };
+
         try {
             if (!inspect(brType.getSearchType())) {
                 return null;

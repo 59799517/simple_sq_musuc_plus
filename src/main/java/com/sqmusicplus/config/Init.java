@@ -2,13 +2,11 @@ package com.sqmusicplus.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.sqmusicplus.entity.DownloadEntity;
 import com.sqmusicplus.entity.SqConfig;
 import com.sqmusicplus.plug.subsonic.SubsonicHander;
 import com.sqmusicplus.plug.subsonic.config.NowPlayList;
 import com.sqmusicplus.plug.subsonic.entity.SubsonicPlayList;
 import com.sqmusicplus.service.SqConfigService;
-import com.sqmusicplus.utils.EhCacheUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,8 +27,6 @@ import java.util.List;
 @Slf4j
 @Configuration
 public class Init implements ApplicationRunner {
-    @Autowired
-    private DownloadTask downloadTask;
     @Autowired
     private SqConfigService configService;
     @Autowired
@@ -56,18 +52,15 @@ public class Init implements ApplicationRunner {
             }
         }
         log.info("启动完毕：http://localhost:{}", port);
-        List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
-        for (Object value : values) {
-            DownloadEntity downloadEntity = (DownloadEntity) value;
-            try {
-                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-            } catch (Exception e) {
-
-            }
-        }
-        if (Boolean.getBoolean(init_download.getConfigValue())) {
-            downloadTask.execute();
-        }
+//        List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
+//        for (Object value : values) {
+//            DownloadEntity downloadEntity = (DownloadEntity) value;
+//            try {
+//                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
+//                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+//            } catch (Exception e) {
+//
+//            }
+//        }
     }
 }

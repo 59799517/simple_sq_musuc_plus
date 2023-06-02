@@ -6,6 +6,9 @@ spring:
     driver-class-name: org.sqlite.JDBC
     username:
     password:
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
   profiles:
     active: plug
   mvc:

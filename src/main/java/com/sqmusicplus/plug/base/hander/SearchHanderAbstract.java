@@ -9,12 +9,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.sqmusicplus.entity.*;
 import com.sqmusicplus.service.SqConfigService;
 import com.sqmusicplus.utils.DownloadUtils;
-import com.sqmusicplus.utils.EhCacheUtil;
 import com.sqmusicplus.utils.MusicUtils;
 import com.sqmusicplus.utils.StringUtils;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import task.Task;
+import task.entity.TaskLog;
 
 import java.io.File;
 import java.io.Serializable;
@@ -68,18 +70,29 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> , Seria
             HashMap<String, String> stringStringHashMap = searchHander.getDownloadUrl(downloadEntity.getMusicid() + "", downloadEntity.getBrType());
             File type = new File(file, basepath + music.getMusicName().trim() + " - " + music.getMusicArtists().trim() + "." + stringStringHashMap.get("type"));
             log.debug("开始下载---->{}", music.getMusicName());
-            if (Boolean.valueOf(configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.override.download")).getConfigValue())) {
-                if (type.exists()) {
-                    EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-                    EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-                    return;
+            //创建任务
+            Task<DownloadEntity> downloadEntityTask = new Task<DownloadEntity>(downloadEntity.getMusicid());
+            downloadEntityTask.setAction(()->{
+                if (Boolean.valueOf(configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.override.download")).getConfigValue())) {
+                    if (type.exists()) {
+                        downloadEntityTask.getTaskLogs().add(new TaskLog("重复数据无需下载"));
+                        //存在并且不需要重复下载
+                        return downloadEntity;
+                    }
+                }else{
+                    if (type.exists()) {
+                        downloadEntityTask.getTaskLogs().add(new TaskLog("重复数据无需下载"));
+                        //存在并且不需要重复下载
+                        return downloadEntity;
+                    }
                 }
-            }
+                return downloadEntity;
+            });
+
+
             if (StringUtils.isEmpty(stringStringHashMap.get("url"))) {
-                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-                EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
                 log.debug("下载失败{}", music.getMusicName());
-                return;
+                throw new RuntimeException("下载失败:"+music.getMusicName());
             }
             DownloadUtils.download(stringStringHashMap.get("url"), type, onSuccess -> {
                 String albumID = music.getAlbumId();
@@ -147,14 +160,13 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> , Seria
                     extracted(music, onSuccess, albumfile, downloadEntity);
                 }
             }, onFailure -> {
-                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-                EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
                 log.debug("下载失败{}", music.getMusicName());
+                throw new RuntimeException("下载失败:"+music.getMusicName());
             });
 
         } catch (Exception e) {
-            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-            EhCacheUtil.put(EhCacheUtil.ERROR_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+            log.debug("下载失败{}", downloadEntity.getMusicname());
+            throw new RuntimeException("下载失败:"+downloadEntity.getMusicname());
         }
     }
 
@@ -180,15 +192,12 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> , Seria
         //修改文件
         try {
             MusicUtils.setMediaFileInfo(onSuccess, music.getMusicName(), music.getMusicAlbum(), music.getMusicArtists(), "SqMusic", music.getMusicLyric(), albumfile);
-            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-            EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
             log.debug("下载成功{}", music.getMusicName());
         } catch (Exception e) {
-            EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-            EhCacheUtil.put(EhCacheUtil.OVER_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
             log.debug("下载错误{}  ----------> {}", music.getMusicName(), e.getMessage());
             log.error(e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("下载失败:"+downloadEntity.getMusicname()+"------->"+ e.getMessage());
         }
     }
 

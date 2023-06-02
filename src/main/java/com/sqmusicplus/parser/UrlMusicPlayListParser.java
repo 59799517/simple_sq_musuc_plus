@@ -9,12 +9,12 @@ import com.sqmusicplus.plug.base.SearchType;
 import com.sqmusicplus.plug.kw.enums.DownloadPlaylistType;
 import com.sqmusicplus.plug.kw.hander.NKwSearchHander;
 import com.sqmusicplus.plug.utils.TypeUtils;
-import com.sqmusicplus.utils.EhCacheUtil;
-import com.sqmusicplus.utils.StringUtils;
+import com.sqmusicplus.utils.TaksUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
+import task.TaskExcuteHander;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,6 +34,8 @@ public class UrlMusicPlayListParser extends URLParser {
 
     @Autowired
     private NKwSearchHander kwSearchHander;
+    @Autowired
+    TaskExcuteHander taskExcuteHander;
 
 
     @Autowired
@@ -58,7 +60,7 @@ public class UrlMusicPlayListParser extends URLParser {
                     music.setMusicAlbum(downlaodParserUrl.getArtist());
                     threadPoolTaskExecutor.execute(() ->{
                         DownloadEntity downloadEntity = kwSearchHander.downloadSong(music, plugType, downlaodParserUrl.getIsAudioBook(), downlaodParserUrl.getSubsonicPlayListName());
-                        EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+                        taskExcuteHander.start(TaksUtils.DownloadEntityConvertTask(downloadEntity));
                     } );
                 }
 
@@ -66,16 +68,7 @@ public class UrlMusicPlayListParser extends URLParser {
                 String[] split = url.split("/");
                 String id = split[split.length - 1];
                 ArrayList<DownloadEntity> downloadEntities = kwSearchHander.downloadAlbum(id, plugType, downlaodParserUrl.getSubsonicPlayListName(), downlaodParserUrl.getArtist(), downlaodParserUrl.getIsAudioBook(), downlaodParserUrl.getBookName());
-                downloadEntities.forEach(e->{
-                    threadPoolTaskExecutor.execute(() ->{
-                        EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, e.getMusicid(), e);
-                    } );
-                });
-
-
-
-
-
+                taskExcuteHander.start(TaksUtils.DownloadEntityConvertTask(downloadEntities));
 
             }
 

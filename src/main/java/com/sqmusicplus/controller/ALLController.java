@@ -17,19 +17,23 @@ import com.sqmusicplus.plug.kw.hander.NKwSearchHander;
 import com.sqmusicplus.plug.mg.hander.MgHander;
 import com.sqmusicplus.plug.utils.TypeUtils;
 import com.sqmusicplus.service.SqConfigService;
-import com.sqmusicplus.utils.EhCacheUtil;
 import com.sqmusicplus.utils.StringUtils;
+import com.sqmusicplus.utils.TaksUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
+import task.Task;
+import task.TaskExcuteHander;
+import task.entity.enums.TaskStatus;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -55,6 +59,9 @@ public class ALLController {
     private UrlMusicPlayListParser urlMusicPlayListParser;
     @Autowired
     private SqConfigService configService;
+
+    @Autowired
+    TaskExcuteHander taskExcuteHander;
 
 
 
@@ -126,15 +133,11 @@ public class ALLController {
 
         Music finalMusic = music;
         if (searchType.equals(kutype.getValue())){
-            threadPoolTaskExecutor.execute(() -> {
-                DownloadEntity downloadEntity = kwHander.downloadSong(finalMusic.getId(), finalPlugType, finalMusic.getMusicName(), finalMusic.getMusicArtists(), finalMusic.getMusicAlbum(), false, downloadSong.getSubsonicPlayListName());
-                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-            });
+            DownloadEntity downloadEntity = kwHander.downloadSong(finalMusic.getId(), finalPlugType, finalMusic.getMusicName(), finalMusic.getMusicArtists(), finalMusic.getMusicAlbum(), false, downloadSong.getSubsonicPlayListName());
+            taskExcuteHander.start(TaksUtils.DownloadEntityConvertTask(downloadEntity));
         }else{
-            threadPoolTaskExecutor.execute(() -> {
-                DownloadEntity downloadEntity = mgHander.downloadSong(finalMusic.getId(), finalPlugType, finalMusic.getMusicName(), finalMusic.getMusicArtists(), finalMusic.getMusicAlbum(), false, downloadSong.getSubsonicPlayListName());
-                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-            });
+            DownloadEntity downloadEntity = mgHander.downloadSong(finalMusic.getId(), finalPlugType, finalMusic.getMusicName(), finalMusic.getMusicArtists(), finalMusic.getMusicAlbum(), false, downloadSong.getSubsonicPlayListName());
+            taskExcuteHander.start(TaksUtils.DownloadEntityConvertTask(downloadEntity));
         }
         return AjaxResult.success(true);
     }
@@ -208,15 +211,13 @@ public class ALLController {
         PlugBrType finalPlugType = plugType;
         threadPoolTaskExecutor.execute(()->{
             if (downlaodAlubm.getPlugType().equals(kutype.getValue())) {
-
                 List<DownloadEntity> downloadEntities = kwHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
-                downloadEntities.forEach(e -> EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, e.getMusicid(), e));
+                taskExcuteHander.start(TaksUtils.DownloadEntityConvertTask(downloadEntities));
             }else if (downlaodAlubm.getPlugType().equals(mgtype.getValue())){
                 List<DownloadEntity> downloadEntities = mgHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
-                downloadEntities.forEach(e -> EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, e.getMusicid(), e));
+                taskExcuteHander.start(TaksUtils.DownloadEntityConvertTask(downloadEntities));
             }
         });
-
         return AjaxResult.success(true);
     }
     /**
@@ -262,10 +263,10 @@ public class ALLController {
         threadPoolTaskExecutor.execute(()->{
             if (downlaodAlubm.getPlugType().equals(kutype.getValue())) {
                 ArrayList<DownloadEntity> downloadEntities = kwHander.downloadAlbum(downlaodAlubm.getId(), finalPlugType, downlaodAlubm.getSubsonicPlayListName(), "", false, "");
-                downloadEntities.forEach(e->EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, e.getMusicid(), e));
+                taskExcuteHander.start(TaksUtils.DownloadEntityConvertTask(downloadEntities));
             }else if (downlaodAlubm.getPlugType().equals(mgtype.getValue())){
                 ArrayList<DownloadEntity> downloadEntities = mgHander.downloadAlbum(downlaodAlubm.getId(), finalPlugType, downlaodAlubm.getSubsonicPlayListName(), "", false, "");
-                downloadEntities.forEach(e->EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, e.getMusicid(), e));
+                taskExcuteHander.start(TaksUtils.DownloadEntityConvertTask(downloadEntities));
             }
         });
 
@@ -276,10 +277,11 @@ public class ALLController {
     @GetMapping("/getTask")
     public AjaxResult taskStatus(){
         HashMap<String, List> stringListHashMap = new HashMap<>();
-        List<Object> ready = EhCacheUtil.values(EhCacheUtil.READY_DOWNLOAD);
-        List<Object> success = EhCacheUtil.values(EhCacheUtil.OVER_DOWNLOAD);
-        List<Object> error = EhCacheUtil.values(EhCacheUtil.ERROR_DOWNLOAD);
-        List<Object> run = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
+        List<Task<DownloadEntity>> tasks = taskExcuteHander.getTasks();
+        List<Task<DownloadEntity>> run = tasks.stream().filter(e -> e.getStatus().equals(TaskStatus.RUNNING)).collect(Collectors.toList());
+        List<Task<DownloadEntity>> ready = tasks.stream().filter(e -> e.getStatus().equals(TaskStatus.NOT_START)).collect(Collectors.toList());
+        List<Task<DownloadEntity>> error = tasks.stream().filter(e -> e.getStatus().equals(TaskStatus.ERROR)).collect(Collectors.toList());
+        List<Task<DownloadEntity>> success = tasks.stream().filter(e -> e.getStatus().equals(TaskStatus.SUCCESS)).collect(Collectors.toList());
         stringListHashMap.put("ready",ready);
         stringListHashMap.put("success",success);
         stringListHashMap.put("error",error);
@@ -289,49 +291,49 @@ public class ALLController {
     @SaCheckLogin
     @GetMapping("/delErrorTask")
     public AjaxResult delErrorTask(){
-        EhCacheUtil.removeaLL(EhCacheUtil.ERROR_DOWNLOAD);
+        List<Task<DownloadEntity>> tasks = taskExcuteHander.getTasks();
+        List<Task<DownloadEntity>> error = tasks.stream().filter(e -> e.getStatus().equals(TaskStatus.ERROR)).collect(Collectors.toList());
+        taskExcuteHander.removeTask(error);
         return AjaxResult.success(true);
     }
     @SaCheckLogin
     @GetMapping("/delSuccessTask")
     public AjaxResult delSuccessTask(){
-        EhCacheUtil.removeaLL(EhCacheUtil.OVER_DOWNLOAD);
+        List<Task<DownloadEntity>> tasks = taskExcuteHander.getTasks();
+        List<Task<DownloadEntity>> success = tasks.stream().filter(e -> e.getStatus().equals(TaskStatus.SUCCESS)).collect(Collectors.toList());
+        taskExcuteHander.removeTask(success);
         return AjaxResult.success(true);
     }
     @SaCheckLogin
     @GetMapping("/delAllTask")
     public AjaxResult delAllTask(){
-        EhCacheUtil.removeaLL(EhCacheUtil.ERROR_DOWNLOAD);
-        EhCacheUtil.removeaLL(EhCacheUtil.OVER_DOWNLOAD);
-        EhCacheUtil.removeaLL(EhCacheUtil.READY_DOWNLOAD);
-        EhCacheUtil.removeaLL(EhCacheUtil.RUN_DOWNLOAD);
+        List<Task<DownloadEntity>> tasks = taskExcuteHander.getTasks();
+        taskExcuteHander.removeTask(tasks);
         return AjaxResult.success(true);
     }
-    @SaCheckLogin
-    @GetMapping("/refreshTask")
-    public AjaxResult refreshTask(){
-        List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
-        for (Object value : values) {
-            DownloadEntity downloadEntity = (DownloadEntity) value;
-            try {
-                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD,downloadEntity.getMusicid());
-                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getMusicid(),downloadEntity);
-            } catch (Exception e) {
-
-            }
-        }
-        return AjaxResult.success(true);
-    }
+//    @SaCheckLogin
+//    @GetMapping("/refreshTask")
+//    public AjaxResult refreshTask(){
+//        List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
+//        for (Object value : values) {
+//            DownloadEntity downloadEntity = (DownloadEntity) value;
+//            try {
+//                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD,downloadEntity.getMusicid());
+//                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getMusicid(),downloadEntity);
+//            } catch (Exception e) {
+//
+//            }
+//        }
+//        return AjaxResult.success(true);
+//    }
 
     @SaCheckLogin
     @GetMapping("/againTask")
     public AjaxResult againTask(){
-        List<Object> values1 = EhCacheUtil.values(EhCacheUtil.ERROR_DOWNLOAD);
-        for (Object o : values1) {
-            DownloadEntity downloadEntity = (DownloadEntity)o;
-            EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD,downloadEntity.getMusicid(),downloadEntity);
-            EhCacheUtil.remove(EhCacheUtil.ERROR_DOWNLOAD,downloadEntity.getMusicid());
-        }
+        List<Task<DownloadEntity>> tasks = taskExcuteHander.getTasks();
+        List<Task<DownloadEntity>> error = tasks.stream().filter(e -> e.getStatus().equals(TaskStatus.ERROR)).collect(Collectors.toList());
+        taskExcuteHander.removeTask(error);
+        taskExcuteHander.start(error);
         return AjaxResult.success(true);
     }
 
@@ -415,12 +417,12 @@ public class ALLController {
                         if (StringUtils.isEmpty(subsonicPlayListName)){
                             threadPoolTaskExecutor.execute(() -> {
                                 DownloadEntity downloadEntity = finalSearchHander.downloadSong(finalMusic, plugType, false, subsonicPlayListName);
-                                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+                                taskExcuteHander.start(TaksUtils.DownloadEntityConvertTask(downloadEntity));
                                     });
                         }else{
                             threadPoolTaskExecutor.execute(() ->{
                                 DownloadEntity downloadEntity = finalSearchHander.downloadSong(finalMusic, plugType, true, subsonicPlayListName);
-                                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
+                                taskExcuteHander.start(TaksUtils.DownloadEntityConvertTask(downloadEntity));
                             } );
                         }
                     } else {
@@ -475,43 +477,10 @@ public class ALLController {
         }else{
             return AjaxResult.error("不支持");
         }
-
-
-
-
-//        return AjaxResult.success(true);
-
     }
 
 
-//    @RequestMapping(value = "loginHtml", produces = "text/html")
-//    public String LoginHtml(String username, String password, HttpServletResponse response) throws IOException {
-//        SqConfig suser = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.username"));
-//        SqConfig spwd = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "system.password"));
-//        if (suser.getConfigValue().equals(username) && spwd.getConfigValue().equals(password)) {
-//            StpUtil.login(10001);
-//            response.sendRedirect("/index.html");
-//        }
-//        String html = "<!DOCTYPE html>\n" +
-//                "<html lang=\"zh\">\n" +
-//                "<head>\n" +
-//                "    <meta charset=\"UTF-8\">\n" +
-//                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
-//                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-//                "    <title>登录</title>\n" +
-//                "</head>\n" +
-//                "<body>\n" +
-//                "    <h2>登录</h2>\n" +
-//                "     <div> 登录失败:请输入用户名密码</div>       \n" +
-//                "    <form name=\"form\" method=\"post\" action=\"/login\">\n" +
-//                "    <div>用户名：<input type=\"text\" name=\"username\"></div>\n" +
-//                "    <div>密码：<input  type=\"password\" name=\"password\"></div>\n" +
-//                "    <div><button type=\"submit\">登录</button></div>\n" +
-//                "</form>\n" +
-//                "</body>\n" +
-//                "</html>";
-//        return html;
-//    }
+
 
     @RequestMapping(value = "login",method = RequestMethod.POST)
     public AjaxResult login(@RequestBody HashMap<String,String> data )  {

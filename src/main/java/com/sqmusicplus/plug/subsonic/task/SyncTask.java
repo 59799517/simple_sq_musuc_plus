@@ -5,7 +5,6 @@ import com.sqmusicplus.entity.DownloadEntity;
 import com.sqmusicplus.plug.subsonic.SubsonicHander;
 import com.sqmusicplus.plug.subsonic.entity.SubsonicPlayList;
 import com.sqmusicplus.plug.subsonic.entity.SubsonicSong;
-import com.sqmusicplus.utils.EhCacheUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,13 +28,8 @@ public class SyncTask {
     private SubsonicHander subsonicHander;
 
 
-    @Scheduled(cron = "0 0/2 * * * *")
-    public void excute() {
-        int size = EhCacheUtil.size(EhCacheUtil.SUBSONIC_SYNC);
-        if (size > 0) {
-            List<Object> objects = EhCacheUtil.get(EhCacheUtil.SUBSONIC_SYNC, size);
-            for (Object object : objects) {
-                DownloadEntity downloadEntity = (DownloadEntity) object;
+    public void excute(DownloadEntity downloadEntity) {
+
                 String addSubsonicPlayListName = downloadEntity.getAddSubsonicPlayListName();
                 ArrayList<SubsonicPlayList> subsonicPlayList = subsonicHander.getSubsonicPlayList();
                 boolean isExist = false;
@@ -65,7 +59,6 @@ public class SyncTask {
                         GlobalStatic.SUBSONIC_SYNC_COUNT.put(downloadEntity.getMusicid(), 1);
                     } else {
                         if (integer.intValue() == GlobalStatic.SUBSONIC_SYNC_MAXIMUM_STATISTICS.intValue()) {
-                            EhCacheUtil.remove(EhCacheUtil.SUBSONIC_SYNC, downloadEntity.getMusicid());
                             GlobalStatic.SUBSONIC_SYNC_COUNT.remove(downloadEntity.getMusicid());
                         } else {
                             int i = integer.intValue();
@@ -84,11 +77,6 @@ public class SyncTask {
                     //添加至歌单
                     subsonicHander.addToPlayList(PlayListId, id);
                 }
-
-            }
-
-        }
-
     }
 
 

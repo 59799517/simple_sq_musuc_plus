@@ -1,12 +1,10 @@
 package com.sqmusicplus;
 
 import com.github.plexpt.chatgpt.Chatbot;
-import com.sqmusicplus.plug.kw.enums.KwBrType;
 import com.sqmusicplus.plug.utils.Base64Coder;
 import com.sqmusicplus.plug.utils.KuwoDES;
 import com.sqmusicplus.utils.DownloadUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import ws.schild.jave.EncoderException;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.info.MultimediaInfo;

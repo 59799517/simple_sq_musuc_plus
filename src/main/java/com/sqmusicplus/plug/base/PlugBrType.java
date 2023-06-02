@@ -4,7 +4,11 @@ package com.sqmusicplus.plug.base;
 
 public enum PlugBrType {
 
-    MP3_128(SearchType.WK, "128kmp3", "mp3", 128,SearchType.WK.value), MP3_192(SearchType.WK, "192kmp3", "mp3", 192,SearchType.WK.value), MP3_320(SearchType.WK, "320kmp3", "mp3", 320,SearchType.WK.value), APE_1000(SearchType.WK, "1000kape", "ape", 1000,SearchType.WK.value), FLAC_2000(SearchType.WK, "2000kflac", "flac", 2000,SearchType.WK.value),
+    MP3_128(SearchType.WK, "128kmp3", "mp3", 128,SearchType.WK.value),
+    MP3_192(SearchType.WK, "192kmp3", "mp3", 192,SearchType.WK.value),
+    MP3_320(SearchType.WK, "320kmp3", "mp3", 320,SearchType.WK.value),
+    APE_1000(SearchType.WK, "1000kape", "ape", 1000,SearchType.WK.value),
+    FLAC_2000(SearchType.WK, "2000kflac", "flac", 2000,SearchType.WK.value),
     MG_FLAC_2000(SearchType.MG,"ZQ","flac",2000,SearchType.MG.value),
     MG_M4A_1000(SearchType.MG,"SQ","m4a",1000,SearchType.MG.value),
     MG_MP3_320(SearchType.MG,"HQ","mp3",320,SearchType.MG.value),
