@@ -21,6 +21,7 @@ import task.entity.TaskLog;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -75,12 +76,16 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> , Seria
             downloadEntityTask.setAction(()->{
                 if (Boolean.valueOf(configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.override.download")).getConfigValue())) {
                     if (type.exists()) {
+                        List<TaskLog> taskLogs = downloadEntityTask.getTaskLogs();
+                        taskLogs.add(new TaskLog("重复数据无需下载"));
                         downloadEntityTask.getTaskLogs().add(new TaskLog("重复数据无需下载"));
                         //存在并且不需要重复下载
                         return downloadEntity;
                     }
                 }else{
                     if (type.exists()) {
+                        List<TaskLog> taskLogs = downloadEntityTask.getTaskLogs();
+                        taskLogs.add(new TaskLog("重复数据无需下载"));
                         downloadEntityTask.getTaskLogs().add(new TaskLog("重复数据无需下载"));
                         //存在并且不需要重复下载
                         return downloadEntity;

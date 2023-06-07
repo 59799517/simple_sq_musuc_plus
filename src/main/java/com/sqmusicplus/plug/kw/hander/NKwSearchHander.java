@@ -274,19 +274,19 @@ public class NKwSearchHander extends SearchHanderAbstract {
         String s = "";
 
         if (brType.getType().equals("flac")) {
-            s = "corp=kuwo&p2p=1&type=convert_url2&format=flac&rid=${id}";
+            s = "corp=kuwo&p2p=1&type=convert_url2&format=flac&rid=#{musicId}";
         } else if (brType.getType().equals("ape")) {
-          s = "corp=kuwo&p2p=1&type=convert_url2&format=ape&rid=${id}";
+          s = "corp=kuwo&p2p=1&type=convert_url2&format=ape&rid=#{musicId}";
         } else if (brType.getValue().equals("320kmp3")) {
             //320 MP3
-            s = "corp=kuwo&p2p=1&type=convert_url2&format=mp3&rid=${id}&mode=download";
+            s="user=0&android_id=0&prod=kwplayer_ar_9.3.1.3&corp=kuwo&newver=3&vipver=9.3.1.3&source=kwplayer_ar_9.3.1.3_qq.apk&p2p=1&notrace=0&type=convert_url2&format=flac|mp3|aac&sig=0&rid=#{musicId}&priority=bitrate&loginUid=0&network=WIFI&loginSid=0&mode=download";
+//            s = "corp=kuwo&p2p=1&type=convert_url2&format=mp3&rid=#{musicId}&mode=download";
         }else if (brType.getValue().equals("128kmp3")){
-            s = "corp=kuwo&p2p=1&type=convert_url2&format=mp3|aac&rid=${id}";
+            s = "corp=kuwo&p2p=1&type=convert_url2&format=mp3|aac&rid=#{musicId}";
         } else {
             //未知类型就限定flac格式
-            s = "corp=kuwo&p2p=1&type=convert_url2&format=flac&rid=${id}";
+            s = "corp=kuwo&p2p=1&type=convert_url2&format=flac&rid=#{musicId}";
         };
-
         try {
             if (!inspect(brType.getSearchType())) {
                 return null;
@@ -302,6 +302,17 @@ public class NKwSearchHander extends SearchHanderAbstract {
         }
         try {
             String s1 = DownloadUtils.getHttp().sync(downloadurl).get().getBody().toByteString().utf8();
+            if (StringUtils.isEmpty(s1)){
+                try {
+                    if (brType.getType().equals("320kmp3")&&StringUtils.isEmpty(s1)){
+                        return null;
+                    }
+                   return getDownloadUrl(musicId, PlugBrType.MP3_320);
+                } catch (Exception e) {
+//                    throw new RuntimeException(e);
+                    return null;
+                }
+            }
             String bitrate = s1.split("\n")[1].split("=")[1];
             String format = s1.split("\n")[0].split("=")[1];
             downloadurl = s1.split("\n")[2].split("=")[1].split("\r")[0];

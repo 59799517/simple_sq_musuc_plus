@@ -2,6 +2,8 @@ package com.sqmusicplus.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.sqmusicplus.entity.SqConfig;
 import com.sqmusicplus.plug.subsonic.SubsonicHander;
 import com.sqmusicplus.plug.subsonic.config.NowPlayList;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
@@ -63,4 +66,6 @@ public class Init implements ApplicationRunner {
 //            }
 //        }
     }
+
+
 }

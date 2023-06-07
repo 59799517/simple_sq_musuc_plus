@@ -1,8 +1,6 @@
 FROM tomcat:8.5.87-jre17-temurin-focal
-
 #接口地址
 EXPOSE 8080
-
 MAINTAINER 59799517@qq.com
 
 COPY ./web /usr/local/tomcat/webapps/ROOT

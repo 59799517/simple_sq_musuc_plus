@@ -1,5 +1,6 @@
 package com.sqmusicplus.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sqmusicplus.plug.base.PlugBrType;
 import com.sqmusicplus.plug.base.hander.SearchHander;
 import com.sqmusicplus.plug.base.hander.SearchHanderAbstract;
@@ -61,7 +62,7 @@ public class DownloadEntity implements Serializable {
      */
     String addSubsonicPlayListName;
 
-
+    @JsonIgnore
     SearchHanderAbstract searchHander;
 
 

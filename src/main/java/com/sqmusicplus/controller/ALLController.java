@@ -381,7 +381,6 @@ public class ALLController {
     @PostMapping("/downloadParser")
     public AjaxResult downloadParser(@RequestBody DownlaodParserText data) throws IOException {
         String text = data.getText();
-
         SearchType kutype = kwHander.getSearchType();
         SearchType mgtype = mgHander.getSearchType();
         SearchHanderAbstract searchHander = null;
@@ -396,7 +395,6 @@ public class ALLController {
         SearchHanderAbstract finalSearchHander = searchHander;
         threadPoolTaskExecutor.execute(()->{
             for (ParserEntity parserEntity : parser) {
-
                 PlugSearchResult<PlugSearchMusicResult> plugSearchMusicResultPlugSearchResult = null;
                 try {
                     plugSearchMusicResultPlugSearchResult = finalSearchHander.querySongByName(new SearchKeyData().setSearchkey(parserEntity.getSongName() + " " + parserEntity.getArtistsName()).setPageIndex(0).setPageSize(5));

@@ -7,8 +7,7 @@ spring:
     username:
     password:
   jackson:
-    serialization:
-      fail-on-empty-beans: false
+    default-property-inclusion: non_null
   profiles:
     active: plug
   mvc:

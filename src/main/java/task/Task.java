@@ -1,6 +1,7 @@
 package task;
 
 import cn.hutool.core.util.IdUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import task.entity.TaskConfig;
 import task.entity.TaskLog;
 import task.entity.enums.TaskStatus;
@@ -54,6 +55,7 @@ public class Task<T> {
      */
     private TaskStatus status;
 
+    @JsonIgnore
     private Callable<T> action;
     /**
      * 执行完成后通知下一个任务
