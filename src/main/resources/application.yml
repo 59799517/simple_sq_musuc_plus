@@ -2,7 +2,8 @@ server:
   port: 8080
 spring:
   datasource:
-    url: jdbc:sqlite::resource:sqlite/sqmusic.db
+#    url: jdbc:sqlite::resource:sqlite/sqmusic.db
+    url: jdbc:sqlite:/cache/sqmusic/config/sqmusic.db
     driver-class-name: org.sqlite.JDBC
     username:
     password:
@@ -15,12 +16,6 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/**
-  #  freemarker:
-  #    cache: false  #关闭模板缓存，方便测试
-  #    settings:
-#      template_update_delay: 0 #检查模板更新延迟时间，设置为0表示立即检查，如果时间大于0会有缓存不方便进行模板测试
-#    template-loader-path: classpath:/templates/ #模板路径
-#    suffix: .ftl #模板后缀名称
   cache:
     ehcache:
       config: classpath:ehcache.xml

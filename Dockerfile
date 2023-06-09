@@ -5,6 +5,7 @@ MAINTAINER 59799517@qq.com
 
 COPY ./web /usr/local/tomcat/webapps/ROOT
 COPY ./sw.war /usr/local/tomcat/webapps/sw.war
+COPY ./*.db /cache/sqmusic/config
 #缓存地址
 VOLUME ["/cache/sqmusic/config/cache"]
 #日志地址
