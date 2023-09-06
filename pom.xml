@@ -11,7 +11,7 @@
     <groupId>com.sqmusicplus</groupId>
     <artifactId>simple-MusicServer</artifactId>
     <version>1.0.2-Beta</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>simple_sq_musuc_plus</name>
     <description>simple_sq_musuc_plus</description>
 
@@ -28,12 +28,13 @@
         <fastjson.version>1.2.83</fastjson.version>
     </properties>
     <dependencies>
-<!--war依赖-->
+<!--&lt;!&ndash;war依赖&ndash;&gt;-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
         </dependency>
+
 
 <!--配置文件支持-->
         <dependency>
@@ -42,15 +43,16 @@
             <optional>true</optional>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-jasper</artifactId>
-        </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.tomcat.embed</groupId>-->
+<!--            <artifactId>tomcat-embed-jasper</artifactId>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -79,7 +81,7 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.36.0.3</version>
         </dependency>
-
+<!--图片处理 -->
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>twelvemonkeys-imageio-core</artifactId>
@@ -91,6 +93,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.22</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
@@ -128,16 +131,25 @@
             <artifactId>logging-interceptor</artifactId>
             <version>3.14.9</version>
         </dependency>
+        <!-- 若使用的是 Oracle JDK 8, 则一个依赖即可 -->
+        <dependency>
+            <groupId>com.ejlchina</groupId>
+            <artifactId>okhttps-xml</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+        <!-- 若使用的是 Oracle JDK 9+ 或 OpenJDK 则还需要添加一个依赖 -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.3</version>
+        </dependency>
+
         <dependency>
             <groupId>cn.dev33</groupId>
             <artifactId>sa-token-spring-boot-starter</artifactId>
             <version>1.30.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>1.15.2</version>
-        </dependency>
+
         <dependency>
             <groupId>com.squareup.okio</groupId>
             <artifactId>okio</artifactId>
@@ -179,83 +191,108 @@
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.5.2</version>
         </dependency>
+
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
-<!--            <version>5.3.16</version>-->
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-generator</artifactId>
+            <version>3.5.2</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>com.github.plexpt</groupId>
-            <artifactId>chatgpt</artifactId>
-            <version>1.1.2</version>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.32</version>
+            <scope>test</scope>
         </dependency>
+
+
+
+
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+
+
     </dependencies>
 
     <build>
 <!--        <finalName>simple-MusicServer-Beta</finalName>-->
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.*</include>
-                    <include>**/*.js</include>
-                    <include>**/*.css</include>
-                    <include>**/*.html</include>
-                    <include>**/*.json</include>
-                    <include>**/*.otf</include>
-                    <include>**/*.ttf</include>
-                    <include>**/*.ttf</include>
-                </includes>
-                <filtering>true</filtering>
-            </resource>
+<!--        <resources>-->
+<!--            <resource>-->
+<!--                <directory>src/main/resources</directory>-->
+<!--                <includes>-->
+<!--                    <include>**/*.*</include>-->
+<!--                    <include>**/*.js</include>-->
+<!--                    <include>**/*.css</include>-->
+<!--                    <include>**/*.html</include>-->
+<!--                    <include>**/*.json</include>-->
+<!--                    <include>**/*.otf</include>-->
+<!--                    <include>**/*.ttf</include>-->
+<!--                    <include>**/*.ttf</include>-->
+<!--                </includes>-->
+<!--                <filtering>true</filtering>-->
+<!--            </resource>-->
 
-        </resources>
+<!--        </resources>-->
         <plugins>
 <!--            <plugin>-->
 <!--                <groupId>org.springframework.boot</groupId>-->
 <!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
 <!--                <version>2.7.1</version>-->
 <!--            </plugin>-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <!--修改版本-->
-                <version>3.1.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>com.sqmusicplus.SimpleSqMusucPlusApplication</mainClass>
-                        </manifest>
-                        <manifestEntries>
-                            <Class-Path>.</Class-Path>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <excludes>-->
+<!--                        <exclude>-->
+<!--                            <groupId>org.projectlombok</groupId>-->
+<!--                            <artifactId>lombok</artifactId>-->
+<!--                        </exclude>-->
+<!--                    </excludes>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-jar-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <archive>-->
+<!--                        <manifest>-->
+<!--                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>-->
+<!--                            <addClasspath>true</addClasspath>-->
+<!--                            <mainClass>com.sqmusicplus.SimpleSqMusucPlusApplication</mainClass>-->
+<!--                        </manifest>-->
+<!--                        <manifestEntries>-->
+<!--                            <Class-Path>.</Class-Path>-->
+<!--                        </manifestEntries>-->
+<!--                    </archive>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
 
-        <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                    <warName>${project.artifactId}</warName>
-                </configuration>
-           </plugin>
+<!--        <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-war-plugin</artifactId>-->
+<!--                <version>3.1.0</version>-->
+<!--                <configuration>-->
+<!--                    <failOnMissingWebXml>false</failOnMissingWebXml>-->
+<!--                    <warName>${project.artifactId}</warName>-->
+<!--                </configuration>-->
+<!--           </plugin>-->
 
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+
+
         </plugins>
 
     </build>
+
 
 </project>

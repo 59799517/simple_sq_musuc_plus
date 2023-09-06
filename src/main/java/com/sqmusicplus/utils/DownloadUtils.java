@@ -6,8 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.jsoup.Jsoup;
 
+import javax.net.ssl.*;
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -23,9 +29,24 @@ public class DownloadUtils {
 
    private static HTTP http = null;
 
-    public static HTTP getHttp(){
+    public static HTTP getHttp()  {
         if (http==null){
+
+            SSLContext sslCtx = null;
+            try {
+                sslCtx = SSLContext.getInstance("TLS");
+                sslCtx.init(null, new TrustManager[] { myTrustManager }, new SecureRandom());
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            } catch (KeyManagementException e) {
+                throw new RuntimeException(e);
+            }
+
+            SSLSocketFactory mySSLSocketFactory = sslCtx.getSocketFactory();
+
             HTTP.Builder hb = HTTP.builder().config((OkHttpClient.Builder builder) -> {
+                builder.sslSocketFactory(mySSLSocketFactory, myTrustManager);
+                builder.hostnameVerifier(myHostnameVerifier);
                 // 连接超时时间（默认10秒）
                 builder.connectTimeout(7, TimeUnit.DAYS);
                 // 写入超时时间（默认10秒）
@@ -66,7 +87,6 @@ public class DownloadUtils {
 
     //下载其他的
    public static void download(String url, String path, String fileName, Consumer<Process> onProcess,Consumer<File> onSuccess) {
-
        HTTP http = getHttp();
        HttpResult.Body body = http.async(url)
                 .tag("music")
@@ -94,9 +114,7 @@ public class DownloadUtils {
     public static void download(String url ,File file,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete){
         download(url,file,null,onSuccess,onFailure,onComplete);
     }
-//    public static void download(DownloadEntity downloadEntity,Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete){
-//        download(downloadEntity.getUrl(),downloadEntity.getFile(),onProcess,onSuccess,onFailure,onComplete);
-//    }
+
     public static void download(String url, File file, Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete) {
             //开始下载
             HTTP http = getHttp();
@@ -120,40 +138,35 @@ public class DownloadUtils {
             download.start();
         }
 
-//    public static void download(String url, String path, String fileName,Consumer<File> onSuccess) {
-//        download(url,path,fileName,null,onSuccess);
-//    }
-//    public static void download(String url, String path, String fileName) {
-//        download(url,path,fileName,null,null);
-//    }
+
     public static void download(String url, String path, Consumer<File> onSuccess) {
         download(url,path,null,null,onSuccess);
     }
-//    public static void download(String url, File file,Consumer<File> onSuccess ,Consumer<Download.Failure> onFailure) {
-//        download(url,file,null,onSuccess,onFailure);
-//    }
 
 
+    private static X509TrustManager myTrustManager = new X509TrustManager() {
 
-    public static String  OKBaseHttp(String url){
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
 
-        OkHttpClient client = new OkHttpClient().newBuilder()
-                .build();
-        MediaType mediaType = MediaType.parse("text/plain");
-        RequestBody body = RequestBody.create(mediaType, "");
-        Request request = new Request.Builder()
-                .url("http://m.music.migu.cn/migu/remoting/scr_search_tag?rows=10&type=2&keyword=xingqing&pgc=0")
-                .method("GET", body)
-                .addHeader("Cookie", "JSESSIONID=8F0F4A61ACFEE98F3EBA56CB7AD5A517; CookieID=D55IR5HIY88X7R1EY44JCMULPGDS1M51")
-                .build();
-        try {
-            Response response = client.newCall(request).execute();
-            return response.body().string();
-        } catch (IOException e) {
-            return null;
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
         }
+    };
 
-    }
+    private static HostnameVerifier myHostnameVerifier = new HostnameVerifier() {
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+            return true;
+        }
+    };
+
+
+
 
 
 

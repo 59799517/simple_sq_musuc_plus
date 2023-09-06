@@ -1,6 +1,6 @@
 package com.sqmusicplus.parser;
 
-import com.sqmusicplus.entity.ParserEntity;
+import com.sqmusicplus.base.entity.ParserEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

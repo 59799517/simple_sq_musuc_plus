@@ -1,16 +1,16 @@
 server:
-  port: 8080
+  port: 8099
 spring:
   datasource:
-#    url: jdbc:sqlite::resource:sqlite/sqmusic.db
-    url: jdbc:sqlite:/cache/sqmusic/config/sqmusic.db
+    url: jdbc:sqlite::resource:sqlite/sqmusic2.db
+#    url: jdbc:sqlite:/cache/sqmusic/config/sqmusic.db
     driver-class-name: org.sqlite.JDBC
     username:
     password:
   jackson:
     default-property-inclusion: non_null
   profiles:
-    active: plug
+    active: plug,qq
   mvc:
     static-path-pattern: /**
   web:
@@ -19,16 +19,17 @@ spring:
   cache:
     ehcache:
       config: classpath:ehcache.xml
+  main:
+    allow-circular-references: true
 mybatis-plus:
   # 搜索指定包别名
-  typeAliasesPackage: com.sqmusicplus.entity
+  typeAliasesPackage: com.sqmusicplus.*.entity
   # 配置mapper的扫描，找到所有的mapper.xml映射文件
   mapperLocations: classpath*:mapper/*Mapper.xml
   # 加载全局的配置文件
   configuration:
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
     cache-enabled: true
-  #  typeEnumsPackage: com.txj.zdgh.**.dbenum
   global-config:
     db-config:
       select-strategy: NOT_NULL
@@ -53,4 +54,3 @@ sa-token:
   token-style: uuid
   # 是否输出操作日志
   is-log: false
-

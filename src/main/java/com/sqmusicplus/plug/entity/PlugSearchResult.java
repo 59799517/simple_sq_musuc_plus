@@ -1,6 +1,5 @@
 package com.sqmusicplus.plug.entity;
 
-import com.sqmusicplus.plug.base.SearchType;
 import lombok.Data;
 import lombok.experimental.Accessors;
 

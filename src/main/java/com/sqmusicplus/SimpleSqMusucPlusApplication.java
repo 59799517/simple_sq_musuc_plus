@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class SimpleSqMusucPlusApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ServletInitializer.class, args);
+        SpringApplication.run(SimpleSqMusucPlusApplication.class, args);
     }
 
 }

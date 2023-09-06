@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableCaching
 @EnableTransactionManagement(proxyTargetClass = true)
 @Configuration
-@MapperScan("com.sqmusicplus.mapper")
+@MapperScan("com.sqmusicplus.base.mapper")
 public class MybatisPlusConfig {
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
@@ -31,7 +31,7 @@ public class MybatisPlusConfig {
         // 乐观锁插件
         interceptor.addInnerInterceptor(optimisticLockerInnerInterceptor());
         // 阻断插件
-        interceptor.addInnerInterceptor(blockAttackInnerInterceptor());
+//        interceptor.addInnerInterceptor(blockAttackInnerInterceptor());
         return interceptor;
     }
 
@@ -54,11 +54,11 @@ public class MybatisPlusConfig {
         return new OptimisticLockerInnerInterceptor();
     }
 
-    /**
-     * 如果是对全表的删除或更新操作，就会终止该操作 https://baomidou.com/guide/interceptor-block-attack.html
-     */
-    public BlockAttackInnerInterceptor blockAttackInnerInterceptor() {
-        return new BlockAttackInnerInterceptor();
-    }
+//    /**
+//     * 如果是对全表的删除或更新操作，就会终止该操作 https://baomidou.com/guide/interceptor-block-attack.html
+//     */
+//    public BlockAttackInnerInterceptor blockAttackInnerInterceptor() {
+//        return new BlockAttackInnerInterceptor();
+//    }
 
 }

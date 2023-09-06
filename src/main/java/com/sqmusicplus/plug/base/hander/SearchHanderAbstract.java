@@ -6,18 +6,15 @@ import cn.hutool.core.io.IORuntimeException;
 import cn.hutool.core.util.ReflectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.sqmusicplus.entity.*;
-import com.sqmusicplus.service.SqConfigService;
+import com.sqmusicplus.base.entity.*;
+import com.sqmusicplus.base.service.SqConfigService;
 import com.sqmusicplus.utils.DownloadUtils;
 import com.sqmusicplus.utils.MusicUtils;
+import com.sqmusicplus.utils.SpringContextUtil;
 import com.sqmusicplus.utils.StringUtils;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import task.Task;
-import task.entity.TaskLog;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -32,7 +29,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public abstract class SearchHanderAbstract<T> implements SearchHander<T> , Serializable {
+public abstract class SearchHanderAbstract implements SearchHander, Serializable {
 
     @Autowired
     private SqConfigService configService;
@@ -42,11 +39,9 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> , Seria
     }
 
 
-
     @Override
-    public void dnonloadAndSaveToFile(DownloadEntity downloadEntity) {
+    public void dnonloadAndSaveToFile(DownloadEntity downloadEntity,SearchHander searchHander) {
         try {
-            SearchHanderAbstract searchHander = downloadEntity.getSearchHander();
             //获取歌曲详情
             Music music = searchHander.querySongById(downloadEntity.getMusicid());
             String musicPath = configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.download.path")).getConfigValue();
@@ -72,38 +67,19 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> , Seria
             File type = new File(file, basepath + music.getMusicName().trim() + " - " + music.getMusicArtists().trim() + "." + stringStringHashMap.get("type"));
             log.debug("开始下载---->{}", music.getMusicName());
             //创建任务
-            Task<DownloadEntity> downloadEntityTask = new Task<DownloadEntity>(downloadEntity.getMusicid());
-            downloadEntityTask.setAction(()->{
-                if (Boolean.valueOf(configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.override.download")).getConfigValue())) {
-                    if (type.exists()) {
-                        List<TaskLog> taskLogs = downloadEntityTask.getTaskLogs();
-                        taskLogs.add(new TaskLog("重复数据无需下载"));
-                        downloadEntityTask.getTaskLogs().add(new TaskLog("重复数据无需下载"));
-                        //存在并且不需要重复下载
-                        return downloadEntity;
-                    }
-                }else{
-                    if (type.exists()) {
-                        List<TaskLog> taskLogs = downloadEntityTask.getTaskLogs();
-                        taskLogs.add(new TaskLog("重复数据无需下载"));
-                        downloadEntityTask.getTaskLogs().add(new TaskLog("重复数据无需下载"));
-                        //存在并且不需要重复下载
-                        return downloadEntity;
-                    }
+            if (Boolean.valueOf(configService.getOne(new QueryWrapper<SqConfig>().eq("config_key", "music.override.download")).getConfigValue())) {
+                if (type.exists()) {
+                   log.info("歌曲{}---->已存在不下载",music.getMusicName().trim());
                 }
-                return downloadEntity;
-            });
-
-
+            }
             if (StringUtils.isEmpty(stringStringHashMap.get("url"))) {
                 log.debug("下载失败{}", music.getMusicName());
-                throw new RuntimeException("下载失败:"+music.getMusicName());
+                throw new RuntimeException("下载失败:" + music.getMusicName());
             }
             DownloadUtils.download(stringStringHashMap.get("url"), type, onSuccess -> {
                 String albumID = music.getAlbumId();
-                Integer artistsID = music.getArtistsId();
+                String artistsID = music.getArtistsId();
                 Artists artists = searchHander.queryArtistById(artistsID.toString());
-                artists.setOther(JSONObject.toJSONString(artists.getOther()));
                 String getSearheads = "";
                 try {
                     getSearheads = ReflectUtil.invoke(searchHander.getConfig(), "getSearheads");
@@ -166,12 +142,12 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> , Seria
                 }
             }, onFailure -> {
                 log.debug("下载失败{}", music.getMusicName());
-                throw new RuntimeException("下载失败:"+music.getMusicName());
+                throw new RuntimeException("下载失败:" + music.getMusicName());
             });
 
         } catch (Exception e) {
             log.debug("下载失败{}", downloadEntity.getMusicname());
-            throw new RuntimeException("下载失败:"+downloadEntity.getMusicname());
+            throw new RuntimeException("下载失败:" + downloadEntity.getMusicname());
         }
     }
 
@@ -202,7 +178,7 @@ public abstract class SearchHanderAbstract<T> implements SearchHander<T> , Seria
             log.debug("下载错误{}  ----------> {}", music.getMusicName(), e.getMessage());
             log.error(e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("下载失败:"+downloadEntity.getMusicname()+"------->"+ e.getMessage());
+            throw new RuntimeException("下载失败:" + downloadEntity.getMusicname() + "------->" + e.getMessage());
         }
     }
 

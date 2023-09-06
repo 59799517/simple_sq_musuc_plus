@@ -1,34 +1,18 @@
 package com.sqmusicplus.plug.base.hander;
 
-import com.sqmusicplus.entity.Album;
-import com.sqmusicplus.entity.Artists;
-import com.sqmusicplus.entity.DownloadEntity;
-import com.sqmusicplus.entity.Music;
+import com.sqmusicplus.base.entity.Album;
+import com.sqmusicplus.base.entity.Artists;
+import com.sqmusicplus.base.entity.DownloadEntity;
+import com.sqmusicplus.base.entity.Music;
 import com.sqmusicplus.plug.base.PlugBrType;
-import com.sqmusicplus.plug.base.SearchType;
-import com.sqmusicplus.plug.entity.PlugSearchResult;
-import com.sqmusicplus.plug.entity.SearchKeyData;
+import com.sqmusicplus.plug.entity.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public interface SearchHander<T> {
+public interface SearchHander {
 
-    /**
-     * 是否被选中（根据类型过滤）
-     *
-     * @param searchType
-     * @return
-     */
-    Boolean inspect(SearchType searchType);
-
-    /**
-     * 当前属于那种类型
-     *
-     * @return
-     */
-    SearchType getSearchType();
 
     /**
      * 获得当前搜索的设置
@@ -44,7 +28,7 @@ public interface SearchHander<T> {
      * @param searchKeyData
      * @return 搜索结果
      */
-    PlugSearchResult<T> querySongByName(SearchKeyData searchKeyData);
+    PlugSearchResult<PlugSearchMusicResult> querySongByName(SearchKeyData searchKeyData);
 
     /**
      * 根据歌手名称搜索歌手信息
@@ -52,7 +36,7 @@ public interface SearchHander<T> {
      * @param searchKeyData
      * @return
      */
-    PlugSearchResult<T> queryArtistByName(SearchKeyData searchKeyData);
+    PlugSearchResult<PlugSearchArtistResult> queryArtistByName(SearchKeyData searchKeyData);
 
     /**
      * 根据专辑名称搜索专辑信息
@@ -60,7 +44,7 @@ public interface SearchHander<T> {
      * @param searchKeyData
      * @return
      */
-    PlugSearchResult<T> queryAlbumByName(SearchKeyData searchKeyData);
+    PlugSearchResult<PlugSearchAlbumResult> queryAlbumByName(SearchKeyData searchKeyData);
 
     /**
      * 根据歌曲id查询歌曲信息(专辑，歌手，音乐信息必须有 歌词与下载链接可以无)
@@ -193,6 +177,6 @@ public interface SearchHander<T> {
      *
      * @param downloadEntity 下载对象
      */
-    void dnonloadAndSaveToFile(DownloadEntity downloadEntity);
+    void dnonloadAndSaveToFile(DownloadEntity downloadEntity,SearchHander searchHander);
 
 }

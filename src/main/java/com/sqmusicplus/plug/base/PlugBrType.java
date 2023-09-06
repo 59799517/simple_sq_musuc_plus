@@ -4,78 +4,62 @@ package com.sqmusicplus.plug.base;
 
 public enum PlugBrType {
 
-    MP3_128(SearchType.WK, "128kmp3", "mp3", 128,SearchType.WK.value),
-    MP3_192(SearchType.WK, "192kmp3", "mp3", 192,SearchType.WK.value),
-    MP3_320(SearchType.WK, "320kmp3", "mp3", 320,SearchType.WK.value),
-    APE_1000(SearchType.WK, "1000kape", "ape", 1000,SearchType.WK.value),
-    FLAC_2000(SearchType.WK, "2000kflac", "flac", 2000,SearchType.WK.value),
-    MG_FLAC_2000(SearchType.MG,"ZQ","flac",2000,SearchType.MG.value),
-    MG_M4A_1000(SearchType.MG,"SQ","m4a",1000,SearchType.MG.value),
-    MG_MP3_320(SearchType.MG,"HQ","mp3",320,SearchType.MG.value),
-    MG_MP3_128(SearchType.MG,"PQ","mp3",128,SearchType.MG.value),
-    MG_MP3_64(SearchType.MG,"LQ","mp3",64,SearchType.MG.value);
+    KW_MP3_128( "128kmp3", "mp3", 128,"kw","nKwSearchHander"),
+    KW_MP3_192( "192kmp3", "mp3", 192,"kw","nKwSearchHander"),
+    KW_MP3_320( "320kmp3", "mp3", 320,"kw","nKwSearchHander"),
+    KW_APE_1000( "1000kape", "ape", 1000,"kw","nKwSearchHander"),
+    KW_FLAC_2000( "2000kflac", "flac", 2000,"kw","nKwSearchHander"),
+    MG_FLAC_2000("ZQ","flac",2000,"mg","mgHander"),
+    MG_M4A_1000("SQ","m4a",1000,"mg","mgHander"),
+    MG_MP3_320("HQ","mp3",320,"mg","mgHander"),
+    MG_MP3_128("PQ","mp3",128,"mg","mgHander"),
+    MG_MP3_64("LQ","mp3",64,"mg","mgHander"),
 
-    SearchType searchType;
+    QQ_MP3_128("hq_128","mp3",128,"qq","qqHander"),
+    QQ_MP3_320("hq_320","mp3",320,"qq","qqHander"),
+    QQ_Flac_2000("sq","flac",2000,"qq","qqHander"),
+    QQ_Flac_3000("hr","falc",3000,"qq","qqHander");
+
+
+
+
+
+
     String value;
     String type;
     Integer bit;
 
     String plugName;
 
+    String springName;
+    String id;
 
-    PlugBrType(SearchType searchType, String value, String type, Integer bit, String plugName) {
-        this.searchType = searchType;
+
+    PlugBrType(String value, String type, Integer bit, String plugName, String springName) {
         this.value = value;
         this.type = type;
         this.bit = bit;
         this.plugName = plugName;
-    }
-
-    public SearchType getSearchType() {
-        return searchType;
-    }
-
-    public void setSearchType(SearchType searchType) {
-        this.searchType = searchType;
+        this.springName = springName;
     }
 
     public String getValue() {
         return value;
     }
 
-    public void setValue(String value) {
-        this.value = value;
-    }
-
     public String getType() {
         return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public Integer getBit() {
         return bit;
     }
 
-    public void setBit(Integer bit) {
-        this.bit = bit;
-    }
-
     public String getPlugName() {
         return plugName;
     }
 
-    public void setPlugName(String plugName) {
-        this.plugName = plugName;
-    }
-
-    public boolean istype(SearchType searchType){
-        if (this.searchType==searchType) {
-            return true;
-        }else{
-            return false;
-        }
+    public String getSpringName() {
+        return springName;
     }
 }

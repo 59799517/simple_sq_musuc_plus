@@ -15,20 +15,12 @@ import lombok.experimental.Accessors;
 public class PlugSearchArtistResult {
 
     private String artistName;
-    /**
-     * 专辑名称
-     */
-    private String albumName;
 
     /**
      * 歌手id
      */
     private String artistid;
 
-    /**
-     * 专辑id
-     */
-    private String albumid;
     /**
      * 搜索类型
      */

@@ -3,9 +3,8 @@ package com.sqmusicplus.plug.kw.hander;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ejlchina.okhttps.HttpUtils;
-import com.sqmusicplus.entity.*;
+import com.sqmusicplus.base.entity.*;
 import com.sqmusicplus.plug.base.PlugBrType;
-import com.sqmusicplus.plug.base.SearchType;
 import com.sqmusicplus.plug.base.hander.SearchHanderAbstract;
 import com.sqmusicplus.plug.entity.*;
 import com.sqmusicplus.plug.kw.config.KwConfig;
@@ -35,22 +34,13 @@ import java.util.stream.Collectors;
  * Time: 10:21
  * Description:
  */
-@Component
+@Component("nKwSearchHander")
 @Slf4j
 public class NKwSearchHander extends SearchHanderAbstract {
 
     @Autowired
     private KwConfig config;
 
-    @Override
-    public Boolean inspect(SearchType searchType) {
-        return searchType.getType() == 1;
-    }
-
-    @Override
-    public SearchType getSearchType() {
-        return SearchType.WK;
-    }
 
     @Override
     public PlugSearchResult<PlugSearchMusicResult> querySongByName(SearchKeyData searchKeyData) {
@@ -164,7 +154,7 @@ public class NKwSearchHander extends SearchHanderAbstract {
         if (lrclist != null && lrclist.size() > 0) {
             Lrc = LrcUtils.krcTolrc(lrclist, album, artist, songName);
         }
-        return new Music().setId(songinfo.getId()).setMusicImage(s).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(artist).setMusicName(songName).setOther(JSONObject.parseObject(JSONObject.toJSONString(data))).setMusicDuration(Integer.parseInt(duration)).setAlbumId(albumId).setArtistsId(Integer.valueOf(artistId));
+        return new Music().setId(songinfo.getId()).setMusicImage(s).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(artist).setMusicName(songName).setOther(JSONObject.parseObject(JSONObject.toJSONString(data))).setMusicDuration(Integer.parseInt(duration)).setAlbumId(albumId).setArtistsId(artistId);
     }
 
     @Override
@@ -261,7 +251,7 @@ public class NKwSearchHander extends SearchHanderAbstract {
                     .setMusicAlbum(albumInfoResult.getName())
                     .setMusicName(e.getName())
                     .setId(e.getId())
-                    .setArtistsId(Integer.valueOf(e.getArtistid()))
+                    .setArtistsId(e.getArtistid())
                     .setMusicArtists(e.getArtist())
                     .setMusicImage(getConfig().getSearheads() + e.getWebAlbumpicShort().replaceAll("/120", "/500")));
         });
@@ -288,9 +278,6 @@ public class NKwSearchHander extends SearchHanderAbstract {
             s = "corp=kuwo&p2p=1&type=convert_url2&format=flac&rid=#{musicId}";
         };
         try {
-            if (!inspect(brType.getSearchType())) {
-                return null;
-            }
             s = s.replaceAll("#\\{musicId}", musicId).replaceAll("#\\{brvalue}", brType.getValue());
             byte[] bytes = KuwoDES.encrypt2(s.getBytes("UTF-8"), s.length(), KuwoDES.SECRET_KEY, KuwoDES.SECRET_KEY_LENG);
             char[] encode = Base64Coder.encode(bytes);
@@ -307,7 +294,7 @@ public class NKwSearchHander extends SearchHanderAbstract {
                     if (brType.getType().equals("320kmp3")&&StringUtils.isEmpty(s1)){
                         return null;
                     }
-                   return getDownloadUrl(musicId, PlugBrType.MP3_320);
+                   return getDownloadUrl(musicId, PlugBrType.KW_MP3_320);
                 } catch (Exception e) {
 //                    throw new RuntimeException(e);
                     return null;
@@ -332,19 +319,19 @@ public class NKwSearchHander extends SearchHanderAbstract {
     @Override
     public DownloadEntity downloadSong(String musicid, PlugBrType brType, String musicname, String artistname, String albumname, Boolean isAudioBook, String addSubsonicPlayListName) {
         Music music = querySongById(musicid);
-        DownloadEntity downloadEntity = new DownloadEntity(this,musicid, brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
+        DownloadEntity downloadEntity = new DownloadEntity("nKwSearchHander",musicid, brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
         return downloadEntity;
     }
 
     @Override
     public DownloadEntity downloadSong(Music music ,PlugBrType brType,Boolean isAudioBook, String addSubsonicPlayListName) {
-        DownloadEntity downloadEntity = new DownloadEntity(this,music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
+        DownloadEntity downloadEntity = new DownloadEntity("nKwSearchHander",music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
         return downloadEntity;
     }
 
     @Override
     public DownloadEntity downloadSong(Music music, PlugBrType brType, String addSubsonicPlayListName) {
-        DownloadEntity downloadEntity = new DownloadEntity(this,music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), false, addSubsonicPlayListName);
+        DownloadEntity downloadEntity = new DownloadEntity("nKwSearchHander",music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), false, addSubsonicPlayListName);
         return downloadEntity;
     }
 
@@ -379,10 +366,10 @@ public class NKwSearchHander extends SearchHanderAbstract {
                 change.set(md.getArtist());
             }
             if (isAudioBook) {
-                downloadEntities.add(new DownloadEntity(this,md.getId(), brType, md.getName(), artist, albumName, isAudioBook));
+                downloadEntities.add(new DownloadEntity("nKwSearchHander",md.getId(), brType, md.getName(), artist, albumName, isAudioBook));
             } else {
                 //添加到缓存
-                downloadEntities.add(new DownloadEntity(this,md.getId(), brType, md.getName(), change.get(), albumInfoResult.getName()));
+                downloadEntities.add(new DownloadEntity("nKwSearchHander",md.getId(), brType, md.getName(), change.get(), albumInfoResult.getName()));
             }
 
         });

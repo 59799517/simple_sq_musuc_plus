@@ -1,6 +1,10 @@
 package com.sqmusicplus.utils;
 
 import cn.hutool.core.img.ImgUtil;
+import com.sqmusicplus.base.entity.DownloadEntity;
+import com.sqmusicplus.base.entity.DownloadInfo;
+import com.sqmusicplus.plug.base.PlugBrType;
+import com.sqmusicplus.plug.utils.TypeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -19,6 +23,9 @@ import ws.schild.jave.info.MultimediaInfo;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Classname MusicUtils
@@ -106,5 +113,49 @@ public class MusicUtils {
         af.setTag(tag);
         AudioFileIO.write(af);
         return null;
+    }
+
+    public static DownloadEntity downloadInfoToDownloadEntity(DownloadInfo downloadInfo) {
+        String downloadType = downloadInfo.getDownloadType();
+        String downloadBrType = downloadInfo.getDownloadBrType();
+        PlugBrType plugType = TypeUtils.getPlugType(downloadType, downloadBrType);
+        String downloadMusicId = downloadInfo.getDownloadMusicId();
+        String downloadMusicname = downloadInfo.getDownloadMusicname();
+        String downloadArtistname = downloadInfo.getDownloadArtistname();
+        String downloadAlbumname = downloadInfo.getDownloadAlbumname();
+        String springName = downloadInfo.getSpringName();
+        DownloadEntity downloadEntity = new DownloadEntity(springName, downloadMusicId, plugType, downloadMusicname, downloadArtistname, downloadAlbumname);
+        return downloadEntity;
+    }
+
+    public static DownloadInfo downloadEntitytoDownloadInfoTo(DownloadEntity downloadEntity){
+        DownloadInfo downloadInfo = new DownloadInfo().setDownloadMusicId(downloadEntity.getMusicid())
+                .setDownloadBrType(downloadEntity.getBrType().getValue())
+                .setDownloadMusicname(downloadEntity.getMusicname())
+                .setDownloadArtistname(downloadEntity.getArtistname())
+                .setDownloadAlbumname(downloadEntity.getAlbumname())
+                .setAudioBook("false")
+                .setAddSubsonicPlayListName(downloadEntity.getAddSubsonicPlayListName())
+                .setSpringName(downloadEntity.getBrType().getSpringName())
+                .setDownloadType(downloadEntity.getBrType().getPlugName())
+                .setDownloadTime(new Date());
+        return downloadInfo;
+    }
+    public static List<DownloadInfo> downloadEntitytoDownloadInfoTo(List<DownloadEntity> downloadEntitys){
+        ArrayList<DownloadInfo> downloadInfos = new ArrayList<>();
+        downloadEntitys.forEach(downloadEntity->{
+            DownloadInfo downloadInfo = new DownloadInfo().setDownloadMusicId(downloadEntity.getMusicid())
+                    .setDownloadBrType(downloadEntity.getBrType().getValue())
+                    .setDownloadMusicname(downloadEntity.getMusicname())
+                    .setDownloadArtistname(downloadEntity.getArtistname())
+                    .setDownloadAlbumname(downloadEntity.getAlbumname())
+                    .setAudioBook("false")
+                    .setAddSubsonicPlayListName(downloadEntity.getAddSubsonicPlayListName())
+                    .setSpringName(downloadEntity.getBrType().getSpringName())
+                    .setDownloadType(downloadEntity.getBrType().getPlugName())
+                    .setDownloadTime(new Date());
+            downloadInfos.add(downloadInfo);
+        });
+        return downloadInfos;
     }
 }

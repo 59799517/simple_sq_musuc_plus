@@ -1,11 +1,11 @@
 package com.sqmusicplus.plug.utils;
 
 import com.sqmusicplus.plug.base.PlugBrType;
-import com.sqmusicplus.plug.base.SearchType;
 import com.sqmusicplus.utils.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Classname TypeUtils
@@ -26,24 +26,23 @@ public class TypeUtils {
     public static PlugBrType getPlugType(String plugTypeName, Integer br){
 
         if (StringUtils.isEmpty(plugTypeName)||br==null){
-            return PlugBrType.MP3_320;
+            return PlugBrType.KW_FLAC_2000;
         }
-        List<SearchType> searchTypes = Arrays.stream(SearchType.values()).toList();
-        SearchType searchType = SearchType.WK;
-        for (SearchType e : searchTypes) {
-            boolean b = e.getValue().equalsIgnoreCase(plugTypeName);
-            if (b){
-                searchType=e;
-            }
+        if (plugTypeName.equals(PlugBrType.KW_FLAC_2000.getPlugName())&&br==null){
+            return PlugBrType.KW_FLAC_2000;
         }
-        List<PlugBrType> plugBrTypes = Arrays.stream(PlugBrType.values()).toList();
-        PlugBrType plugBrType  = PlugBrType.MP3_320;
-        for (PlugBrType e : plugBrTypes) {
-            if (e.getBit().intValue() == br.intValue() && e.getSearchType().getType() == searchType.getType()) {
-                plugBrType = e;
-            }
+        if (plugTypeName.equals(PlugBrType.MG_FLAC_2000.getPlugName())&&br==null){
+            return PlugBrType.MG_FLAC_2000;
         }
-        return plugBrType;
+
+        List<PlugBrType> collect = Arrays.stream(PlugBrType.values()).filter(e -> e.getPlugName().equals(plugTypeName) && e.getBit().intValue() == br.intValue()).collect(Collectors.toList());
+
+        if (collect!=null&&collect.size()>0){
+            return collect.get(0);
+        }
+
+        return  PlugBrType.KW_FLAC_2000;
+
     }
 
 
@@ -55,25 +54,23 @@ public class TypeUtils {
      */
     public static PlugBrType getPlugType(String plugTypeName, String value){
 
-        if (StringUtils.isEmpty(plugTypeName)||value==null){
-            return PlugBrType.MP3_320;
+        if (StringUtils.isEmpty(plugTypeName)||StringUtils.isEmpty(value)){
+            return PlugBrType.KW_FLAC_2000;
         }
-        List<SearchType> searchTypes = Arrays.stream(SearchType.values()).toList();
-        SearchType searchType = SearchType.WK;
-        for (SearchType e : searchTypes) {
-            boolean b = e.getValue().equalsIgnoreCase(plugTypeName);
-            if (b){
-                searchType=e;
-            }
+        if (plugTypeName.equals(PlugBrType.KW_FLAC_2000.getPlugName())&&StringUtils.isEmpty(value)){
+            return PlugBrType.KW_FLAC_2000;
         }
-        List<PlugBrType> plugBrTypes = Arrays.stream(PlugBrType.values()).toList();
-        PlugBrType plugBrType  = PlugBrType.MP3_320;
-        for (PlugBrType e : plugBrTypes) {
-            if (e.getValue().equals(value)  && e.getSearchType().getType() == searchType.getType()) {
-                plugBrType = e;
-            }
+        if (plugTypeName.equals(PlugBrType.MG_FLAC_2000.getPlugName())&&StringUtils.isEmpty(value)){
+            return PlugBrType.MG_FLAC_2000;
         }
-        return plugBrType;
+
+        List<PlugBrType> collect = Arrays.stream(PlugBrType.values()).filter(e -> e.getPlugName().equals(plugTypeName) && e.getValue().equals(value)).collect(Collectors.toList());
+
+        if (collect!=null&&collect.size()>0){
+            return collect.get(0);
+        }
+
+        return  PlugBrType.KW_FLAC_2000;
     }
 
 }

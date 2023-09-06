@@ -2,15 +2,11 @@ package com.sqmusicplus.plug.mg.hander;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.ejlchina.data.Mapper;
-import com.ejlchina.okhttps.HttpUtils;
 import com.ejlchina.okhttps.OkHttps;
-import com.sqmusicplus.entity.*;
+import com.sqmusicplus.base.entity.*;
 import com.sqmusicplus.plug.base.PlugBrType;
-import com.sqmusicplus.plug.base.SearchType;
 import com.sqmusicplus.plug.base.hander.SearchHanderAbstract;
 import com.sqmusicplus.plug.entity.*;
-import com.sqmusicplus.plug.kw.enums.KwSearchType;
 import com.sqmusicplus.plug.mg.config.MgConfig;
 import com.sqmusicplus.plug.mg.entity.*;
 import com.sqmusicplus.plug.mg.enums.MgBrType;
@@ -22,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +32,7 @@ import java.util.stream.Collectors;
  * @Created by shang
  */
 
-@Component
+@Component("mgHander")
 @Slf4j
 
 public class MgHander extends SearchHanderAbstract  {
@@ -49,17 +44,7 @@ public class MgHander extends SearchHanderAbstract  {
     @Autowired
     private MgConfig mgConfig;
 
-    @Override
-    public Boolean inspect(SearchType searchType) {
 
-       return searchType.getType()==2;
-    }
-
-
-    @Override
-    public SearchType getSearchType() {
-        return SearchType.MG;
-    }
 
     @Override
     public PlugSearchResult querySongByName(SearchKeyData searchKeyData) {
@@ -83,7 +68,7 @@ public class MgHander extends SearchHanderAbstract  {
             plugSearchMusicResult.setArtistid(music.getSingerId());
             plugSearchMusicResult.setPic(music.getCover());
             plugSearchMusicResult.setLyricId(music.getCopyrightId());
-            plugSearchMusicResult.setSearchType(SearchType.MG.getValue());
+            plugSearchMusicResult.setSearchType("mg");
 //            plugSearchMusicResult.setOter(JSONObject.toJSONString(music));
             plugSearchMusicResults.add(plugSearchMusicResult);
         }
@@ -116,7 +101,7 @@ public class MgHander extends SearchHanderAbstract  {
             plugSearchArtistResult.setArtistName(artist.getTitle());
             plugSearchArtistResult.setPic(artist.getArtistPicL());
             plugSearchArtistResult.setTotal(artist.getAlbumNum()+"");
-            plugSearchArtistResult.setSearchType(SearchType.MG.getValue());
+            plugSearchArtistResult.setSearchType(PlugBrType.MG_FLAC_2000.getPlugName());
             plugSearchArtistResult.setOter(JSONObject.toJSONString(artist));
             plugSearchMusicResults.add(plugSearchArtistResult);
         }
@@ -149,7 +134,7 @@ public class MgHander extends SearchHanderAbstract  {
             plugSearchAlbumResult.setArtistName(album.getSinger().stream().map(MgSearchAlbumResult.AlbumsDTO.SingerDTO::getName).collect(Collectors.joining(",")));
             plugSearchAlbumResult.setArtistid(album.getSinger().stream().map(MgSearchAlbumResult.AlbumsDTO.SingerDTO::getId).collect(Collectors.joining(",")));
 
-            plugSearchAlbumResult.setSearchType(SearchType.MG.getValue());
+            plugSearchAlbumResult.setSearchType(PlugBrType.MG_FLAC_2000.getPlugName());
             plugSearchMusicResults.add(plugSearchAlbumResult);
         }
         PlugSearchResult<PlugSearchAlbumResult> plugSearchResult = new PlugSearchResult<>();
@@ -188,7 +173,7 @@ public class MgHander extends SearchHanderAbstract  {
 
         //图片
         String img = mgSongInfoResult.getResource().get(0).getAlbumImgs().get(0).getImg();
-        return new Music().setId(copyrightId).setMusicImage(img).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(singer).setMusicName(songName).setAlbumId(albumId).setArtistsId(Integer.valueOf(singerId));
+        return new Music().setId(copyrightId).setMusicImage(img).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(singer).setMusicName(songName).setAlbumId(albumId).setArtistsId(singerId);
 
     }
 
@@ -338,7 +323,7 @@ public class MgHander extends SearchHanderAbstract  {
                     .setMusicAlbum(e.getAlbum())
                     .setMusicName(e.getSongName())
                     .setId(e.getCopyrightId())
-                    .setArtistsId(Integer.valueOf(e.getSingerList().get(0).getId()))
+                    .setArtistsId(e.getSingerList().get(0).getId())
                     .setMusicArtists(e.getSingerList().get(0).getName())
                     .setMusicImage(songCoverUrl+e.getImg1()));
         });
@@ -357,7 +342,7 @@ public class MgHander extends SearchHanderAbstract  {
                         .setMusicAlbum(e.getAlbum())
                         .setMusicName(e.getSongName())
                         .setId(e.getCopyrightId())
-                        .setArtistsId(Integer.valueOf(e.getSingerList().get(0).getId()))
+                        .setArtistsId(e.getSingerList().get(0).getId())
                         .setMusicArtists(e.getSingerList().get(0).getName())
                         .setMusicImage(songCoverUrl+e.getImg1()));
             });
@@ -506,20 +491,20 @@ public class MgHander extends SearchHanderAbstract  {
     @Override
     public DownloadEntity downloadSong(String musicid, PlugBrType brType, String musicname, String artistname, String albumname, Boolean isAudioBook, String addSubsonicPlayListName) {
         Music music = querySongById(musicid);
-        DownloadEntity downloadEntity = new DownloadEntity(this,musicid, brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
+        DownloadEntity downloadEntity = new DownloadEntity("mgHander",musicid, brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
         return downloadEntity;
 
     }
 
     @Override
     public DownloadEntity downloadSong(Music music, PlugBrType brType, Boolean isAudioBook, String addSubsonicPlayListName) {
-        DownloadEntity downloadEntity = new DownloadEntity(this,music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
+        DownloadEntity downloadEntity = new DownloadEntity("mgHander",music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), isAudioBook, isAudioBook?addSubsonicPlayListName:null);
         return downloadEntity;
     }
 
     @Override
     public DownloadEntity downloadSong(Music music, PlugBrType brType, String addSubsonicPlayListName) {
-        DownloadEntity downloadEntity = new DownloadEntity(this,music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), false, addSubsonicPlayListName);
+        DownloadEntity downloadEntity = new DownloadEntity("mgHander",music.getId(), brType, music.getMusicName(), music.getMusicArtists(), music.getMusicAlbum(), false, addSubsonicPlayListName);
         return downloadEntity;
     }
 
@@ -547,10 +532,10 @@ public class MgHander extends SearchHanderAbstract  {
                 change.set(md.getMusicArtists());
             }
             if (isAudioBook) {
-                downloadEntities.add(new DownloadEntity(this,md.getId(), brType, md.getMusicName(), artist, albumName, isAudioBook));
+                downloadEntities.add(new DownloadEntity("mgHander",md.getId(), brType, md.getMusicName(), artist, albumName, isAudioBook));
             } else {
                 //添加到缓存
-                downloadEntities.add(new DownloadEntity(this,md.getId(), brType, md.getMusicName(), change.get(), md.getMusicAlbum()));
+                downloadEntities.add(new DownloadEntity("mgHander",md.getId(), brType, md.getMusicName(), change.get(), md.getMusicAlbum()));
             }
 
         });
@@ -569,7 +554,8 @@ public class MgHander extends SearchHanderAbstract  {
         MgArtistSongList.DataDTO.HeaderDTO header = mgArtistSongList.getData().getHeader();
         List<MgArtistSongList.DataDTO.ContentsDTO.CContentsDTO> contents = mgArtistSongList.getData().getContents().get(0).getContents();
         contents.forEach(md -> {
-            DownloadEntity downloadEntity = new DownloadEntity(this,md.getSongItem().getRingCopyrightId(), brType, md.getSongItem().getSongName(), md.getSongItem().getSingerList().get(0).getName(), md.getSongItem().getAlbum(), false, addSubsonicPlayListName);
+            DownloadEntity downloadEntity = new DownloadEntity("mgHander",md.getSongItem().getRingCopyrightId(), brType, md.getSongItem().getSongName(), md.getSongItem().getSingerList().get(0).getName(), md.getSongItem().getAlbum(), false, addSubsonicPlayListName);
+
             downloadEntities.add(downloadEntity);
         });
         //获取是否有下一页
@@ -580,7 +566,7 @@ public class MgHander extends SearchHanderAbstract  {
             header = mgArtistSongList.getData().getHeader();
             contents = mgArtistSongList.getData().getContents().get(0).getContents();
             contents.forEach(md -> {
-                DownloadEntity downloadEntity = new DownloadEntity(this,md.getSongItem().getRingCopyrightId(), brType, md.getSongItem().getSongName(), md.getSongItem().getSingerList().get(0).getName(), md.getSongItem().getAlbum(), false, addSubsonicPlayListName);
+                DownloadEntity downloadEntity = new DownloadEntity("mgHander",md.getSongItem().getRingCopyrightId(), brType, md.getSongItem().getSongName(), md.getSongItem().getSingerList().get(0).getName(), md.getSongItem().getAlbum(), false, addSubsonicPlayListName);
                 downloadEntities.add(downloadEntity);
             });
             nextPageUrl = header.getNextPageUrl();

@@ -1,23 +1,23 @@
 package com.sqmusicplus.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.sqmusicplus.config.AjaxResult;
-import com.sqmusicplus.entity.SqConfig;
+import com.sqmusicplus.base.entity.SqConfig;
 import com.sqmusicplus.plug.base.PlugBrType;
-import com.sqmusicplus.plug.base.SearchType;
-import com.sqmusicplus.service.SqConfigService;
+import com.sqmusicplus.base.service.SqConfigService;
 import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -75,26 +75,23 @@ public class SetController {
     }
     @GetMapping("/getSearchType")
     public AjaxResult getSearchType(){
-        SearchType[] values = SearchType.values();
+        PlugBrType[] values = PlugBrType.values();
+        Map<String, String> collect = Arrays.stream(values).collect(Collectors.toMap(PlugBrType::getPlugName, PlugBrType::getValue));
+
         JSONArray objects = new JSONArray();
-        for (SearchType value : values) {
+
+        Set<Map.Entry<String, String>> entries = collect.entrySet();
+        for (Map.Entry<String, String> entry : entries) {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put(value.getName(),value.getValue());
+            jsonObject.put(entry.getKey(),entry.getValue());
             objects.add(jsonObject);
         }
-        return  AjaxResult.success("成功", objects);
+        return  AjaxResult.success("成功", collect);
     }
     @GetMapping("/getSearchTypeBrType")
     public AjaxResult getSearchTypeBrType(){
-        JSONObject jsonObject = new JSONObject();
-
         PlugBrType[] values = PlugBrType.values();
-        Set<String> collect = Arrays.stream(SearchType.values()).map(SearchType::getValue).collect(Collectors.toSet());
-        for (String s : collect) {
-            List<String> collect1 = Arrays.stream(values).filter(e -> e.getSearchType().istype(s)).map(PlugBrType::getValue).collect(Collectors.toList());
-            jsonObject.put(s,collect1);
-        }
-        return  AjaxResult.success("成功", jsonObject);
+        return  AjaxResult.success("成功", values);
     }
 
 

@@ -2,23 +2,20 @@ package com.sqmusicplus.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.sqmusicplus.entity.SqConfig;
+import com.sqmusicplus.base.entity.SqConfig;
+import com.sqmusicplus.download.DownloadExcute;
 import com.sqmusicplus.plug.subsonic.SubsonicHander;
 import com.sqmusicplus.plug.subsonic.config.NowPlayList;
 import com.sqmusicplus.plug.subsonic.entity.SubsonicPlayList;
-import com.sqmusicplus.service.SqConfigService;
+import com.sqmusicplus.base.service.SqConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @Classname Init
@@ -36,6 +33,8 @@ public class Init implements ApplicationRunner {
     private SubsonicHander subsonicHander;
     @Value("${server.port}")
     private String port;
+    @Autowired
+    private DownloadExcute downloadExcute;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -55,6 +54,11 @@ public class Init implements ApplicationRunner {
             }
         }
         log.info("启动完毕：http://localhost:{}", port);
+        if (Boolean.valueOf(init_download.getConfigValue())){
+            downloadExcute.getDownloadInfo();
+        }
+
+
 //        List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
 //        for (Object value : values) {
 //            DownloadEntity downloadEntity = (DownloadEntity) value;

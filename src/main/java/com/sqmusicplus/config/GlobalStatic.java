@@ -1,6 +1,12 @@
 package com.sqmusicplus.config;
 
+import com.sqmusicplus.base.entity.DownloadInfo;
+
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @Classname GlobalStatic
@@ -20,5 +26,6 @@ public class GlobalStatic {
      * 最大同步次数 超过就算失败放弃同步
      */
     public static Integer SUBSONIC_SYNC_MAXIMUM_STATISTICS = 3;
+
 
 }

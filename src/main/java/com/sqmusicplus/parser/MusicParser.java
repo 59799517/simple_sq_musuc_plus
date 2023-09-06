@@ -1,6 +1,6 @@
 package com.sqmusicplus.parser;
 
-import com.sqmusicplus.entity.ParserEntity;
+import com.sqmusicplus.base.entity.ParserEntity;
 
 import java.io.IOException;
 import java.util.List;
