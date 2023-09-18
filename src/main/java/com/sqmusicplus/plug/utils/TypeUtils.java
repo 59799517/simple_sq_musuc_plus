@@ -63,6 +63,9 @@ public class TypeUtils {
         if (plugTypeName.equals(PlugBrType.MG_FLAC_2000.getPlugName())&&StringUtils.isEmpty(value)){
             return PlugBrType.MG_FLAC_2000;
         }
+        if (plugTypeName.equals(PlugBrType.QQ_Flac_2000.getPlugName())&&StringUtils.isEmpty(value)){
+            return PlugBrType.QQ_Flac_3000;
+        }
 
         List<PlugBrType> collect = Arrays.stream(PlugBrType.values()).filter(e -> e.getPlugName().equals(plugTypeName) && e.getValue().equals(value)).collect(Collectors.toList());
 

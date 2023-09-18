@@ -60,9 +60,19 @@ public class DownloadInfoController {
         downloadInfoService.remove(downloadInfoLambdaQueryWrapper);
         return AjaxResult.success();
     }
+    @SaCheckLogin
+    @GetMapping("/delWaitingTask")
+    public AjaxResult delWaitingTask(){
+        LambdaQueryWrapper<DownloadInfo> downloadInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        downloadInfoLambdaQueryWrapper.eq(DownloadInfo::getStatus, DownloadStatus.waiting.getValue());
+        downloadInfoService.remove(downloadInfoLambdaQueryWrapper);
+        return AjaxResult.success();
+    }
 
-
-
+    /**
+     * 重新下载错误任务
+     * @return
+     */
     @SaCheckLogin
     @GetMapping("/againTask")
     public AjaxResult againTask(){
@@ -71,6 +81,15 @@ public class DownloadInfoController {
                         .set(DownloadInfo::getStatus, DownloadStatus.waiting.getValue());
         downloadInfoService.update(downloadInfoLambdaUpdateWrapper);
         return AjaxResult.success();
+    }
+    @SaCheckLogin
+    @GetMapping("/refreshTask")
+    public AjaxResult refreshTask(){
+           LambdaUpdateWrapper<DownloadInfo> downloadInfoLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+           downloadInfoLambdaUpdateWrapper.eq(DownloadInfo::getStatus, DownloadStatus.loading.getValue())
+                   .set(DownloadInfo::getStatus, DownloadStatus.waiting.getValue());
+           downloadInfoService.update(downloadInfoLambdaUpdateWrapper);
+           return AjaxResult.success();
     }
 
 }

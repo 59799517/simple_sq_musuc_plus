@@ -23,7 +23,7 @@ public class DownlaodParserText {
     /**
      * 插件名称
      */
-    String plugType;
+    String plugType ="kw";
     /**
      * 需要加入的歌单名称
      */

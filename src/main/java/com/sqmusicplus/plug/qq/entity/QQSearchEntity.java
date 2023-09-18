@@ -288,10 +288,11 @@ public class QQSearchEntity {
             String singerName = e.toMapper().getString("singerName");
             String singerID = e.toMapper().getString("singerID");
             String singerPic = e.toMapper().getString("singerPic");
-
+            String string = e.toMapper().getString("albumNum");
             PlugSearchArtistResult plugSearchArtistResult = new PlugSearchArtistResult();
             plugSearchArtistResult.setSearchType(PlugBrType.QQ_Flac_2000.getPlugName());
             plugSearchArtistResult.setArtistName(singerName);
+            plugSearchArtistResult.setTotal(string);
             plugSearchArtistResult.setArtistid(singerID);
             plugSearchArtistResult.setPic(singerPic);
             plugSearchArtistResult.setOter(e.toString());
@@ -319,9 +320,9 @@ public class QQSearchEntity {
         String albumname = mapper1.getMapper("album").getString("name");
         String albumpmid = mapper1.getMapper("album").getString("pmid");
         String albumImageconfig = qqConfig.getAlbumImage();
-        String albumImage = albumImageconfig.replace("#\\{pmid}", albumpmid);
-        String artistId = mapper1.getMapper("singer").getString("mid");
-        String artistname = mapper1.getMapper("singer").getString("name");
+        String albumImage = albumImageconfig.replaceAll("#\\{pmid}", albumpmid);
+        String artistId = mapper1.getArray("singer").getMapper(0).getString("mid");
+        String artistname = mapper1.getArray("singer").getMapper(0).getString("name");
 
         String lyricResult = toPlugLyricResult(mid,qqConfig);
         Music music = new Music().setId(mid)
@@ -361,12 +362,12 @@ public class QQSearchEntity {
                 albumTime.set(e.toMapper().getMapper("songInfo").getMapper("album").getString("time_public"));
                 String albumImageconfig = qqConfig.getAlbumImage();
                 alubimage.set(albumImageconfig.replaceAll("#\\{pmid}", pmid));
-                artistid.set(e.toMapper().getMapper("songInfo").getMapper("singer").getString("mid"));
-                artist.set(e.toMapper().getMapper("songInfo").getMapper("singer").getString("name"));
+                artistid.set(e.toMapper().getMapper("songInfo").getArray("singer").getMapper(0).getString("mid"));
+                artist.set(e.toMapper().getMapper("songInfo").getArray("singer").getMapper(0).getString("name"));
             }
             String string = e.toMapper().getMapper("songInfo").getString("name");
             String albumname =  e.toMapper().getMapper("songInfo").getMapper("album").getString("name");
-            String aartist = e.toMapper().getMapper("songInfo").getMapper("singer").getString("name");
+            String aartist = e.toMapper().getMapper("songInfo").getArray("singer").getMapper(0).getString("name");
             String albumImageconfig = qqConfig.getAlbumImage();
             String url =  albumImageconfig.replaceAll("#\\{pmid}", e.toMapper().getMapper("songInfo").getMapper("album").getString("pmid"));
             Music music = new Music().setMusicName(string).setMusicAlbum(albumname).setMusicArtists(aartist).setMusicImage(url).setOther(JSONObject.parseObject(e.toString()));

@@ -15,10 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,17 +37,10 @@ public class SetController {
      *
      * @return
      */
-    @GetMapping("/getSetList")
-    public AjaxResult getSetList(String configKey) {
-        if (StringUtils.isEmpty(configKey)) {
-            List<SqConfig> list = configService.list();
-            return AjaxResult.success("成功", list);
-        } else {
-            List<SqConfig> config_key = configService.list(new QueryWrapper<SqConfig>().eq("config_key", configKey));
-            return AjaxResult.success("成功", config_key);
-
-        }
-
+    @GetMapping("/getSetList/")
+    public AjaxResult getSetList() {
+        List<SqConfig> list = configService.list();
+        return AjaxResult.success("成功", list);
     }
 
     @SaCheckLogin
@@ -94,5 +84,22 @@ public class SetController {
         return  AjaxResult.success("成功", values);
     }
 
-
+    @GetMapping("selectOption")
+    public AjaxResult selectOption(){
+        ArrayList<HashMap<String, String>> hashMaps = new ArrayList<>();
+        HashMap<String, String> kwoption = new HashMap<>();
+        kwoption.put("value","kw");
+        kwoption.put("label","某我");
+        HashMap<String, String> QQoption = new HashMap<>();
+        QQoption.put("value","qq");
+        QQoption.put("label","鹅厂");
+        HashMap<String, String> MGoption = new HashMap<>();
+        MGoption.put("value","mg");
+        MGoption.put("label","10086(有问题暂停使用)");
+        MGoption.put("disabled","true");
+        hashMaps.add(kwoption);
+        hashMaps.add(QQoption);
+        hashMaps.add(MGoption);
+        return AjaxResult.success(hashMaps);
+    }
 }
