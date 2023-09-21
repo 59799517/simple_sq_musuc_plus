@@ -21,10 +21,6 @@ public class DownlaodParserText {
     Integer br;
 
     /**
-     * 插件名称
-     */
-    String plugType ="kw";
-    /**
      * 需要加入的歌单名称
      */
     String subsonicPlayListName;

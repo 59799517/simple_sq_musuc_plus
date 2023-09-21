@@ -50,20 +50,12 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                         SaHolder.getResponse().addHeader("Access-Control-Allow-Headers","appId");
                         SaHolder.getResponse().addHeader("Access-Control-Allow-Methods","POST, GET, OPTIONS");
                         SaHolder.getResponse().addHeader("Access-Control-Allow-Origin","*");
-
                         SaRouter.back();
                     }
-                    if(StpUtil.isLogin() == false) {
+                    if(!StpUtil.isLogin()) {
                             SaHolder.getResponse().setStatus(401);
-
                         SaRouter.back();
                     }
-//                    if(SaHolder.getRequest().getMethod().equals("OPTIONS")){
-//                        SaHolder.getResponse().setStatus(200);
-//                        SaRouter.back();
-//                    }else{
-//
-//                    }
                 });
     }
 }

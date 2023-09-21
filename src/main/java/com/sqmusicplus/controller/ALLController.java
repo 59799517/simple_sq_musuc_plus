@@ -170,25 +170,28 @@ public class ALLController {
     @SaCheckLogin
     @PostMapping("/ArtistDownload")
     public AjaxResult ArtistDownload(@RequestBody DownlaodArtis downlaodAlubm){
-        PlugBrType plugType;
-        if (StringUtils.isEmpty(downlaodAlubm.getPlugTypeValue())){
-            plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getBr());
-        }else{
-            plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getPlugTypeValue());
-        }
-        PlugBrType finalPlugType = plugType;
-        List<DownloadEntity> downloadEntities =null;
-        if (downlaodAlubm.getPlugType().equals(PlugBrType.KW_FLAC_2000.getPlugName())){
-            downloadEntities= kwHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
+        threadPoolTaskExecutor.execute(()->{
+            PlugBrType plugType;
+            if (StringUtils.isEmpty(downlaodAlubm.getPlugTypeValue())){
+                plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getBr());
+            }else{
+                plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getPlugTypeValue());
+            }
+            PlugBrType finalPlugType = plugType;
+            List<DownloadEntity> downloadEntities =null;
+            if (downlaodAlubm.getPlugType().equals(PlugBrType.KW_FLAC_2000.getPlugName())){
+                downloadEntities= kwHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
 
-        }else if(downlaodAlubm.getPlugType().equals(PlugBrType.MG_FLAC_2000.getPlugName())){
-            downloadEntities =  mgHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
-        }
-        else if(downlaodAlubm.getPlugType().equals(PlugBrType.QQ_Flac_2000.getPlugName())){
-            downloadEntities =  qqHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
-        }
-        List<DownloadInfo> downloadInfos = MusicUtils.downloadEntitytoDownloadInfoTo(downloadEntities);
-        downloadInfoService.add(downloadInfos);
+            }else if(downlaodAlubm.getPlugType().equals(PlugBrType.MG_FLAC_2000.getPlugName())){
+                downloadEntities =  mgHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
+            }
+            else if(downlaodAlubm.getPlugType().equals(PlugBrType.QQ_Flac_2000.getPlugName())){
+                downloadEntities =  qqHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
+            }
+            List<DownloadInfo> downloadInfos = MusicUtils.downloadEntitytoDownloadInfoTo(downloadEntities);
+            downloadInfoService.add(downloadInfos);
+        });
+
         return AjaxResult.success(true);
     }
     /**
@@ -283,29 +286,27 @@ public class ALLController {
      *
      * @param data { text：“内容”，plugType：“插件类型”，br：“品质”，subsonicPlayListName：“歌单名称”}
      * @return
+     * 以后在整理逻辑将就用
      */
     @SaCheckLogin
     @PostMapping("/downloadParser")
     public AjaxResult downloadParser(@RequestBody DownlaodParserText data) throws IOException {
         String text = data.getText();
-        SearchHanderAbstract searchHander = kwHander;
 
         String subsonicPlayListName = data.getSubsonicPlayListName();
         List<ParserEntity> parser = textMusicPlayListParser.parser(text);
-        PlugBrType plugType = TypeUtils.getPlugType(data.getPlugType(), data.getBr());
-        SearchHanderAbstract finalSearchHander = searchHander;
         threadPoolTaskExecutor.execute(()->{
             for (ParserEntity parserEntity : parser) {
-                PlugSearchResult<PlugSearchMusicResult> plugSearchMusicResultPlugSearchResult = null;
                 try {
-                    plugSearchMusicResultPlugSearchResult = finalSearchHander.querySongByName(new SearchKeyData().setSearchkey(parserEntity.getSongName() + " " + parserEntity.getArtistsName()).setPageIndex(0).setPageSize(5));
+                PlugSearchResult<PlugSearchMusicResult> plugSearchMusicResultPlugSearchResult = null;
+                    plugSearchMusicResultPlugSearchResult = kwHander.querySongByName(new SearchKeyData().setSearchkey(parserEntity.getSongName() + " " + parserEntity.getArtistsName()).setPageIndex(0).setPageSize(5));
                     String id = "";
                     Music music =null;
                     List<PlugSearchMusicResult> records = plugSearchMusicResultPlugSearchResult.getRecords();
                     for (PlugSearchMusicResult record : records) {
                         if (parserEntity.getArtistsName().trim().equals(record.getArtistName().trim())){
                              id = record.getId();
-                             music = finalSearchHander.querySongById(id);
+                             music = kwHander.querySongById(id);
                              break;
                         }
                     }
@@ -314,20 +315,50 @@ public class ALLController {
                         Music finalMusic = music;
                         music.setMusicArtists(parserEntity.getArtistsName());
                             DownloadInfo downloadInfo = new DownloadInfo().setDownloadMusicId(finalMusic.getId())
-                                    .setDownloadBrType(plugType.getValue())
+                                    .setDownloadBrType(PlugBrType.KW_FLAC_2000.getValue())
                                     .setDownloadMusicname(finalMusic.getMusicName())
                                     .setDownloadArtistname(finalMusic.getMusicArtists())
                                     .setDownloadAlbumname(finalMusic.getMusicAlbum())
                                     .setAudioBook("false")
                                     .setAddSubsonicPlayListName(subsonicPlayListName)
-                                    .setSpringName(plugType.getSpringName())
-                                    .setDownloadType(plugType.getPlugName())
+                                    .setSpringName(PlugBrType.KW_FLAC_2000.getSpringName())
+                                    .setDownloadType(PlugBrType.KW_FLAC_2000.getPlugName())
                                     .setDownloadTime(new Date());
                             Boolean add = downloadInfoService.add(downloadInfo);
-                    } else {
-                        log.error("没有查询到歌曲：" + parserEntity);
-                    }
+                    }else {
+                        plugSearchMusicResultPlugSearchResult = qqHander.querySongByName(new SearchKeyData().setSearchkey(parserEntity.getSongName() + " " + parserEntity.getArtistsName()).setPageIndex(0).setPageSize(5));
+                         id = "";
+                         music =null;
+                        records = plugSearchMusicResultPlugSearchResult.getRecords();
+                        for (PlugSearchMusicResult record : records) {
+                            if (parserEntity.getArtistsName().trim().equals(record.getArtistName().trim())){
+                                id = record.getId();
+                                music = qqHander.querySongById(id);
+                                break;
+                            }
+                        }
+                        if (music!=null){
+                            //成功了
+                            Music finalMusic = music;
+                            music.setMusicArtists(parserEntity.getArtistsName());
+                            DownloadInfo downloadInfo = new DownloadInfo().setDownloadMusicId(finalMusic.getId())
+                                    .setDownloadBrType(PlugBrType.QQ_Flac_2000.getValue())
+                                    .setDownloadMusicname(finalMusic.getMusicName())
+                                    .setDownloadArtistname(finalMusic.getMusicArtists())
+                                    .setDownloadAlbumname(finalMusic.getMusicAlbum())
+                                    .setAudioBook("false")
+                                    .setAddSubsonicPlayListName(subsonicPlayListName)
+                                    .setSpringName(PlugBrType.QQ_Flac_2000.getSpringName())
+                                    .setDownloadType(PlugBrType.QQ_Flac_2000.getPlugName())
+                                    .setDownloadTime(new Date());
+                            Boolean add = downloadInfoService.add(downloadInfo);
+                        }else{
+                            log.error("没有查询到歌曲：" + parserEntity);
+                        }
 
+
+
+                    }
                 } catch (Exception e) {
                     log.error("没有查询出错：" + parserEntity+"  "+e.getMessage());
                     continue;

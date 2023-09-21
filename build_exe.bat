@@ -1,0 +1,1 @@
+ jpackage --type msi --name SqMusic --input target --main-jar simple-MusicServer-1.0.2-Beta.jar --win-console --dest dist --win-dir-chooser  --win-shortcut-prompt --win-shortcut --win-menu --app-version 2.0 --copyright SQ --description MusicDownloadTool --icon logo.ico
