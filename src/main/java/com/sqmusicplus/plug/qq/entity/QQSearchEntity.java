@@ -286,7 +286,7 @@ public class QQSearchEntity {
 
         array.forEach((i,e)-> {
             String singerName = e.toMapper().getString("singerName");
-            String singerID = e.toMapper().getString("singerID");
+            String singerID = e.toMapper().getString("singerMID");
             String singerPic = e.toMapper().getString("singerPic");
             String string = e.toMapper().getString("albumNum");
             PlugSearchArtistResult plugSearchArtistResult = new PlugSearchArtistResult();
@@ -391,11 +391,12 @@ public class QQSearchEntity {
         ArrayList<Music> collect = new ArrayList<>();
         array.forEach((i,e)->{
             String string = e.toMapper().getMapper("songInfo").getString("name");
+            String mid = e.toMapper().getMapper("songInfo").getString("mid");
             String albumname =  e.toMapper().getMapper("songInfo").getMapper("album").getString("name");
-            String aartist = e.toMapper().getMapper("songInfo").getMapper("singer").getString("name");
+            String aartist = e.toMapper().getMapper("songInfo").getArray("singer").getMapper(0).getString("name");
             String albumImageconfig = qqConfig.getAlbumImage();
             String url =  albumImageconfig.replaceAll("#\\{pmid}", e.toMapper().getMapper("songInfo").getMapper("album").getString("pmid"));
-            Music music = new Music().setMusicName(string).setMusicAlbum(albumname).setMusicArtists(aartist).setMusicImage(url).setOther(JSONObject.parseObject(e.toString()));
+            Music music = new Music().setId(mid).setMusicName(string).setMusicAlbum(albumname).setMusicArtists(aartist).setMusicImage(url).setOther(JSONObject.parseObject(e.toString()));
             collect.add(music);
         });
         return collect;
@@ -411,7 +412,7 @@ public class QQSearchEntity {
         Array array = mapper.getMapper("req").getMapper("data")
                 .getMapper("body").getMapper("album").getArray("list");
         array.forEach((i,e)-> {
-            String albumID = e.toMapper().getString("albumID");
+            String albumID = e.toMapper().getString("albumMID");
             String albumName = e.toMapper().getString("albumName");
             String singerName = e.toMapper().getString("singerName");
             String singerID = e.toMapper().getString("singerID");
@@ -472,7 +473,7 @@ public class QQSearchEntity {
      */
     public static List<Album> artistsTransferAlbum (Mapper mapper, QQConfig qqConfig){
         ArrayList<Album> albums = new ArrayList<>();
-        Array array = mapper.getMapper("singerAlbum").getArray("list");
+        Array array = mapper.getMapper("singerAlbum").getMapper("data").getArray("list");
         array.forEach((i,e)-> {
             String album_mid = e.toMapper().getString("album_mid");
             String pub_time = e.toMapper().getString("pub_time");

@@ -170,25 +170,28 @@ public class ALLController {
     @SaCheckLogin
     @PostMapping("/ArtistDownload")
     public AjaxResult ArtistDownload(@RequestBody DownlaodArtis downlaodAlubm){
-        PlugBrType plugType;
-        if (StringUtils.isEmpty(downlaodAlubm.getPlugTypeValue())){
-            plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getBr());
-        }else{
-            plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getPlugTypeValue());
-        }
-        PlugBrType finalPlugType = plugType;
-        List<DownloadEntity> downloadEntities =null;
-        if (downlaodAlubm.getPlugType().equals(PlugBrType.KW_FLAC_2000.getPlugName())){
-            downloadEntities= kwHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
+        threadPoolTaskExecutor.execute(()->{
+            PlugBrType plugType;
+            if (StringUtils.isEmpty(downlaodAlubm.getPlugTypeValue())){
+                plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getBr());
+            }else{
+                plugType = TypeUtils.getPlugType(downlaodAlubm.getPlugType(), downlaodAlubm.getPlugTypeValue());
+            }
+            PlugBrType finalPlugType = plugType;
+            List<DownloadEntity> downloadEntities =null;
+            if (downlaodAlubm.getPlugType().equals(PlugBrType.KW_FLAC_2000.getPlugName())){
+                downloadEntities= kwHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
 
-        }else if(downlaodAlubm.getPlugType().equals(PlugBrType.MG_FLAC_2000.getPlugName())){
-            downloadEntities =  mgHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
-        }
-        else if(downlaodAlubm.getPlugType().equals(PlugBrType.QQ_Flac_2000.getPlugName())){
-            downloadEntities =  qqHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
-        }
-        List<DownloadInfo> downloadInfos = MusicUtils.downloadEntitytoDownloadInfoTo(downloadEntities);
-        downloadInfoService.add(downloadInfos);
+            }else if(downlaodAlubm.getPlugType().equals(PlugBrType.MG_FLAC_2000.getPlugName())){
+                downloadEntities =  mgHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
+            }
+            else if(downlaodAlubm.getPlugType().equals(PlugBrType.QQ_Flac_2000.getPlugName())){
+                downloadEntities =  qqHander.downloadArtistAllAlbum(downlaodAlubm.getId(), finalPlugType, null);
+            }
+            List<DownloadInfo> downloadInfos = MusicUtils.downloadEntitytoDownloadInfoTo(downloadEntities);
+            downloadInfoService.add(downloadInfos);
+        });
+
         return AjaxResult.success(true);
     }
     /**
