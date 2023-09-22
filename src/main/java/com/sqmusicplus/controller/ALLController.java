@@ -439,11 +439,17 @@ public class ALLController {
             SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
            return AjaxResult.success(tokenInfo);
         }else{
-            AjaxResult.error("账号密码错误");
+            return   AjaxResult.error("账号密码错误");
         }
-        return AjaxResult.error("登录失败");
     }
 
+
+    @RequestMapping(value = "logout",method = RequestMethod.POST)
+    public AjaxResult logout(@RequestBody HashMap<String,String> data )  {
+         StpUtil.logout(9527);
+         return AjaxResult.success("已退出");
+
+    }
     @RequestMapping(value = "isLogin")
     public AjaxResult isLogin() {
         return  StpUtil.isLogin()?AjaxResult.success("登录有效",true):AjaxResult.error("过期",false);

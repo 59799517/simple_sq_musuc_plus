@@ -232,7 +232,7 @@
                     <include>**/*.json</include>
                     <include>**/*.otf</include>
                     <include>**/*.ttf</include>
-                    <include>**/*.ttf</include>
+                    <include>**/*.db</include>
                 </includes>
                 <filtering>true</filtering>
             </resource>

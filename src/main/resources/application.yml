@@ -2,8 +2,8 @@ server:
   port: 8099
 spring:
   datasource:
-    url: jdbc:sqlite::resource:sqlite/sqmusic2.db
-#    url: jdbc:sqlite:/cache/sqmusic/config/sqmusic.db
+#    url: jdbc:sqlite::resource:sqlite/sqmusic2.db
+    url: jdbc:sqlite:/cache/sqmusic/config/sqmusic.db
     driver-class-name: org.sqlite.JDBC
     username:
     password:

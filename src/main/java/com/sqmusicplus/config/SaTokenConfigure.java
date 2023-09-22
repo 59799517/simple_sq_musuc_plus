@@ -23,7 +23,7 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     public SaServletFilter getSaServletFilter() {
         return new SaServletFilter()
                 .addInclude("/**")
-                .addExclude("/**/*.json","/**/*.js","/**/*.html","/**/*.css","/**/*.png","/**/*.jpg","/**/*.otf","/**/*.ttf","/**/*.wasm","/login", "/favicon.ico","/isLogin","/set/selectOption","/set/getSetList","/set/getSearchType","/set/getSearchTypeBrType")
+                .addExclude("/**/*.json","/**/*.js","/","/**/*.html","/**/*.css","/**/*.png","/**/*.jpg","/**/*.otf","/**/*.ttf","/**/*.wasm","/login", "/favicon.ico","/isLogin","/set/selectOption","/set/getSetList","/set/getSearchType","/set/getSearchTypeBrType")
 
                 .setBeforeAuth(obj -> {
                     // ---------- 设置跨域响应头 ----------
