@@ -4,8 +4,6 @@
 
 
 
-
-
 ## 项目描述
 
 
@@ -18,8 +16,8 @@ https://support.emby.media/support/solutions/articles/44001159113-music-naming
 
 ## 整体配置
 
-1. 登录用户名密码在 application-music.yml -----> user 修改 （默认账号 admin 密码 admin）
-2. 文件下载路径 application-music.yml ---> musicPath
+1. 登录用户名密码在 db文件中修改 （默认账号 admin 密码 admin）
+2. 文件下载路径 db文件中修改 ---> musicPath
 3. 其余配置 application-music.yml 请自行查看根据情况修改
 4. 缓存 ehcache.xml--->diskStore
 5. 日志 logback.xml---->property--->log.path
@@ -31,11 +29,7 @@ https://support.emby.media/support/solutions/articles/44001159113-music-naming
 
 
 
-### 新的版本使用tomcat开发
-稍后整理docker打包方法
-
 ## 打包docker方法
-
 
 1. 删除旧的包 docker rmi sqmusicplusserver
 2. 打包新的 docker build -t sqmusicplusserver .
@@ -54,7 +48,7 @@ https://support.emby.media/support/solutions/articles/44001159113-music-naming
 ![](img/8.png)
 ![](img/9.png)
 
-后期可能实现功能
+
 
 
 
