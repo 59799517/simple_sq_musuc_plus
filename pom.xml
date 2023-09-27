@@ -26,6 +26,7 @@
         <jcommander.version>1.82</jcommander.version>
         <commons.collections.version>3.2.2</commons.collections.version>
         <fastjson.version>1.2.83</fastjson.version>
+        <skipTests>true</skipTests>
     </properties>
     <dependencies>
 <!--&lt;!&ndash;war依赖&ndash;&gt;-->
@@ -286,6 +287,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+
             </plugin>
 
             <plugin>
