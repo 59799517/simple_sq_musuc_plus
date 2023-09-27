@@ -303,29 +303,27 @@
 
     <repositories>
         <repository>
-            <id>nexus-163</id>
-            <name>Nexus 163</name>
-            <url>http://mirrors.163.com/maven/repository/maven-public/</url>
-            <layout>default</layout>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
+            <id>aliyun-public</id>
+            <name>Spring Milestones</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </repository>
+        <repository>
+            <id>aliyun-spring</id>
+            <name>Spring Milestones</name>
+            <url>https://maven.aliyun.com/repository/spring</url>
+        </repository>
+        <repository>
+            <id>aliyun-center</id>
+            <name>Spring Milestones</name>
+            <url>https://maven.aliyun.com/repository/central</url>
+        </repository>
+
+        <!--以下源站的仓库节点保留，用于下载原始依赖的索引-->
+
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
         </repository>
     </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>nexus-163</id>
-            <name>Nexus 163</name>
-            <url>http://mirrors.163.com/maven/repository/maven-public/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </pluginRepository>
-    </pluginRepositories>
 </project>
