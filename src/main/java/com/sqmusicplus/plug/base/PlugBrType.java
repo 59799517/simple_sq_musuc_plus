@@ -15,10 +15,10 @@ public enum PlugBrType {
     MG_MP3_128("PQ","mp3",128,"mg","mgHander"),
     MG_MP3_64("LQ","mp3",64,"mg","mgHander"),
 
-    QQ_MP3_128("hq_128","mp3",128,"qq","qqHander"),
-    QQ_MP3_320("hq_320","mp3",320,"qq","qqHander"),
-    QQ_Flac_2000("sq","flac",2000,"qq","qqHander"),
-    QQ_Flac_3000("hr","falc",3000,"qq","qqHander");
+    QQ_MP3_128("HQ_128","mp3",128,"qq","qqHander"),
+    QQ_MP3_320("HQ_320","mp3",320,"qq","qqHander"),
+    QQ_Flac_2000("SQ","flac",2000,"qq","qqHander"),
+    QQ_Flac_3000("HR","falc",3000,"qq","qqHander");
 
 
 

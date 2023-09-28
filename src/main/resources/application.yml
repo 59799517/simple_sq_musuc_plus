@@ -3,7 +3,7 @@ server:
 spring:
   datasource:
 #    url: jdbc:sqlite::resource:sqlite/sqmusic2.db
-    url: jdbc:sqlite:/config/cache/sqmusic.db
+    url: jdbc:sqlite:/cache/sqmusic.db
     driver-class-name: org.sqlite.JDBC
     username:
     password:

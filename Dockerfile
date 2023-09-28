@@ -5,7 +5,7 @@ WORKDIR /build/
 
 COPY pom.xml /build/
 COPY src /build/src/
-COPY src/main/resources/sqlite/sqmusic.db /config/cache/sqmusic.db
+COPY src/main/resources/sqlite/sqmusic.db /cache/sqmusic.db
 
 RUN mvn clean package
 
@@ -19,7 +19,7 @@ EXPOSE 8099
 
 VOLUME ["/music"]
 
-VOLUME ["/config"]
+VOLUME ["/cache"]
 
 CMD ["java", "-jar", "app.jar"]
 

@@ -61,7 +61,7 @@ class SimpleSqMusucPlusApplicationTests {
 
     @Test
     public void contextLoads() throws IOException {
-        String t1_MusicID = "001Zi7Ly4ZtVQk";
+        String t1_MusicID = "0039wALP1ImfSQ";
         String platform = "qq";
         String t2 = "SQ";
         String device = "MI 14 Pro Max";
