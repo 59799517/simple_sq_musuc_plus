@@ -4,12 +4,7 @@ FROM maven:3.9.4-eclipse-temurin-17-alpine AS builder
 MAINTAINER SQ
 
 WORKDIR /build/
-# 时区与字符设置UTF-8并配置环境
-ENV TZ=Asia/Shanghai
-ENV LANG=C.UTF-8
-ENV apiPort="8099"
-ENV webPort="80"
-ENV TimeZone=Asia/Shanghai
+
 
 #复制源码信息
 COPY pom.xml /build/
@@ -23,17 +18,37 @@ RUN mvn clean package
 #运行镜像
 FROM centos:7
 
+# 时区与字符设置UTF-8并配置环境
+ENV TZ=Asia/Shanghai
+ENV LANG=C.UTF-8
+ENV apiPort="8099"
+ENV webPort="80"
+ENV TimeZone=Asia/Shanghai
 
-RUN yum update \
-    && yum install -y java-17-openjdk nginx
+
+#
+#RUN yum makecache
+RUN yum update -y wget
+
+RUN rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
+RUN yum install -y nginx
+
+RUN yum install -y wget
+RUN wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
+RUN yum  install -y ./jdk-17_linux-x64_bin.rpm
+
+#RUN wget http://nginx.org/packages/centos/7/x86_64/RPMS/nginx-1.18.0-1.el7.ngx.x86_64.rpm
+#RUN yum install -y ./nginx-1.18.0-1.el7.ngx.x86_64.rpm
+
+
 
 COPY --from=builder  /build/target/MusicServer2.0.jar /app/app.jar
-
+RUN mkdir -p /usr/local/nginx/conf/
 RUN echo "worker_processes  1;events {    worker_connections  1024;}http {    include       mime.types;    default_type  application/octet-stream;    sendfile        on;    keepalive_timeout  65;    server {        listen       ${webPort};        server_name  localhost;        location / {            root   html;            index  index.html index.htm;        }        location /sqmusic-api/ {            proxy_pass http://localhost:${apiPort}/;            proxy_http_version 1.1;        }        error_page   500 502 503 504  /50x.html;        location = /50x.html {            root   html;        }    }}" > /usr/local/nginx/conf/nginx.conf
 
 
 #将启动脚本拷贝到容器里面的/usr/local/project下面
-COPY run.sh /usr/local/project
+COPY docker-run.sh /usr/local/project/docker-run.sh
 #给run.sh可执行权限
 RUN chmod 777 /usr/local/project/docker-run.sh
 
