@@ -369,7 +369,7 @@ public class MgHander extends SearchHanderAbstract  {
         String downloadUrl = mgConfig.getDownloadUrl();
         downloadUrl = downloadUrl.replaceAll("#\\{musicId}", musicId);
         log.info("咪咕下载地址：url:{}",downloadUrl);
-        MgDownloadResult mgDownloadResult = DownloadUtils.getHttp().sync(downloadUrl).addHeader("Referer","https://m.music.migu.cn").get().getBody().toBean(MgDownloadResult.class);
+        MgDownloadResult mgDownloadResult = DownloadUtils.getHttp().sync(downloadUrl).addHeader("Referer","http://m.music.migu.cn/v3").get().getBody().toBean(MgDownloadResult.class);
         HashMap<String, String> objectObjectHashMap = null;
         if (StringUtils.isNotEmpty(mgDownloadResult.getResource())) {
             List<MgDownloadResult.ResourceDTO.NewRateFormatsDTO> newRateFormats = mgDownloadResult.getResource().get(0).getNewRateFormats();

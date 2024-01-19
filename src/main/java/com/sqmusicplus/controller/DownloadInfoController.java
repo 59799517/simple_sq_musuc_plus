@@ -35,6 +35,9 @@ public class DownloadInfoController {
         Page<DownloadInfo> page = downloadInfoService.page(new Page<>(pageIndex, pageSize),downloadInfoLambdaQueryWrapper);
         return AjaxResult.success(page);
     }
+
+
+
     @GetMapping("/delAllTask")
     public AjaxResult delAllTask(){
         QueryWrapper<DownloadInfo> downloadInfoQueryWrapper = new QueryWrapper<>();

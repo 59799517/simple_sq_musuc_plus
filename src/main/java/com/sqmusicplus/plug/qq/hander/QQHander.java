@@ -17,10 +17,12 @@ import com.sqmusicplus.plug.kw.entity.SearchMusicResult;
 import com.sqmusicplus.plug.qq.config.QQConfig;
 import com.sqmusicplus.plug.qq.entity.QQSearchEntity;
 import com.sqmusicplus.plug.qq.enums.QQSearchType;
+import com.sqmusicplus.plug.utils.QSignHelper;
 import com.sqmusicplus.utils.DateUtils;
 import com.sqmusicplus.utils.DownloadUtils;
 import com.sqmusicplus.utils.MusicUtils;
 import com.sqmusicplus.utils.ZLibUtils;
+import com.twelvemonkeys.lang.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -141,6 +143,56 @@ public class QQHander extends SearchHanderAbstract {
 
     @Override
     public HashMap<String, String> getDownloadUrl(String musicId, PlugBrType brType) {
+
+//        HashMap<String, String> stringStringHashMap = new HashMap<>();
+//        stringStringHashMap.put("url", "");
+//        stringStringHashMap.put("type", brType.getType());
+//        stringStringHashMap.put("bit", brType.getBit().toString());
+//        // 获取 mediaMid
+//        String infoReqBody = String.format("{\"comm\":{\"ct\":\"19\",\"cv\":\"1859\",\"uin\":\"0\"},\"req\":{\"module\":\"music.pf_song_detail_svr\"," +
+//                "\"method\":\"get_song_detail_yqq\",\"param\":{\"song_type\":0,\"song_mid\":\"%s\"}}}", musicId);
+//        HTTP http = DownloadUtils.getHttp();
+//        String sign = QSignHelper.sign(infoReqBody);
+//        HttpResult post1 = http.sync("https://u.y.qq.com/cgi-bin/musics.fcg?format=json&sign=" + sign).setBodyPara(infoReqBody).post();
+//        JSONObject infoBodyJson = JSONObject.parseObject(post1.getBody().toString());
+//
+//        if (infoBodyJson.getIntValue("code") != 0 || infoBodyJson.getJSONObject("req").getIntValue("code") != 0){
+//
+//            return stringStringHashMap;
+//        }
+//        String mediaMid = infoBodyJson.getJSONObject("req").getJSONObject("data")
+//                .getJSONObject("track_info").getJSONObject("file").getString("media_mid");
+//        // 获取 url
+//        String reqBody = String.format("{\"req_0\":{\"module\":\"vkey.GetVkeyServer\",\"method\":\"CgiGetVkey\",\"param\":{\"filename\":[\"%s\"]," +
+//                        "\"guid\":\"%s\",\"songmid\":[\"%s\"],\"songtype\":[0],\"uin\":\"%s\",\"loginflag\":1,\"platform\":\"20\"}}," +
+//                        "\"comm\":{\"qq\":\"%s\",\"authst\":\"%s\",\"ct\":\"26\",\"cv\":\"2010101\",\"v\":\"2010101\"}}",
+//                brType.getValue().split("_")[1] + mediaMid +brType.getType(), "0", musicId, "0", "", "");
+//        String sign2 = QSignHelper.sign(reqBody);
+//        HttpResult post2 = http.sync( "https://u.y.qq.com/cgi-bin/musics.fcg?format=json&sign=" + sign2).setBodyPara(reqBody).post();
+//
+//
+//
+//        JSONObject urlJson = JSONObject.parseObject(post2.getBody().toString());
+//        JSONObject data = urlJson.getJSONObject("req_0").getJSONObject("data");
+//        if (urlJson==null||urlJson.isEmpty()){
+//
+//            return stringStringHashMap;
+//        }
+//        String sip = data.getJSONArray("sip").getString(0);
+//        String url = data.getJSONArray("midurlinfo").getJSONObject(0).getString("purl");
+//        String trackUrl = sip + url;
+//        stringStringHashMap.put("url", trackUrl);
+//
+//        return stringStringHashMap;
+
+
+
+
+
+
+
+
+
         String platform = "qq";
         String t2 = brType.getValue().split("_")[0];
         String device = "MI 14 Pro Max";
@@ -157,7 +209,8 @@ public class QQHander extends SearchHanderAbstract {
         byte[] encodedBytes = upperHexString.getBytes(StandardCharsets.UTF_8);
         byte[] compress = ZLibUtils.compress(encodedBytes);
         HTTP http = DownloadUtils.getHttp();
-        SHttpTask sync = http.sync(config.getDownloadUrl());
+//        SHttpTask sync = http.sync(config.getDownloadUrl());
+        SHttpTask sync = http.sync("http://app.kzti.top/client/cgi-bin/api.fcg");
         sync.setBodyPara(compress);
         HttpResult post = sync.post();
         byte[] decompress = ZLibUtils.decompress(post.getBody().toBytes());
