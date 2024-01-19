@@ -367,9 +367,15 @@ public class MgHander extends SearchHanderAbstract  {
         //等级
         String value = brType.getValue();
         String downloadUrl = mgConfig.getDownloadUrl();
-        downloadUrl = downloadUrl.replaceAll("#\\{musicId}", musicId);
+
+
+
+        downloadUrl = "https://app.c.nf.migu.cn/MIGUM2.0/strategy/listen-url/v2.2?netType=01&resourceType=E&songId="+musicId+"&toneFlag=ZQ";
+
+//        downloadUrl = downloadUrl.replaceAll("#\\{musicId}", musicId);
         log.info("咪咕下载地址：url:{}",downloadUrl);
-        MgDownloadResult mgDownloadResult = DownloadUtils.getHttp().sync(downloadUrl).addHeader("Referer","http://m.music.migu.cn/v3").get().getBody().toBean(MgDownloadResult.class);
+//        MgDownloadResult mgDownloadResult = DownloadUtils.getHttp().sync(downloadUrl).addHeader("Referer","http://m.music.migu.cn/v3").get().getBody().toBean(MgDownloadResult.class);
+        MgDownloadResult mgDownloadResult = DownloadUtils.getHttp().sync(downloadUrl).addHeader("channel","0146951").addHeader("uid","0").get().getBody().toBean(MgDownloadResult.class);
         HashMap<String, String> objectObjectHashMap = null;
         if (StringUtils.isNotEmpty(mgDownloadResult.getResource())) {
             List<MgDownloadResult.ResourceDTO.NewRateFormatsDTO> newRateFormats = mgDownloadResult.getResource().get(0).getNewRateFormats();
