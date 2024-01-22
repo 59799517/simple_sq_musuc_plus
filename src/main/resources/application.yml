@@ -28,7 +28,7 @@ mybatis-plus:
   mapperLocations: classpath*:mapper/*Mapper.xml
   # 加载全局的配置文件
   configuration:
-    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
     cache-enabled: true
   global-config:
     db-config:
@@ -37,7 +37,7 @@ mybatis-plus:
 # 日志配置
 logging:
   level:
-    com.sqmusicplus: debug
+    com.sqmusicplus: info
     org.springframework: warn
 sa-token:
   # token 名称 (同时也是cookie名称)
