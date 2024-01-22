@@ -11,7 +11,12 @@ kw:
   #  榜单详情
   BangInfoUrl: http://kbangserver.kuwo.cn/ksong.s?from=pc&fmt=json&pn=#{pn}&rn=#{pagesize}&type=bang&data=content&id=#{BangMenuId}&show_copyright_off=0&pcmp4=1&isbang=1
   #   下载
-  downloadurl: http://nmobi.kuwo.cn/mobi.s?f=kuwo&q=
+  downloadurl: http://nmobi.kuwo.cn/mobi.s?f=kuwo&source=kwplayer_ar_1.1.9_oppo_118980_320.apk&q=
+  #返回json的下载链接
+  downloadurl2: http://mobi.kuwo.cn/mobi.s?f=web&source=kwplayer_ar_1.1.9_oppo_118980_320.apk&type=convert_url_with_sign&rid=#{musicId}&br=#{brvalue}
+
+
+
   #  歌曲详情以及歌词
   SongInfoUrl: http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=#{musicId}
   #  歌曲封面前缀

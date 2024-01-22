@@ -20,7 +20,6 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -258,51 +257,78 @@ public class NKwSearchHander extends SearchHanderAbstract {
         return music;
     }
 
+//    @Override
+//    public HashMap<String, String> getDownloadUrl(String musicId, PlugBrType brType) {
+//        String downloadurl = config.getDownloadurl();
+//        String s = "";
+//
+//        if (brType.getType().equals("flac")) {
+//            s = "corp=kuwo&p2p=1&type=convert_url2&format=flac&rid=#{musicId}";
+//        } else if (brType.getType().equals("ape")) {
+//          s = "corp=kuwo&p2p=1&type=convert_url2&format=ape&rid=#{musicId}";
+//        } else if (brType.getValue().equals("320kmp3")) {
+//            //320 MP3
+//            s="user=0&android_id=0&prod=kwplayer_ar_9.3.1.3&corp=kuwo&newver=3&vipver=9.3.1.3&source=kwplayer_ar_9.3.1.3_qq.apk&p2p=1&notrace=0&type=convert_url2&format=flac|mp3|aac&sig=0&rid=#{musicId}&priority=bitrate&loginUid=0&network=WIFI&loginSid=0&mode=download";
+////            s = "corp=kuwo&p2p=1&type=convert_url2&format=mp3&rid=#{musicId}&mode=download";
+//        }else if (brType.getValue().equals("128kmp3")){
+//            s = "corp=kuwo&p2p=1&type=convert_url2&format=mp3|aac&rid=#{musicId}";
+//        } else {
+//            //未知类型就限定flac格式
+//            s = "corp=kuwo&p2p=1&type=convert_url2&format=flac&rid=#{musicId}";
+//        };
+//        try {
+//            s = s.replaceAll("#\\{musicId}", musicId).replaceAll("#\\{brvalue}", brType.getValue());
+//            byte[] bytes = KuwoDES.encrypt2(s.getBytes("UTF-8"), s.length(), KuwoDES.SECRET_KEY, KuwoDES.SECRET_KEY_LENG);            char[] encode = Base64Coder.encode(bytes);
+//            String out = new String(encode);
+//            downloadurl = downloadurl + out;
+//        } catch (Exception e) {
+//            log.error("获取下载链接失败：{}", e.getMessage());
+//            return null;
+//        }
+//        try {
+//            String s1 = DownloadUtils.getHttp().sync(downloadurl).get().getBody().toByteString().utf8();
+//            if (StringUtils.isEmpty(s1)){
+//                try {
+//                    if (brType.getType().equals("320kmp3")&&StringUtils.isEmpty(s1)){
+//                        return null;
+//                    }
+//                   return getDownloadUrl(musicId, PlugBrType.KW_MP3_320);
+//                } catch (Exception e) {
+////                    throw new RuntimeException(e);
+//                    return null;
+//                }
+//            }
+//
+//            String bitrate = s1.split("\n")[1].split("=")[1];
+//            String format = s1.split("\n")[0].split("=")[1];
+//            downloadurl = s1.split("\n")[2].split("=")[1].split("\r")[0];
+//            HashMap<String, String> stringStringHashMap = new HashMap<>();
+//            stringStringHashMap.put("url", downloadurl);
+//            stringStringHashMap.put("type", format.replaceAll("\r", ""));
+//            stringStringHashMap.put("bit", bitrate.replaceAll("\r", ""));
+//            return stringStringHashMap;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//
+//        return null;
+//    }
     @Override
     public HashMap<String, String> getDownloadUrl(String musicId, PlugBrType brType) {
-        String downloadurl = config.getDownloadurl();
-        String s = "";
+        String downloadurl = config.getDownloadurl2();
 
-        if (brType.getType().equals("flac")) {
-            s = "corp=kuwo&p2p=1&type=convert_url2&format=flac&rid=#{musicId}";
-        } else if (brType.getType().equals("ape")) {
-          s = "corp=kuwo&p2p=1&type=convert_url2&format=ape&rid=#{musicId}";
-        } else if (brType.getValue().equals("320kmp3")) {
-            //320 MP3
-            s="user=0&android_id=0&prod=kwplayer_ar_9.3.1.3&corp=kuwo&newver=3&vipver=9.3.1.3&source=kwplayer_ar_9.3.1.3_qq.apk&p2p=1&notrace=0&type=convert_url2&format=flac|mp3|aac&sig=0&rid=#{musicId}&priority=bitrate&loginUid=0&network=WIFI&loginSid=0&mode=download";
-//            s = "corp=kuwo&p2p=1&type=convert_url2&format=mp3&rid=#{musicId}&mode=download";
-        }else if (brType.getValue().equals("128kmp3")){
-            s = "corp=kuwo&p2p=1&type=convert_url2&format=mp3|aac&rid=#{musicId}";
-        } else {
-            //未知类型就限定flac格式
-            s = "corp=kuwo&p2p=1&type=convert_url2&format=flac&rid=#{musicId}";
-        };
-        try {
-            s = s.replaceAll("#\\{musicId}", musicId).replaceAll("#\\{brvalue}", brType.getValue());
-            byte[] bytes = KuwoDES.encrypt2(s.getBytes("UTF-8"), s.length(), KuwoDES.SECRET_KEY, KuwoDES.SECRET_KEY_LENG);
-            char[] encode = Base64Coder.encode(bytes);
-            String out = new String(encode);
-            downloadurl = downloadurl + out;
-        } catch (UnsupportedEncodingException e) {
+            try {
+                downloadurl = downloadurl.replaceAll("#\\{musicId}", musicId).replaceAll("#\\{brvalue}", brType.getValue());
+        } catch (Exception e) {
             log.error("获取下载链接失败：{}", e.getMessage());
             return null;
         }
         try {
-            String s1 = DownloadUtils.getHttp().sync(downloadurl).get().getBody().toByteString().utf8();
-            if (StringUtils.isEmpty(s1)){
-                try {
-                    if (brType.getType().equals("320kmp3")&&StringUtils.isEmpty(s1)){
-                        return null;
-                    }
-                   return getDownloadUrl(musicId, PlugBrType.KW_MP3_320);
-                } catch (Exception e) {
-//                    throw new RuntimeException(e);
-                    return null;
-                }
-            }
-            String bitrate = s1.split("\n")[1].split("=")[1];
-            String format = s1.split("\n")[0].split("=")[1];
-            downloadurl = s1.split("\n")[2].split("=")[1].split("\r")[0];
+            Download2Result bean = DownloadUtils.getHttp().sync(downloadurl).get().getBody().toBean(Download2Result.class);
+            String bitrate = bean.getData().getBitrate()+"";
+            String format = bean.getData().getFormat();
+            downloadurl = bean.getData().getUrl();
             HashMap<String, String> stringStringHashMap = new HashMap<>();
             stringStringHashMap.put("url", downloadurl);
             stringStringHashMap.put("type", format.replaceAll("\r", ""));
