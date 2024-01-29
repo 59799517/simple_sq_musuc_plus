@@ -97,7 +97,6 @@ public class ALLController {
     }
     @SaCheckLogin
     @GetMapping("/musicUrl/{searchType}/{id}")
-
     public AjaxResult getPlayMusicUrl(@PathVariable("searchType") String searchType,@PathVariable("id")String id){
         if(searchType.equals(PlugBrType.KW_FLAC_2000.getPlugName())){
             HashMap<String, String> downloadUrl = kwHander.getDownloadUrl(id, PlugBrType.KW_FLAC_2000);
@@ -111,6 +110,23 @@ public class ALLController {
         }
         return AjaxResult.error("未知的搜索类型");
     }
+    @SaCheckLogin
+    @GetMapping("/SongInfoById/{searchType}/{id}")
+    public AjaxResult SongInfoById(@PathVariable("searchType") String searchType,@PathVariable("id")String id){
+        if(searchType.equals(PlugBrType.KW_FLAC_2000.getPlugName())){
+            Music music = kwHander.querySongById(id);
+            return AjaxResult.success(music);
+        }else if (searchType.equals(PlugBrType.MG_FLAC_2000.getPlugName())){
+            Music music = mgHander.querySongById(id);
+            return AjaxResult.success(music);
+        }else if ("qq".equals(searchType)){
+            Music music = qqHander.querySongById(id);
+            return AjaxResult.success(music);
+        }
+        return AjaxResult.error("未知的搜索类型");
+    }
+
+
 
     /**
      *

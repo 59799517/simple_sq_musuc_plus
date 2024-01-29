@@ -13,6 +13,7 @@ import com.sqmusicplus.base.service.SqConfigService;
 import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -31,6 +32,8 @@ import java.util.stream.Collectors;
 public class SetController {
     @Autowired
     private SqConfigService configService;
+    @Value("${version}")
+    private String version;
 
     /**
      * 查询全部设置
@@ -93,6 +96,7 @@ public class SetController {
         HashMap<String, String> QQoption = new HashMap<>();
         QQoption.put("value","qq");
         QQoption.put("label","鹅厂");
+        QQoption.put("disabled","true");
         HashMap<String, String> MGoption = new HashMap<>();
         MGoption.put("value","mg");
         MGoption.put("label","10086(有问题暂停使用)");
@@ -101,5 +105,9 @@ public class SetController {
         hashMaps.add(QQoption);
         hashMaps.add(MGoption);
         return AjaxResult.success(hashMaps);
+    }
+    @GetMapping("version")
+    public AjaxResult getVersion(){
+        return AjaxResult.success("成功", version);
     }
 }

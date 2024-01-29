@@ -54,6 +54,11 @@ public class PlugSearchMusicResult {
      * 搜索类型
      */
     String  searchType;
+    /**
+     * 歌曲时长
+     */
+
+    String duration;
 
     /**
      * 其余信息（插件特殊参数） 尽量避免使用

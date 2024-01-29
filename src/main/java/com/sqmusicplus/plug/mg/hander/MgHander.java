@@ -170,7 +170,6 @@ public class MgHander extends SearchHanderAbstract  {
 
         String Lrc = DownloadUtils.getHttp().sync(lrcUrl).get().getBody().toByteString().utf8();
         Lrc = LrcUtils.mgLrcTolrc(Lrc);
-
         //图片
         String img = mgSongInfoResult.getResource().get(0).getAlbumImgs().get(0).getImg();
         return new Music().setId(copyrightId).setMusicImage(img).setMusicLyric(Lrc).setMusicAlbum(album).setMusicArtists(singer).setMusicName(songName).setAlbumId(albumId).setArtistsId(singerId);

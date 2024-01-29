@@ -59,6 +59,7 @@ public class NKwSearchHander extends SearchHanderAbstract {
                 .setArtistid(e.getArtistid())
                 .setId(e.getMusicrid().replaceAll("MUSIC_",""))
                 .setSearchType(searchKeyData.getSearchType())
+                .setDuration(e.getDuration())
                 .setName(e.getName()).setPic(getConfig().getSongCoverUrl() + e.getWebAlbumpicShort())
                 .setOter(JSONObject.toJSONString(e))));
         PlugSearchResult<PlugSearchMusicResult> plugSearchResult = new PlugSearchResult<>();
