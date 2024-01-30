@@ -19,6 +19,14 @@ https://support.emby.media/support/solutions/articles/44001159113-music-naming
 4. 缓存 ehcache.xml--->diskStore
 5. 日志 logback.xml---->property--->log.path
 
+
+
+自己打包java 运行 更方便 
+咱最新的桌面播放器 也支持此服务 双击右下方版本号可进入插件设置使用此服务
+
+播放器：
+https://github.com/59799517/sq_subsonic_desktop
+
 ## 使用可（java -jar ./simple-MusicServer-0.0.1-SNAPSHOT.jar
 
 1. 安装java17

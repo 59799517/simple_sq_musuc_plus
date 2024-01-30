@@ -24,4 +24,6 @@ public class DownlaodParserText {
      * 需要加入的歌单名称
      */
     String subsonicPlayListName;
+    //插件类型（目前不使用仅支持酷我）
+    String plugType;
 }
