@@ -2,15 +2,15 @@ server:
   port: 8099
 spring:
   datasource:
-#    url: jdbc:sqlite::resource:sqlite/sqmusic.db
-    url: jdbc:sqlite:/cache/sqmusic.db
+    url: jdbc:sqlite::resource:sqlite/sqmusic.db
+#    url: jdbc:sqlite:/cache/sqmusic.db
     driver-class-name: org.sqlite.JDBC
     username:
     password:
   jackson:
     default-property-inclusion: non_null
   profiles:
-    active: plug,qq
+    active: plug,qq,netease
   mvc:
     static-path-pattern: /**
   web:
@@ -55,4 +55,4 @@ sa-token:
   # 是否输出操作日志
   is-log: false
 
-version: 2.1.4
+version: 2.1.5

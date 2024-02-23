@@ -89,7 +89,7 @@ public interface SearchHander {
     List<Album> getAlbumsByArtist(String artistId, Integer pageIndex, Integer pageSize);
 
     /**
-     * 根据专辑id获取专辑下歌曲
+     * 根据专辑id获取专辑下歌曲（有点冗余以后和上方的代码合并一下）
      *
      * @param albumsId
      * @return

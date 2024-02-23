@@ -20,7 +20,14 @@ public enum PlugBrType {
     QQ_Flac_2000("SQ_F000","flac",2000,"qq","qqHander"),
     QQ_Flac_3000("HR_RS01","falc",3000,"qq","qqHander"),
     QQ_Flac_4000("HR_Q000","falc",3000,"qq","qqHander"),
-    QQ_Flac_5000("HR_AI00","falc",3000,"qq","qqHander");
+    QQ_Flac_5000("HR_AI00","falc",3000,"qq","qqHander"),
+
+    NETEASE_MP3_128("standard", "mp3", 128,"netease","neteaseHander"),
+    NETEASE_MP3_192("higher", "mp3", 192,"netease","neteaseHander"),
+    NETEASE_MP3_320("exhigh", "mp3", 320,"netease","neteaseHander"),
+    NETEASE_FLAC_2000("lossless", "flac", 2000,"netease","neteaseHander"),
+    NETEASE_FLAC_3000("hires", "flac", 3000,"netease","neteaseHander");
+
 
 
 

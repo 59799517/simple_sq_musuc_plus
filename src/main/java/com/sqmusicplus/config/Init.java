@@ -2,18 +2,25 @@ package com.sqmusicplus.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.ejlchina.data.Mapper;
+import com.ejlchina.okhttps.HTTP;
 import com.sqmusicplus.base.entity.SqConfig;
 import com.sqmusicplus.download.DownloadExcute;
+import com.sqmusicplus.plug.netease.config.NeteaseConfig;
+import com.sqmusicplus.plug.netease.hander.NeteaseHander;
 import com.sqmusicplus.plug.subsonic.SubsonicHander;
 import com.sqmusicplus.plug.subsonic.config.NowPlayList;
 import com.sqmusicplus.plug.subsonic.entity.SubsonicPlayList;
 import com.sqmusicplus.base.service.SqConfigService;
+import com.sqmusicplus.utils.DownloadUtils;
+import com.sqmusicplus.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Configuration;
+import top.yumbo.util.music.MusicEnum;
 
 import java.util.ArrayList;
 
@@ -35,6 +42,8 @@ public class Init implements ApplicationRunner {
     private String port;
     @Autowired
     private DownloadExcute downloadExcute;
+    @Autowired
+    private NeteaseHander neteaseHander;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -57,18 +66,10 @@ public class Init implements ApplicationRunner {
         if (Boolean.valueOf(init_download.getConfigValue())){
             downloadExcute.getDownloadInfo();
         }
+        neteaseHander.initPlug();
 
 
-//        List<Object> values = EhCacheUtil.values(EhCacheUtil.RUN_DOWNLOAD);
-//        for (Object value : values) {
-//            DownloadEntity downloadEntity = (DownloadEntity) value;
-//            try {
-//                EhCacheUtil.remove(EhCacheUtil.RUN_DOWNLOAD, downloadEntity.getMusicid());
-//                EhCacheUtil.put(EhCacheUtil.READY_DOWNLOAD, downloadEntity.getMusicid(), downloadEntity);
-//            } catch (Exception e) {
-//
-//            }
-//        }
+
     }
 
 

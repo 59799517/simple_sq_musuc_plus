@@ -49,4 +49,24 @@ public class FileUtils
         return organizeFiles(file,target);
     }
 
+    public static File findFile(String path,String fileName){
+        try {
+            File file = new File(path);
+            if(file.exists()){
+                File[] files = file.listFiles();
+                for(File f:files){
+                    //判断文件的名称忽略后缀
+                    String name = f.getName().substring(0,f.getName().lastIndexOf("."));
+                    if(name.equals(fileName)){
+                        return f;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return new File("");
+        }
+        return new File("");
+    }
+
+
 }

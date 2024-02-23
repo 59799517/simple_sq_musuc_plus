@@ -245,10 +245,7 @@ public class QQHander extends SearchHanderAbstract {
 
     @Override
     public ArrayList<DownloadEntity> downloadAlbum(String albumsId, PlugBrType brType, String addSubsonicPlayListName, String artist, Boolean isAudioBook, String albumName) {
-        String searchUrl = config.getSearchUrl();
-        String s = QQSearchEntity.albumInfoRequestParam(albumsId);
-        Mapper mapper = DownloadUtils.getHttp().sync(searchUrl).setBodyPara(s).post().getBody().toMapper();
-        List<Music> musiclist = QQSearchEntity.albumInfoToAlbumMusic(mapper, config);
+        List<Music> musiclist = getAlbumSongByAlbumsId(albumsId);
         AtomicReference<String> change = new AtomicReference<>(artist);
         ArrayList<DownloadEntity> downloadEntities = new ArrayList<>();
 

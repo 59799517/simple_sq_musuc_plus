@@ -207,6 +207,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>top.yumbo.music</groupId>
+            <artifactId>yumbo-music-utils</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+
 
 
 

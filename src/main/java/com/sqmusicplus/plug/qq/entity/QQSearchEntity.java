@@ -264,7 +264,7 @@ public class QQSearchEntity {
             plugSearchMusicResult.setAlbumid(albumId);
             plugSearchMusicResult.setLyricId(mid);
             plugSearchMusicResult.setLyric(lyricResult);
-            plugSearchMusicResult.setOter(e.toString());
+//            plugSearchMusicResult.setOter(e.toString());
             plugSearchMusicResults.add(plugSearchMusicResult);
 
         });

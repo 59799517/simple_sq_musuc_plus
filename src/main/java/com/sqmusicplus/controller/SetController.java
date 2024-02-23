@@ -95,15 +95,19 @@ public class SetController {
         kwoption.put("label","某我");
         HashMap<String, String> QQoption = new HashMap<>();
         QQoption.put("value","qq");
-        QQoption.put("label","鹅厂");
+        QQoption.put("label","鹅厂(有问题暂停使用)");
         QQoption.put("disabled","true");
         HashMap<String, String> MGoption = new HashMap<>();
         MGoption.put("value","mg");
         MGoption.put("label","10086(有问题暂停使用)");
         MGoption.put("disabled","true");
+        HashMap<String, String> neteaseoption = new HashMap<>();
+        neteaseoption.put("value","netease");
+        neteaseoption.put("label","猪厂");
         hashMaps.add(kwoption);
         hashMaps.add(QQoption);
         hashMaps.add(MGoption);
+        hashMaps.add(neteaseoption);
         return AjaxResult.success(hashMaps);
     }
     @GetMapping("version")
