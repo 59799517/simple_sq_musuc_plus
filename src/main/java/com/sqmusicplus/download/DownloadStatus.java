@@ -12,7 +12,6 @@ public enum DownloadStatus {
 
     waiting("待下载","waiting"),
     loading("正在进行","loading"),
-
     success("成功","success"),
 
     error("错误","error");

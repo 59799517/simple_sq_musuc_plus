@@ -104,7 +104,7 @@ public class Music  implements Serializable {
     private String musicFormat;
 
     /**
-     *音乐时长
+     *音乐时长（单位 毫秒）
      */
     private Integer musicDuration;
 

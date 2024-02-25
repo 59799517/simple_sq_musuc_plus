@@ -20,6 +20,7 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,16 +54,29 @@ public class NKwSearchHander extends SearchHanderAbstract {
                 .getBody()                      // 响应报文体
                 .toBean(SearchMusicResult.class);
         ArrayList<PlugSearchMusicResult> plugSearchMusicResults = new ArrayList<>();
-        searchMusicResult.getAbslist().forEach(e -> plugSearchMusicResults.add(new PlugSearchMusicResult().setAlbumName(e.getAlbum())
-                .setAlbumid(e.getAlbumid())
-                .setArtistName(e.getArtist())
-                .setArtistid(e.getArtistid())
-                .setId(e.getMusicrid().replaceAll("MUSIC_",""))
-                .setSearchType(searchKeyData.getSearchType())
-                .setDuration(e.getDuration())
-                .setName(e.getName()).setPic(getConfig().getSongCoverUrl() + e.getWebAlbumpicShort())
-//                .setOter(JSONObject.toJSONString(e))
-        ));
+        searchMusicResult.getAbslist().forEach(e -> {
+                    String duration = "0";
+                    try {
+                        duration = e.getDuration();
+                        BigDecimal bigDecimal = new BigDecimal(duration);
+                        BigDecimal multiply = bigDecimal.multiply(new BigDecimal(1000));
+                        duration = multiply.toString();
+                    } catch (Exception ex) {
+                       duration = "0";
+                    }
+
+                    plugSearchMusicResults.add(
+                            new PlugSearchMusicResult().setAlbumName(e.getAlbum())
+                                    .setAlbumid(e.getAlbumid())
+                                    .setArtistName(e.getArtist())
+                                    .setArtistid(e.getArtistid())
+                                    .setId(e.getMusicrid().replaceAll("MUSIC_",""))
+                                    .setSearchType(searchKeyData.getSearchType())
+                                    .setDuration(duration)
+                                    .setName(e.getName()).setPic(getConfig().getSongCoverUrl() + e.getWebAlbumpicShort())
+                    );
+                }
+               );
         PlugSearchResult<PlugSearchMusicResult> plugSearchResult = new PlugSearchResult<>();
         plugSearchResult.setSearchIndex(searchKeyData.getPageIndex())
                 .setSearchSize(searchKeyData.getPageSize())
@@ -149,7 +163,15 @@ public class NKwSearchHander extends SearchHanderAbstract {
         String artistId = songinfo.getArtistId();
         String s = songinfo.getPic().replaceAll("/240", "/500");
         String songName = songinfo.getSongName();
-        String duration = songinfo.getDuration();
+        String duration = "0";
+        try {
+            duration = songinfo.getDuration();
+            BigDecimal bigDecimal = new BigDecimal(duration);
+            BigDecimal multiply = bigDecimal.multiply(new BigDecimal(1000));
+            duration = multiply.toString();
+        } catch (Exception e) {
+            duration="0";
+        }
         List<MusicInfoResult.DataDTO.LrclistDTO> lrclist = data.getLrclist();
         String Lrc = null;
         if (lrclist != null && lrclist.size() > 0) {
