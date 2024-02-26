@@ -40,6 +40,8 @@ public class Init implements ApplicationRunner {
     private SubsonicHander subsonicHander;
     @Value("${server.port}")
     private String port;
+    @Value("${version}")
+    private String version;
     @Autowired
     private DownloadExcute downloadExcute;
     @Autowired
@@ -67,6 +69,7 @@ public class Init implements ApplicationRunner {
             downloadExcute.getDownloadInfo();
         }
         neteaseHander.initPlug();
+        log.info("当前服务版本->{}", version);
 
 
 
