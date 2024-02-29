@@ -376,8 +376,7 @@ public class MusicInfoNeteaseResult {
         private Integer rtype;
         @JSONField(name = "s_id")
         private Integer sId;
-        @JSONField(name = "rtUrls")
-        private List<?> rtUrls;
+
         @JSONField(name = "resourceState")
         private Boolean resourceState;
         @JSONField(name = "id")
@@ -408,8 +407,9 @@ public class MusicInfoNeteaseResult {
         private Integer version;
         @JSONField(name = "cp")
         private Integer cp;
-        @JSONField(name = "alia")
-        private List<?> alia;
+
+
+
         @JSONField(name = "djId")
         private Integer djId;
         @JSONField(name = "single")
@@ -507,13 +507,8 @@ public class MusicInfoNeteaseResult {
             this.sId = sId;
         }
 
-        public List<?> getRtUrls() {
-            return rtUrls;
-        }
 
-        public void setRtUrls(List<?> rtUrls) {
-            this.rtUrls = rtUrls;
-        }
+
 
         public Boolean getResourceState() {
             return resourceState;
@@ -635,13 +630,9 @@ public class MusicInfoNeteaseResult {
             this.cp = cp;
         }
 
-        public List<?> getAlia() {
-            return alia;
-        }
 
-        public void setAlia(List<?> alia) {
-            this.alia = alia;
-        }
+
+
 
         public Integer getDjId() {
             return djId;
@@ -818,8 +809,9 @@ public class MusicInfoNeteaseResult {
             private String picUrl;
             @JSONField(name = "name")
             private String name;
-            @JSONField(name = "tns")
-            private List<?> tns;
+
+
+
             @JSONField(name = "pic_str")
             private String picStr;
             @JSONField(name = "id")
@@ -843,13 +835,9 @@ public class MusicInfoNeteaseResult {
                 this.name = name;
             }
 
-            public List<?> getTns() {
-                return tns;
-            }
 
-            public void setTns(List<?> tns) {
-                this.tns = tns;
-            }
+
+
 
             public String getPicStr() {
                 return picStr;
@@ -985,11 +973,9 @@ public class MusicInfoNeteaseResult {
         public static class ArDTO {
             @JSONField(name = "name")
             private String name;
-            @JSONField(name = "tns")
-            private List<?> tns;
-            @JSONField(name = "alias")
-            private List<?> alias;
-            @JSONField(name = "id")
+
+
+
             private Integer id;
 
             public String getName() {
@@ -1000,21 +986,8 @@ public class MusicInfoNeteaseResult {
                 this.name = name;
             }
 
-            public List<?> getTns() {
-                return tns;
-            }
 
-            public void setTns(List<?> tns) {
-                this.tns = tns;
-            }
 
-            public List<?> getAlias() {
-                return alias;
-            }
-
-            public void setAlias(List<?> alias) {
-                this.alias = alias;
-            }
 
             public Integer getId() {
                 return id;
