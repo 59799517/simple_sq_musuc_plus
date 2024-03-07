@@ -1,34 +1,49 @@
 server:
-  port: 8083
+  port: 8099
 spring:
+  datasource:
+#    url: jdbc:sqlite::resource:sqlite/sqmusic.db
+    url: jdbc:sqlite:/cache/sqmusic.db
+    driver-class-name: org.sqlite.JDBC
+    username:
+    password:
+  jackson:
+    default-property-inclusion: non_null
   profiles:
-    active: plug,music
+    active: plug,qq,netease
   mvc:
     static-path-pattern: /**
   web:
     resources:
-      static-locations:  classpath:/static/**
-#  freemarker:
-#    cache: false  #关闭模板缓存，方便测试
-#    settings:
-#      template_update_delay: 0 #检查模板更新延迟时间，设置为0表示立即检查，如果时间大于0会有缓存不方便进行模板测试
-#    template-loader-path: classpath:/templates/ #模板路径
-#    suffix: .ftl #模板后缀名称
+      static-locations: classpath:/static/**
   cache:
     ehcache:
       config: classpath:ehcache.xml
-
+  main:
+    allow-circular-references: true
+mybatis-plus:
+  # 搜索指定包别名
+  typeAliasesPackage: com.sqmusicplus.*.entity
+  # 配置mapper的扫描，找到所有的mapper.xml映射文件
+  mapperLocations: classpath*:mapper/*Mapper.xml
+  # 加载全局的配置文件
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+    cache-enabled: true
+  global-config:
+    db-config:
+      select-strategy: NOT_NULL
 
 # 日志配置
 logging:
   level:
-    com.sqmusicplus: debug
+    com.sqmusicplus: info
     org.springframework: warn
 sa-token:
   # token 名称 (同时也是cookie名称)
   token-name: sqmusic
   # token 有效期，单位s 默认30天, -1代表永不过期
-  timeout: 2592000
+  timeout: -1
   # token 临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
   activity-timeout: -1
   # 是否允许同一账号并发登录 (为true时允许一起登录, 为false时新登录挤掉旧登录)
@@ -40,3 +55,4 @@ sa-token:
   # 是否输出操作日志
   is-log: false
 
+version: 2.1.7

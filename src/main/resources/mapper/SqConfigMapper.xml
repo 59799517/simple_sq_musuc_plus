@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqmusicplus.base.mapper.SqConfigMapper">
+  <resultMap id="BaseResultMap" type="com.sqmusicplus.base.entity.SqConfig">
+    <!--@mbg.generated-->
+    <!--@Table sq_config-->
+    <id column="config_id" jdbcType="INTEGER" property="configId" />
+    <result column="config_name" jdbcType="LONGVARCHAR" property="configName" />
+    <result column="config_value" jdbcType="LONGVARCHAR" property="configValue" />
+    <result column="config_key" jdbcType="LONGVARCHAR" property="configKey" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    config_id, config_name, config_value, config_key
+  </sql>
+</mapper>

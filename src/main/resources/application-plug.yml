@@ -2,20 +2,27 @@ kw:
   id: kw-v1
   #  名称
   name: 酷我
+  #  不需要登录
+  islogin: false
   #  搜索歌曲
   SearchUrl: http://search.kuwo.cn/r.s?client=kt&encoding=utf8&rformat=json&mobi=1&vipver=1&pn=#{pn}&rn=#{pagesize}&correct=1&all=#{searchKey}&ft=#{searchType}
   #  榜单
   BangMenuUrl: http://m.kuwo.cn/newh5app/api/mobile/v1/typelist/rank
   #  榜单详情
-  BangInfoUrl : http://kbangserver.kuwo.cn/ksong.s?from=pc&fmt=json&pn=#{pn}&rn=#{pagesize}&type=bang&data=content&id=#{BangMenuId}&show_copyright_off=0&pcmp4=1&isbang=1
+  BangInfoUrl: http://kbangserver.kuwo.cn/ksong.s?from=pc&fmt=json&pn=#{pn}&rn=#{pagesize}&type=bang&data=content&id=#{BangMenuId}&show_copyright_off=0&pcmp4=1&isbang=1
   #   下载
-  downloadurl: http://nmobi.kuwo.cn/mobi.s?f=kuwo&q=
+  downloadurl: http://nmobi.kuwo.cn/mobi.s?f=kuwo&source=kwplayer_ar_1.1.9_oppo_118980_320.apk&q=
+  #返回json的下载链接
+  downloadurl2: http://mobi.kuwo.cn/mobi.s?f=web&source=kwplayer_ar_1.1.9_oppo_118980_320.apk&type=convert_url_with_sign&rid=#{musicId}&br=#{brvalue}
+
+
+
   #  歌曲详情以及歌词
   SongInfoUrl: http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=#{musicId}
   #  歌曲封面前缀
   SongCoverUrl: https://img3.kuwo.cn/star/albumcover/
   # 歌手封面前缀
-  Starheads: https://star.kuwo.cn/star/starheads/
+  Searheads: https://star.kuwo.cn/star/starheads/
   # 歌手信息
   ArtistInfoUrl: https://search.kuwo.cn/r.s?stype=artistinfo&encoding=utf8&artistid=#{artistid}&pcjson=1;
   # 专辑列表
@@ -28,3 +35,44 @@ kw:
   ArtistSongListUrl: https://search.kuwo.cn/r.s?pn=#{pn}&rn=#{pagesize}&artistid=#{artistid}&stype=artist2music&sortby=0&alflac=1&show_copyright_off=1&pcmp4=1&encoding=utf8&plat=pc&thost=search.kuwo.cn&vipver=MUSIC_9.1.1.2_BCS2&devid=38668888&newver=1&pcjson=1
   #歌单详情
   PlayListInfo: http://nplserver.kuwo.cn/pl.svc?op=getlistinfo&pid=#{id}&pn=#{pn}&rn=#{pagesize}&encode=utf8&keyset=pl2012&vipver=MUSIC_9.1.1.2_BCS2&newver=1
+mg:
+  #  不需要登录
+  islogin: false
+#  搜索
+  SearchUrl: http://m.music.migu.cn/migu/remoting/scr_search_tag?rows=#{pageSize}&type=#{searchType}&keyword=#{searchKey}&pgc=#{pageNo}
+#  歌曲信息以及下载链接
+  SongInfoUrl: http://c.musicapp.migu.cn/MIGUM2.0/v1.0/content/resourceinfo.do?copyrightId=#{musicId}&resourceType=3
+#歌词
+  SongLyricUrl: http://music.migu.cn/v3/api/music/audioPlayer/getLyric?copyrightId=#{musicId}
+# 歌手信息
+  ArtistInfoUrl: https://m.music.migu.cn/migu/remoting/cms_artist_detail_tag?artistId=#{artistid}
+#专辑信息
+  AlbumInfoUrl: https://app.c.nf.migu.cn/MIGUM3.0/resource/album/v2.0?albumId=#{albumid}
+#  专辑列表
+  ArtistAlbumListUrl: https://app.pd.nf.migu.cn/MIGUM3.0/bmw/singer/album/v1.0?pageNo=#{pageNo}&singerId=#{artistid}
+# 特殊专辑id转换
+  AlbumIdConvert: https://app.c.nf.migu.cn/MIGUM3.0/resource/dalbum/v2.0?dAlbumId=#{albumid}
+# 专辑列表
+  AlbumListUrl: https://app.u.nf.migu.cn/resource/album/song/v2.0?albumId=#{albumid}&pageNo=#{pageNo}
+# 图片前缀
+  SongCoverUrl: http://d.musicapp.migu.cn
+# 下载链接
+  DownloadUrl: http://c.musicapp.migu.cn/MIGUM2.0/v1.0/content/resourceinfo.do?copyrightId=#{musicId}&resourceType=2
+# 下载链接前缀
+  DownloadUrlPrefix: https://freetyst.nf.migu.cn/
+#  歌手全部歌曲搜索
+  ArtistSongListUrl: https://app.pd.nf.migu.cn/MIGUM3.0/bmw/singer/song/v1.0?pageNo=#{pageNo}&singerId=#{artistid}&type=1
+
+subsonic:
+  #  检查是否能通讯
+  restPing: /rest/ping.view
+  #  歌单列表
+  playlists: /rest/getPlaylists
+  #  歌单详情
+  playlistInfo: /rest/getPlaylist
+  #  创建歌单
+  createPlaylist: /rest/createPlaylist
+  #  增加修改歌单
+  updatePlaylist: /rest/updatePlaylist
+  #  搜索
+  search: /rest/search2

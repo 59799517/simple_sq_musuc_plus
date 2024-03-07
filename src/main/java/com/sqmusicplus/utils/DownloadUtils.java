@@ -3,10 +3,17 @@ package com.sqmusicplus.utils;
 import com.ejlchina.okhttps.Process;
 import com.ejlchina.okhttps.*;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.ConnectionPool;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
+import org.jsoup.Jsoup;
 
+import javax.net.ssl.*;
 import java.io.File;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -22,9 +29,24 @@ public class DownloadUtils {
 
    private static HTTP http = null;
 
-    public static HTTP getHttp(){
+    public static HTTP getHttp()  {
         if (http==null){
+
+            SSLContext sslCtx = null;
+            try {
+                sslCtx = SSLContext.getInstance("TLS");
+                sslCtx.init(null, new TrustManager[] { myTrustManager }, new SecureRandom());
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            } catch (KeyManagementException e) {
+                throw new RuntimeException(e);
+            }
+
+            SSLSocketFactory mySSLSocketFactory = sslCtx.getSocketFactory();
+
             HTTP.Builder hb = HTTP.builder().config((OkHttpClient.Builder builder) -> {
+                builder.sslSocketFactory(mySSLSocketFactory, myTrustManager);
+                builder.hostnameVerifier(myHostnameVerifier);
                 // 连接超时时间（默认10秒）
                 builder.connectTimeout(7, TimeUnit.DAYS);
                 // 写入超时时间（默认10秒）
@@ -65,7 +87,6 @@ public class DownloadUtils {
 
     //下载其他的
    public static void download(String url, String path, String fileName, Consumer<Process> onProcess,Consumer<File> onSuccess) {
-
        HTTP http = getHttp();
        HttpResult.Body body = http.async(url)
                 .tag("music")
@@ -93,9 +114,7 @@ public class DownloadUtils {
     public static void download(String url ,File file,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete){
         download(url,file,null,onSuccess,onFailure,onComplete);
     }
-//    public static void download(DownloadEntity downloadEntity,Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete){
-//        download(downloadEntity.getUrl(),downloadEntity.getFile(),onProcess,onSuccess,onFailure,onComplete);
-//    }
+
     public static void download(String url, File file, Consumer<Process> onProcess,Consumer<File> onSuccess,Consumer<Download.Failure> onFailure,Consumer<Download.Status> onComplete) {
             //开始下载
             HTTP http = getHttp();
@@ -116,23 +135,40 @@ public class DownloadUtils {
             if (onComplete!=null){
                 download.setOnComplete(onComplete);
             }
-
             download.start();
-
         }
 
-//    public static void download(String url, String path, String fileName,Consumer<File> onSuccess) {
-//        download(url,path,fileName,null,onSuccess);
-//    }
-//    public static void download(String url, String path, String fileName) {
-//        download(url,path,fileName,null,null);
-//    }
+
     public static void download(String url, String path, Consumer<File> onSuccess) {
         download(url,path,null,null,onSuccess);
     }
-//    public static void download(String url, File file,Consumer<File> onSuccess ,Consumer<Download.Failure> onFailure) {
-//        download(url,file,null,onSuccess,onFailure);
-//    }
+
+
+    private static X509TrustManager myTrustManager = new X509TrustManager() {
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    };
+
+    private static HostnameVerifier myHostnameVerifier = new HostnameVerifier() {
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+            return true;
+        }
+    };
+
+
+
+
+
 
 
 

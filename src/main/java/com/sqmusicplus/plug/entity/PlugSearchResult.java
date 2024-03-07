@@ -35,4 +35,8 @@ public class PlugSearchResult<T> {
      * 搜索结果
      */
     private List<T> records;
+    /**
+     * 搜索类型
+     */
+    private String searchType;
 }

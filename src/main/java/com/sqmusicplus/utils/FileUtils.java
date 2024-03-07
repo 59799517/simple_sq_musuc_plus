@@ -2,18 +2,13 @@ package com.sqmusicplus.utils;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Assert;
-import org.apache.commons.lang3.ArrayUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 /**
  * 文件处理工具类
- * 
+ *
  * @author ruoyi
  */
 public class FileUtils
@@ -53,5 +48,25 @@ public class FileUtils
         File target = new File(newFilepath + newFileName);
         return organizeFiles(file,target);
     }
+
+    public static File findFile(String path,String fileName){
+        try {
+            File file = new File(path);
+            if(file.exists()){
+                File[] files = file.listFiles();
+                for(File f:files){
+                    //判断文件的名称忽略后缀
+                    String name = f.getName().substring(0,f.getName().lastIndexOf("."));
+                    if(name.equals(fileName)){
+                        return f;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return new File("");
+        }
+        return new File("");
+    }
+
 
 }

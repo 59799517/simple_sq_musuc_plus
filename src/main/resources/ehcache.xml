@@ -3,48 +3,58 @@
          xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
          updateCheck="false" monitoring="autodetect" dynamicConfig="true">
 
-    <diskStore path="/sqmusic/cache" />
+    <diskStore path="/cache/sqmusic/config/cache"/>
 
 
 
     <defaultCache eternal="true" maxElementsInMemory="5000000"
-                  overflowToDisk="true" diskPersistent="false" 
+                  overflowToDisk="true" diskPersistent="false"
                    memoryStoreEvictionPolicy="LRU" />
 
-    <cache
-            name="ready"
-            maxElementsInMemory="5000000"
-            eternal="true"
-            diskPersistent="true"
-            overflowToDisk="true"
-            memoryStoreEvictionPolicy="LRU">
-        <cacheEventListenerFactory class="com.sqmusicplus.config.ReadyCacheEventListener" />
-    </cache>
-    <cache
-            name="run"
-            maxElementsInMemory="5000000"
-            eternal="true"
-            diskPersistent="true"
-            overflowToDisk="true"
-            memoryStoreEvictionPolicy="LRU">
-        <cacheEventListenerFactory class="com.sqmusicplus.config.RunCacheEventListener" />
-    </cache>
-    <cache
-            name="over"
-            maxElementsInMemory="5000000"
-            eternal="true"
-            diskPersistent="true"
-            overflowToDisk="true"
-            memoryStoreEvictionPolicy="LRU">
-    </cache>
-    <cache
-            name="error"
-            maxElementsInMemory="5000000"
-            eternal="true"
-            diskPersistent="true"
-            overflowToDisk="true"
-            memoryStoreEvictionPolicy="LRU">
-    </cache>
+<!--    <cache-->
+<!--            name="ready"-->
+<!--            maxElementsInMemory="5000000"-->
+<!--            eternal="true"-->
+<!--            diskPersistent="true"-->
+<!--            overflowToDisk="true"-->
+<!--            memoryStoreEvictionPolicy="LRU">-->
+<!--        <cacheEventListenerFactory class="com.sqmusicplus.config.ReadyCacheEventListener" />-->
+<!--    </cache>-->
+<!--    <cache-->
+<!--            name="run"-->
+<!--            maxElementsInMemory="5000000"-->
+<!--            eternal="true"-->
+<!--            diskPersistent="true"-->
+<!--            overflowToDisk="true"-->
+<!--            memoryStoreEvictionPolicy="LRU">-->
+<!--        <cacheEventListenerFactory class="com.sqmusicplus.config.RunCacheEventListener"/>-->
+<!--    </cache>-->
+<!--    <cache-->
+<!--            name="over"-->
+<!--            maxElementsInMemory="5000000"-->
+<!--            eternal="true"-->
+<!--            diskPersistent="true"-->
+<!--            overflowToDisk="true"-->
+<!--            memoryStoreEvictionPolicy="LRU">-->
+<!--        <cacheEventListenerFactory class="com.sqmusicplus.config.OverCacheEventListener"/>-->
+
+<!--    </cache>-->
+<!--    <cache-->
+<!--            name="subsonic"-->
+<!--            maxElementsInMemory="5000000"-->
+<!--            eternal="true"-->
+<!--            diskPersistent="true"-->
+<!--            overflowToDisk="true"-->
+<!--            memoryStoreEvictionPolicy="LRU">-->
+<!--    </cache>-->
+<!--    <cache-->
+<!--            name="error"-->
+<!--            maxElementsInMemory="5000000"-->
+<!--            eternal="true"-->
+<!--            diskPersistent="true"-->
+<!--            overflowToDisk="true"-->
+<!--            memoryStoreEvictionPolicy="LRU">-->
+<!--    </cache>-->
 
 
 

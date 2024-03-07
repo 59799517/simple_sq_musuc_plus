@@ -1,0 +1,82 @@
+FROM alpine:3.15
+CMD ["/bin/sh"]
+#接口地址
+EXPOSE 8083
+#WEB地址
+EXPOSE 80
+MAINTAINER 59799517@qq.com
+# 创建工作目录
+WORKDIR /root
+# 修改软件包源地址(此处使用 清华大学的源地址)
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
+# 更新软件包
+RUN apk update upgrade
+RUN apk add --no-cache ca-certificates tzdata tree curl tini
+# 安装 glibc 库,主要为了解决中文乱码, 但是有部分java工程可能会依赖. 比如: aws kinesis 等
+COPY glibc-2.35-r0.apk glibc-2.35-r0.apk
+COPY glibc-bin-2.35-r0.apk glibc-bin-2.35-r0.apk
+COPY glibc-i18n-2.35-r0.apk glibc-i18n-2.35-r0.apk
+COPY sgerrand.rsa.pub /etc/apk/keys/sgerrand.rsa.pub
+RUN apk add glibc-2.35-r0.apk glibc-bin-2.35-r0.apk glibc-i18n-2.35-r0.apk
+RUN cat locale.md | xargs -i /usr/glibc-compat/bin/localedef -i {} -f UTF-8 {}.UTF-8 && \
+rm -rf *.apk && \
+rm -rf /var/cache/apk/* && \
+rm -rf locale.md
+# tzdata 是可以配置时区,这里默认使用上海时区
+RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
+RUN { echo '#!/bin/sh'; echo 'set -e'; echo; echo 'dirname "$(dirname "$(readlink -f "$(which javac || which java)")")"'; } > /usr/local/bin/docker-java-home
+RUN chmod +x /usr/local/bin/docker-java-home
+# 支持使用中文
+ENV LANG=zh_CN.UTF-8
+ENV LANGUAGE=zh_CN.UTF-8
+
+
+# 以下为安装jdk 17 的命令 , 目前alpine:3.15 里面软件包最新版本 jdk版本 11.0.15
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-17-openjdk/jre/bin:/usr/lib/java-17-openjdk/bin
+RUN apk add --no-cache openjdk17 && [ "$JAVA_HOME" = "$(docker-java-home)" ]
+
+COPY apache-tomcat-10.1.7.tar.gz /apps/tomcat
+
+
+ENV TZ "Asia/Shanghai"
+ENV TERM xterm
+ENV TOMCAT_MAJOR_VERSION 10
+ENV TOMCAT_MINOR_VERSION 8.5.70
+ENV CATALINA_HOME /apps/tomcat
+ENV APP_DIR ${CATALINA_HOME}/webapps
+RUN mkdir /apps
+ADD apache-tomcat-8.5.70.tar.gz /apps
+RUN ln -s /apps/apache-tomcat-8.5.70 /apps/tomcat
+
+
+RUN apk add --no-cache nginx
+COPY ./www /etc/nginx/html
+COPY ./nginx.conf /etc/nginx/nginx.conf
+
+# 以下为安装jdk 1.8 的命令 , 目前alpine:3.15 里面软件包最新版本 jdk版本 1.8.0_322
+# ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
+# ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin
+# RUN apk add --no-cache openjdk8 && [ "$JAVA_HOME" = "$(docker-java-home)" ]
+#添加nginx
+#ADD nginx-1.22.1.tar.gz /nginx/nginx-1.22.1.tar.gz
+
+#拷贝文件到Nginx下
+
+
+
+#启动web页面
+
+#启动java
+ARG JAR_FILE
+VOLUME ["/music"]
+VOLUME ["/config"]
+ADD ./simple-MusicServer-1.0.2-Beta.jar  /app.jar
+
+COPY ./entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
+#执行启动命令
+#ENTRYPOINT ["tini","java","-Dfile.encoding=utf-8", "-jar","/app.jar"]
+#ENTRYPOINT ["tini","java","-Dfile.encoding=utf-8", "-jar","/app.jar"]
+#ENTRYPOINT [ "service","nginx", "start" ]
+ENTRYPOINT ["sh","./entrypoint.sh"]

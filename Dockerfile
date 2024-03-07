@@ -1,7 +1,25 @@
-FROM openjdk:17.0.2-jdk-oracle
-EXPOSE 8083
-ARG JAR_FILE
+FROM maven:3.9.4-eclipse-temurin-17-alpine AS builder
+MAINTAINER SQ
+
+WORKDIR /build/
+
+COPY pom.xml /build/
+COPY src /build/src/
+COPY src/main/resources/sqlite/sqmusic.db /cache/sqmusic.db
+
+RUN mvn clean package
+
+From eclipse-temurin:17-jre-alpine
+
+WORKDIR /app
+
+COPY --from=builder  /build/target/MusicServer2.0.jar /app/app.jar
+
+EXPOSE 8099
+
 VOLUME ["/music"]
-VOLUME ["/sqmusic"]
-ADD ./simple-MusicServer-0.0.1-SNAPSHOT.jar  /app.jar
-ENTRYPOINT ["java", "-jar","/app.jar"]
+
+VOLUME ["/cache"]
+
+CMD ["java", "-jar", "app.jar"]
+

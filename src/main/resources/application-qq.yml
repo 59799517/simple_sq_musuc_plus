@@ -1,0 +1,9 @@
+qq:
+  #  搜索接口
+  SearchUrl : https://u.y.qq.com/cgi-bin/musicu.fcg
+
+  albumImage: https://y.qq.com/music/photo_new/T002R800x800M000#{pmid}.jpg
+  artistImage: http://y.gtimg.cn/music/photo_new/T001R800x800M000#{pmid}.jpg
+  ArtistInfoUrl: https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_singer_desc.fcg?singermid=#{mid}&utf8=1&outCharset=utf-8&format=xml
+  ArtistInfoReferer: https://y.qq.com
+  downloadUrl: http://gcsp.kzti.top:1030/client/cgi-bin/api.fcg

@@ -1,0 +1,8 @@
+netease:
+#  匿名登录 true 根据cookieUrl获取匿名的cookie自动填充
+#  false 根据填写的cookie登录
+  anonymousLogin: true
+  baseUrl: http://cloud-music.pl-fe.cn
+  cookieUrl: http://cloud-music.pl-fe.cn/register/anonimous
+  cookie:
+  downloadUrl: https://csm.sayqz.com/api/?type=apiSongUrlV1&level=#{level}&id=#{id}
