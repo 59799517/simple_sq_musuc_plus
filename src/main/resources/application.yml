@@ -67,7 +67,7 @@ mybatis-plus:
 # 日志配置
 logging:
   level:
-    com.sqmusicplus: debug
+    com.sqmusicplus: info
     com.sqmusicplus.v3.config.RequireLoginPathScanner: info
     org.springframework: warn
     org.jaudiotagger: warn
