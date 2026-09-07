@@ -10,5 +10,5 @@ RUN mkdir -p /build/classes && javac -cp '/app/BOOT-INF/lib/*:/app/BOOT-INF/clas
 FROM registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest
 
 # Keep the existing production image and replace only the two QQ search classes.
-COPY --from=builder /build/target/classes/com/sqmusicplus/v3/plug/qq/entity/QQSearchEntity.class /app/BOOT-INF/classes/com/sqmusicplus/v3/plug/qq/entity/QQSearchEntity.class
-COPY --from=builder /build/target/classes/com/sqmusicplus/v3/plug/qq/hander/QQHander.class /app/BOOT-INF/classes/com/sqmusicplus/v3/plug/qq/hander/QQHander.class
+COPY --from=builder /build/classes/com/sqmusicplus/v3/plug/qq/entity/QQSearchEntity.class /app/BOOT-INF/classes/com/sqmusicplus/v3/plug/qq/entity/QQSearchEntity.class
+COPY --from=builder /build/classes/com/sqmusicplus/v3/plug/qq/hander/QQHander.class /app/BOOT-INF/classes/com/sqmusicplus/v3/plug/qq/hander/QQHander.class
