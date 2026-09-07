@@ -9,7 +9,11 @@ ARG JAR_FILE=target/simple_sq_music_plus.jar
 COPY ${JAR_FILE} app.jar
 
 # 使用 Spring Boot 的分层工具提取 JAR（自定义 layers.xml 将重型依赖隔离到 heavy-native 层）
-RUN java -Djarmode=layertools -jar app.jar extract --destination /extractor/layers
+# 提取后把解出的文件时间戳统一归一：即使每次重新 mvn package 时间不同，只要依赖版本不变，
+# heavy-native/dependencies 层的内容(含 mtime)就逐字节一致 → 各版本镜像 layer digest 不变，
+# 用户更新时 Docker 对这些层显示 Already exists，只增量下载小层，不会每次重下 ~1GB 大包
+RUN java -Djarmode=layertools -jar app.jar extract --destination /extractor/layers && \
+    find /extractor/layers -exec touch -t 200001010000 {} +
 
 # 第二阶段：运行环境
 FROM amazoncorretto:21-alpine
