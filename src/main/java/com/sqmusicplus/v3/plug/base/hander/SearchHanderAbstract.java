@@ -58,8 +58,6 @@ public abstract class SearchHanderAbstract implements SearchHander, Serializable
     private DownloadInfoService downloadInfoService;
     @Autowired
     private AliHander aliHander;
-    @Autowired
-    private SqAliSyncService sqAliSyncService;
 
     public DownloadInfoService getDownloadInfoService() {
         return downloadInfoService;
@@ -709,10 +707,21 @@ public abstract class SearchHanderAbstract implements SearchHander, Serializable
 
     @Override
     public DownloadInfo musicToDownloadInfo(Music music, PlugBrType brType, Boolean isAudioBook) {
+        String configFormat = SqConfigCache.getSqConfigValue(SetConfigEnum.SYSTEM_DOWNLOAD_FILE_AUDIO_FORMAT);
         List<PlugBrType> bits = music.getBits();
-        if (brType==null){
-            brType = MusicUtils.getMaxBr(bits);
+
+        if (StringUtils.isNotBlank(configFormat)) {
+            if (brType==null){
+                brType = MusicUtils.getMaxBr(bits);
+            }else{
+                brType = PlugBrType.findMaxByTypeAndPlugName(configFormat, brType.getPlugName());
+            }
+        }else{
+            if (brType==null){
+                brType = MusicUtils.getMaxBr(bits);
+            }
         }
+
         StringJoiner joiner = new StringJoiner(",");
         for (PlugBrType bit : bits) {
             String string = bit.getBit().toString();
