@@ -1,9 +1,11 @@
-FROM maven:3.9.4-eclipse-temurin-21-alpine AS builder
+FROM registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest AS builder
 
 WORKDIR /build
-COPY pom.xml /build/
-COPY src /build/src/
-RUN mvn -q -DskipTests clean package
+COPY src/main/java/com/sqmusicplus/v3/plug/qq/entity/QQSearchEntity.java /build/src/com/sqmusicplus/v3/plug/qq/entity/QQSearchEntity.java
+COPY src/main/java/com/sqmusicplus/v3/plug/qq/hander/QQHander.java /build/src/com/sqmusicplus/v3/plug/qq/hander/QQHander.java
+RUN mkdir -p /build/classes && javac -cp '/app/BOOT-INF/lib/*:/app/BOOT-INF/classes' -d /build/classes \
+    /build/src/com/sqmusicplus/v3/plug/qq/entity/QQSearchEntity.java \
+    /build/src/com/sqmusicplus/v3/plug/qq/hander/QQHander.java
 
 FROM registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest
 
