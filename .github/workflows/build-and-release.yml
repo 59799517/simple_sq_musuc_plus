@@ -2,15 +2,13 @@ name: Java CI with Maven and Multi-Arch Release
 
 on:
   push:
-    branches: [ 3.0 ] # 只在提交到 3.0 分支时触发
+    branches: [ 3.0 ]
 
 permissions:
-  contents: write  # 允许创建 Release 和上传资产
-  packages: write  # 允许推送 Docker 镜像
+  contents: write
+  packages: write
 
 env:
-  APP_VERSION: ""
-  WEB_VERSION: ""
   DOCKER_USERNAME: "${{ secrets.DOCKER_USERNAME }}"
   DOCKER_PASSWORD: "${{ secrets.DOCKER_PASSWORD }}"
 
@@ -20,21 +18,21 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      
+        uses: actions/checkout@v4
+
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: 'maven'
           cache-dependency-path: 'pom.xml'
-      
+
       - name: Install yq
         run: |
           wget https://github.com/mikefarah/yq/releases/download/v4.16.2/yq_linux_amd64 -O /usr/local/bin/yq
           chmod +x /usr/local/bin/yq
-      
+
       - name: Read Application Version
         id: app_version
         run: |
@@ -48,117 +46,24 @@ jobs:
           echo "WEB_VERSION: $WEBVERSION"
           echo "$VERSION" > version.txt
           echo "$WEBVERSION" > webversion.txt
-      
-      # 已取消：不再生成带版本号的 docker-compose 文件，统一使用 latest 标签
-      # - name: Generate docker-compose files from templates
-      #   run: |
-      #     # 从模板生成 docker-compose.yml
-      #     cp docker-compose-template.yml docker-compose.yml
-      #     
-      #     # 替换 docker-compose.yml 中的版本号
-      #     sed -i "s/v\[version\]/v$APP_VERSION/g" docker-compose.yml
-      #     sed -i "s/v\[webversion\]/v$WEB_VERSION/g" docker-compose.yml
-      #     
-      #     # 从模板生成 docker-compose-arm.yml
-      #     cp docker-compose-arm-template.yml docker-compose-arm.yml
-      #     
-      #     # 替换 docker-compose-arm.yml 中的版本号
-      #     sed -i "s/v\[version\]/v$APP_VERSION/g" docker-compose-arm.yml
-      #     sed -i "s/v\[webversion\]/v$WEB_VERSION/g" docker-compose-arm.yml
-      #     
-      #     # 显示生成的文件内容以供验证
-      #     echo "=== docker-compose.yml ==="
-      #     cat docker-compose.yml
-      #     echo "\n=== docker-compose-arm.yml ==="
-      #     cat docker-compose-arm.yml
-      
-      # 已取消：不再复制带版本号的 docker-compose 文件到 fnOS 目录，统一使用 latest 标签
-      # 新增步骤：处理 fnOS/app/docker/docker-compose.yaml
-      # - name: Copy or Replace docker-compose.yml to fnOS directory
-      #   run: |
-      #     # 定义目标路径
-      #     TARGET_PATH="fnOS/app/docker/docker-compose.yaml"
-      #
-      #     # 检查目标文件是否存在
-      #     if [ -f "$TARGET_PATH" ]; then
-      #       # 文件存在，直接替换
-      #       echo "File exists, replacing..."
-      #       cp docker-compose.yml "$TARGET_PATH"
-      #     else
-      #       # 文件不存在，先创建目录（如果需要），再复制
-      #       echo "File does not exist, creating and copying..."
-      #       mkdir -p "$(dirname "$TARGET_PATH")"
-      #       cp docker-compose.yml "$TARGET_PATH"
-      #     fi
-      #
-      #     # 显示最终文件内容以供验证
-      #     echo "=== $TARGET_PATH ==="
-      #     cat "$TARGET_PATH"
-      
-      # 已取消：不再复制带版本号的 docker-compose-arm.yml 文件到 fnOS 目录，统一使用 latest 标签
-      # 新增步骤：处理 fnOS/app/docker/docker-compose-arm.yaml
-      # - name: Copy or Replace docker-compose-arm.yml to fnOS directory
-      #   run: |
-      #     # 定义目标路径
-      #     TARGET_PATH_ARM="fnOS/app/docker/docker-compose-arm.yaml"
-      #
-      #     # 检查目标文件是否存在
-      #     if [ -f "$TARGET_PATH_ARM" ]; then
-      #       # 文件存在，直接替换
-      #       echo "File exists, replacing..."
-      #       cp docker-compose-arm.yml "$TARGET_PATH_ARM"
-      #     else
-      #       # 文件不存在，先创建目录（如果需要），再复制
-      #       echo "File does not exist, creating and copying..."
-      #       mkdir -p "$(dirname "$TARGET_PATH_ARM")"
-      #       cp docker-compose-arm.yml "$TARGET_PATH_ARM"
-      #     fi
-      #
-      #     # 显示最终文件内容以供验证
-      #     echo "=== $TARGET_PATH_ARM ==="
-      #     cat "$TARGET_PATH_ARM"
-      
-#      - name: Generate new manifest file
-#        run: |
-#          # 进入 fnOS 目录
-#          cd fnOS
-#
-#          # 从模板生成新的 manifest 文件
-#          sed "s/{VERSION}/$APP_VERSION/g; s/{WEB_VERSION}/$WEB_VERSION/g" manifest.template > manifest
-#          # 显示生成后的内容以供验证
-#          echo "=== Generated manifest ==="
-#          cat manifest
-#
-      # 已取消：不再提交带版本号的 docker-compose 文件，统一使用 latest 标签
-      # - name: Commit updated docker-compose files
-      #   run: |
-      #     git config --local user.email "action@github.com"
-      #     git config --local user.name "GitHub Action"
-      #     git add docker-compose.yml
-      #     git add docker-compose-arm.yml
-      #     git commit -m "Update docker-compose files with version $APP_VERSION and web version $WEB_VERSION" || echo "No changes to commit"
-      
+
       - name: Push changes
-        continue-on-error: true  # 即使失败也继续执行后续步骤
+        continue-on-error: true
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
-          # 已取消：不再推送 docker-compose.yml 和 docker-compose-arm.yml 的版本替换
-      
-      - name: List Environment Variables
-        run: env
-      
+
       - name: Build with Maven
         run: |
           mvn -B package -T 4 --file pom.xml -DskipTests
-      
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: java-artifact
           path: |
-            target/*.jar 
+            target/*.jar
             version.txt
             webversion.txt
             docker-compose.yml
@@ -176,42 +81,42 @@ jobs:
           - platform: linux/arm64
             tag_suffix: arm64
             runner: ubuntu-24.04-arm
-    
+
     runs-on: ${{ matrix.runner }}
-    
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      
+        uses: actions/checkout@v4
+
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
           name: java-artifact
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Read Application Version
         id: app_version
         run: |
           VERSION=$(cat version.txt 2>/dev/null || echo "unknown")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
-      
+
       - name: Login to Aliyun Container Registry
         uses: docker/login-action@v3
         with:
           registry: registry.cn-hangzhou.aliyuncs.com
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      
+
       - name: Login to GitHub Packages
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Build and Push Docker Image to Aliyun
         uses: docker/build-push-action@v5
         with:
@@ -232,7 +137,7 @@ jobs:
           provenance: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       - name: Build and Push Docker Image to GitHub Packages
         uses: docker/build-push-action@v5
         with:
@@ -251,165 +156,108 @@ jobs:
             org.opencontainers.image.version=v${{ env.APP_VERSION }}
             org.opencontainers.image.architecture=${{ matrix.platform }}
           provenance: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
   create-manifest-list:
     name: Create Manifest Lists
     needs: build-multi-arch-images
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
           name: java-artifact
-      
-      - name: Read Application Version
-        id: app_version
+
+      - name: Read Version from Artifact
+        id: read_version
         run: |
-          VERSION=$(cat version.txt 2>/dev/null || echo "unknown")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          VERSION=$(cat version.txt)
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
-      
+          echo "APP_VERSION: $VERSION"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Login to Aliyun Container Registry
         uses: docker/login-action@v3
         with:
           registry: registry.cn-hangzhou.aliyuncs.com
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      
+
       - name: Login to GitHub Packages
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
+      # buildx imagetools create 在 registry 端直接合成 manifest list，
+      # 不下载任何镜像层 blob（替代原来的 docker pull + manifest create 老三样）
+      # 一次 create 只能用一组源镜像，因此版本 tag 和 latest tag 分两条命令，
+      # 版本 manifest 由 v版本-arch 合成，latest manifest 由 latest-arch 合成
       - name: Create and Push Manifest List for Aliyun
         run: |
-          # 强制删除可能存在的旧manifest（忽略错误）
-          echo "Cleaning up existing manifests..."
-          docker manifest rm registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }} 2>/dev/null || true
-          docker manifest rm registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest 2>/dev/null || true
-          
-          # 等待更长时间确保镜像完全同步
-          echo "Waiting for image synchronization..."
-          sleep 30
-          
-          # 验证基础镜像是否存在
-          echo "Checking if base images exist..."
-          docker pull registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }}-amd64
-          docker pull registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }}-arm64
-          
-          # 检查拉取的镜像是不是manifest list
-          echo "Verifying image types..."
-          AMD64_TYPE=$(docker manifest inspect registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }}-amd64 | jq -r '.mediaType' 2>/dev/null || echo "unknown")
-          ARM64_TYPE=$(docker manifest inspect registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }}-arm64 | jq -r '.mediaType' 2>/dev/null || echo "unknown")
-          
-          echo "AMD64 image type: $AMD64_TYPE"
-          echo "ARM64 image type: $ARM64_TYPE"
-          
-          # 创建多架构manifest（使用--amend确保覆盖）
-          echo "Creating manifest for version v${{ env.APP_VERSION }} with overwrite mode"
-          docker manifest create registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }} \
+          # 版本 tag：由 v版本-arch 两个源合成
+          docker buildx imagetools create \
+            -t registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }} \
             registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }}-amd64 \
-            registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }}-arm64 --amend
-          
-          # 注解各架构信息
-          docker manifest annotate registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }} \
-            registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }}-amd64 \
-            --arch amd64 --os linux
-          
-          docker manifest annotate registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }} \
-            registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }}-arm64 \
-            --arch arm64 --os linux
-          
-          # 强制推送manifest（覆盖模式）
-          echo "Force pushing manifest for version v${{ env.APP_VERSION }}"
-          docker manifest push registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }} --purge
-          
-          # 为latest标签创建manifest（使用--amend确保覆盖）
-          echo "Creating manifest for latest tag with overwrite mode"
-          docker manifest create registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest \
+            registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }}-arm64
+
+          # latest tag：由 latest-arch 两个源合成
+          docker buildx imagetools create \
+            -t registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest \
             registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest-amd64 \
-            registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest-arm64 --amend
-          
-          echo "Force pushing manifest for latest tag"
-          docker manifest push registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest --purge
-      
+            registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest-arm64
+
+      - name: Verify Aliyun Manifest List
+        run: |
+          echo "=== v${{ env.APP_VERSION }} ==="
+          docker buildx imagetools inspect \
+            registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ env.APP_VERSION }}
+
+          echo "=== latest ==="
+          docker buildx imagetools inspect \
+            registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest
+
       - name: Create and Push Manifest List for GitHub Packages
         run: |
-          # 强制删除可能存在的旧manifest（忽略错误）
-          echo "Cleaning up existing manifests..."
-          docker manifest rm ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }} 2>/dev/null || true
-          docker manifest rm ghcr.io/${{ github.actor }}/simple_sq_music_plus:latest 2>/dev/null || true
-          
-          # 等待更长时间确保镜像完全同步
-          echo "Waiting for image synchronization..."
-          sleep 30
-          
-          # 验证基础镜像是否存在
-          echo "Checking if base images exist..."
-          docker pull ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }}-amd64
-          docker pull ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }}-arm64
-          
-          # 检查拉取的镜像是不是manifest list
-          echo "Verifying image types..."
-          AMD64_TYPE=$(docker manifest inspect ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }}-amd64 | jq -r '.mediaType' 2>/dev/null || echo "unknown")
-          ARM64_TYPE=$(docker manifest inspect ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }}-arm64 | jq -r '.mediaType' 2>/dev/null || echo "unknown")
-          
-          echo "AMD64 image type: $AMD64_TYPE"
-          echo "ARM64 image type: $ARM64_TYPE"
-          
-          # 创建多架构manifest（使用--amend确保覆盖）
-          echo "Creating manifest for version v${{ env.APP_VERSION }} with overwrite mode"
-          docker manifest create ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }} \
+          # 版本 tag：由 v版本-arch 两个源合成
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }} \
             ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }}-amd64 \
-            ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }}-arm64 --amend
-          
-          # 注解各架构信息
-          docker manifest annotate ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }} \
-            ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }}-amd64 \
-            --arch amd64 --os linux
-          
-          docker manifest annotate ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }} \
-            ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }}-arm64 \
-            --arch arm64 --os linux
-          
-          # 强制推送manifest（覆盖模式）
-          echo "Force pushing manifest for version v${{ env.APP_VERSION }}"
-          docker manifest push ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }} --purge
-          
-          # 为latest标签创建manifest（使用--amend确保覆盖）
-          echo "Creating manifest for latest tag with overwrite mode"
-          docker manifest create ghcr.io/${{ github.actor }}/simple_sq_music_plus:latest \
+            ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }}-arm64
+
+          # latest tag：由 latest-arch 两个源合成
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.actor }}/simple_sq_music_plus:latest \
             ghcr.io/${{ github.actor }}/simple_sq_music_plus:latest-amd64 \
-            ghcr.io/${{ github.actor }}/simple_sq_music_plus:latest-arm64 --amend
-          
-          echo "Force pushing manifest for latest tag"
-          docker manifest push ghcr.io/${{ github.actor }}/simple_sq_music_plus:latest --purge
+            ghcr.io/${{ github.actor }}/simple_sq_music_plus:latest-arm64
+
+      - name: Verify GHCR Manifest List
+        run: |
+          echo "=== v${{ env.APP_VERSION }} ==="
+          docker buildx imagetools inspect \
+            ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ env.APP_VERSION }}
+
+          echo "=== latest ==="
+          docker buildx imagetools inspect \
+            ghcr.io/${{ github.actor }}/simple_sq_music_plus:latest
 
   release:
     needs: [build, create-manifest-list]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/3.0' }}
-    
+
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
           name: java-artifact
-      
+
       - name: Display structure of downloaded files
         run: ls -R
-      
+
       - name: Read Version from Artifact
         id: app_version
         run: |
@@ -419,7 +267,7 @@ jobs:
           echo "webversion=$WEBVERSION" >> $GITHUB_OUTPUT
           echo "APP_VERSION: $VERSION"
           echo "WEB_VERSION: $WEBVERSION"
-      
+
       - name: Create Release and Upload Asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -427,14 +275,11 @@ jobs:
           TAG="${{ steps.app_version.outputs.version }}"
           ASSET_PATH="./target/simple_sq_music_plus.jar"
           ASSET_NAME="simple_sq_music_plus-$TAG.jar"
-          
-          # 清理已存在的 release 和 tag，实现"覆盖"效果
+
           echo "Removing existing release/tag: $TAG (to overwrite)"
           gh release view "$TAG" --repo ${{ github.repository }} 2>/dev/null && gh release delete "$TAG" --yes --repo ${{ github.repository }} 2>/dev/null || true
-          # gh release delete 默认删除本地 tag，但确保远程 tag 也清理
           git push origin ":refs/tags/$TAG" 2>/dev/null || true
-          
-          # 将 Release Notes 写入临时文件（使用分组 echo 避免 heredoc 的 YAML 缩进问题）
+
           {
             echo "## Release ${{ steps.app_version.outputs.version }} - Multi-Architecture Support"
             echo ""
@@ -446,18 +291,23 @@ jobs:
             echo "- \`registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ steps.app_version.outputs.version }}\` (Multi-arch manifest)"
             echo "- \`registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ steps.app_version.outputs.version }}-amd64\`"
             echo "- \`registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:v${{ steps.app_version.outputs.version }}-arm64\`"
+            echo "- \`registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest\` (Multi-arch manifest)"
+            echo "- \`registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest-amd64\`"
+            echo "- \`registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest-arm64\`"
             echo ""
             echo "**GitHub Packages:**"
             echo "- \`ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ steps.app_version.outputs.version }}\` (Multi-arch manifest)"
             echo "- \`ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ steps.app_version.outputs.version }}-amd64\`"
             echo "- \`ghcr.io/${{ github.actor }}/simple_sq_music_plus:v${{ steps.app_version.outputs.version }}-arm64\`"
+            echo "- \`ghcr.io/${{ github.actor }}/simple_sq_music_plus:latest\` (Multi-arch manifest)"
+            echo "- \`ghcr.io/${{ github.actor }}/simple_sq_music_plus:latest-amd64\`"
+            echo "- \`ghcr.io/${{ github.actor }}/simple_sq_music_plus:latest-arm64\`"
             echo ""
             echo "### Supported Architectures:"
             echo "- **AMD64**: Intel/AMD x86-64 processors"
             echo "- **ARM64**: Raspberry Pi 4, AWS Graviton, Apple Silicon"
           } > /tmp/release-notes.md
-          
-          # 创建 Release 并上传附件（一步完成）
+
           echo "Creating release: $TAG"
           gh release create "$TAG" \
             "$ASSET_PATH#$ASSET_NAME" \

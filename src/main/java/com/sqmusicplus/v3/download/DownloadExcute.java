@@ -152,14 +152,17 @@ public class DownloadExcute {
                                 downloadInfoService.updateById(record);
                             }catch (Exception e){
                                 e.printStackTrace();
-                                // 下载失败，尝试使用其他插件重试
+                                // 下载失败，尝试使用其他插件寻找替代
                                 boolean b = downloadRetryService.retryWithOtherPlugin(record);
                                 if(!b){
-                                    // 原记录始终标记为 error 避免阻塞下载队列
-                                    record.setDownloadStatus(DownloadStatus.error.getValue());
-                                    record.setDownloadMsg(e.getMessage());
+                                    // 其他插件也未找到对应歌曲（补充失败），转入同插件重试流程（超过最大重试次数才置 error）
+                                    boolean retrying = markTimeoutRetry(record, e.getMessage());
                                     downloadInfoService.updateById(record);
-                                    log.debug("修改错误状态--->{}",record);
+                                    if(retrying){
+                                        log.debug("其他插件补充失败，转入重试--->{}",record);
+                                    }else{
+                                        log.debug("其他插件补充失败且重试次数已达上限，置为error--->{}",record);
+                                    }
                                 }
 
                             }
@@ -185,13 +188,18 @@ public class DownloadExcute {
                                 downloadInfoService.updateById(record);
                             }catch (Exception e){
                                 e.printStackTrace();
-                                // 下载失败，尝试使用其他插件重试
-                                downloadRetryService.retryWithOtherPlugin(record);
-                                // 原记录始终标记为 error 避免阻塞下载队列
-                                record.setDownloadStatus(DownloadStatus.error.getValue());
-                                record.setDownloadMsg(e.getMessage());
-                                downloadInfoService.updateById(record);
-                                log.debug("修改错误状态--->{}",record);
+                                // 下载失败，尝试使用其他插件寻找替代
+                                boolean b = downloadRetryService.retryWithOtherPlugin(record);
+                                if(!b){
+                                    // 其他插件也未找到对应歌曲（补充失败），转入同插件重试流程（超过最大重试次数才置 error）
+                                    boolean retrying = markTimeoutRetry(record, e.getMessage());
+                                    downloadInfoService.updateById(record);
+                                    if(retrying){
+                                        log.debug("其他插件补充失败，转入重试--->{}",record);
+                                    }else{
+                                        log.debug("其他插件补充失败且重试次数已达上限，置为error--->{}",record);
+                                    }
+                                }
                             }
                         }
                     } catch (Exception e) {
