@@ -125,6 +125,23 @@ public class Music implements Serializable {
 
 
     /**
+     * cd编号
+     */
+    private Integer cd;
+    /**
+     * 曲目序号
+     */
+    private Integer track;
+    /**
+     * tag 风格标签
+     */
+    List<String> tags;
+
+
+
+
+
+    /**
      * 搜索歌曲时的单曲信息
      */
     private JSONObject dataInfo;

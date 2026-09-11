@@ -23,6 +23,8 @@ kg:
   albumSongUrl: /album/songs
 #  获取下载链接
   downloadUrl: /song/url/new
+#  获取下载连接2
+  downloadUrl2: /song/url
 #  用户歌单
   userPlaylist: /user/playlist
 #  歌单详情

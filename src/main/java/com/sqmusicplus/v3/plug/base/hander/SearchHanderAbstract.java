@@ -9,9 +9,7 @@ import com.sqmusicplus.v3.alidrive.entity.SqAliSync;
 import com.sqmusicplus.v3.alidrive.hander.AliHander;
 import com.sqmusicplus.v3.alidrive.service.SqAliSyncService;
 import com.sqmusicplus.v3.base.entity.DownloadInfo;
-import com.sqmusicplus.v3.plug.entity.Album;
-import com.sqmusicplus.v3.plug.entity.Artists;
-import com.sqmusicplus.v3.plug.entity.Music;
+import com.sqmusicplus.v3.plug.entity.*;
 import com.sqmusicplus.v3.base.enums.DbBooleanConvert;
 import com.sqmusicplus.v3.base.enums.PlugBrType;
 import com.sqmusicplus.v3.base.enums.SetConfigEnum;
@@ -20,7 +18,6 @@ import com.sqmusicplus.v3.config.SqConfigCache;
 import com.sqmusicplus.v3.config.exception.DownloadTimeoutException;
 import com.sqmusicplus.v3.download.DownloadStatus;
 import com.sqmusicplus.v3.download.vo.DownloadUrlResult;
-import com.sqmusicplus.v3.plug.entity.PlugSearchMusicResult;
 import com.sqmusicplus.v3.plug.tidal.utils.TidalProxyApiUtils;
 import com.sqmusicplus.v3.utils.*;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +55,8 @@ public abstract class SearchHanderAbstract implements SearchHander, Serializable
     private DownloadInfoService downloadInfoService;
     @Autowired
     private AliHander aliHander;
+    @Autowired
+    List<SearchHanderAbstract> searchHanderAbstractList;
 
     public DownloadInfoService getDownloadInfoService() {
         return downloadInfoService;
@@ -844,10 +843,50 @@ public abstract class SearchHanderAbstract implements SearchHander, Serializable
         //修改文件
         try {
             if (DbBooleanConvert.findByValue(rewriteMp3tag)) {
-                MusicUtils.setMediaFileInfo(onSuccess, music.getMusicName(), music.getMusicAlbum(), String.join(";", music.getMusicArtists()), "", music.getMusicLyric(), albumfile,music.getMusicArtists().get(0),albumYear);
+                try {
+                    //判断是否需要使用第三方的音频标签修改
+                    SetConfigEnum plugOptionsByPlugName = SqConfigCache.getPlugOptionsByPlugName(music.getPlugName());
+                    String tagConfig = SqConfigCache.getSqConfigValue(plugOptionsByPlugName);
+
+                    // auto / 空 / 与当前插件相同 → 不修改
+                    boolean isNeedThirdPartyTag = StringUtils.isNotBlank(tagConfig)
+                            && !"auto".equalsIgnoreCase(tagConfig)
+                            && !tagConfig.equalsIgnoreCase(music.getPlugName());
+
+                    if (isNeedThirdPartyTag) {
+                            log.info("使用第三方音频标签修改");
+                            SearchHanderAbstract plugHander = MusicUtils.getPlugHander(tagConfig,searchHanderAbstractList);
+                            String key = music.getMusicName()+" "+music.getMusicArtists().get(0)+" "+music.getMusicAlbum();
+                            SearchKeyData searchKeyData = new SearchKeyData().setSearchkey(key).setPageSize(10).setPageIndex(1).setPlugName(music.getPlugName());
+                            PlugSearchResult<PlugSearchMusicResult> plugSearchMusicResultPlugSearchResult = plugHander.querySongByName(searchKeyData);
+                            if (plugSearchMusicResultPlugSearchResult !=null) {
+                                List<PlugSearchMusicResult> records = plugSearchMusicResultPlugSearchResult.getRecords();
+                                if (records!=null&&records.size()>0){
+                                    for (PlugSearchMusicResult record : records) {
+                                        String name = record.getName();
+                                        if (name.toLowerCase().contains(music.getMusicName().toLowerCase())) {
+                                            //歌曲名称匹配完成
+                                            if (record.getAlbumName().toLowerCase().contains(tagConfig.toLowerCase())) {
+                                                if (record.getArtistName().size() == music.getMusicArtists().size()) {
+                                                    Music music1 = plugHander.querySongById(record.getId());
+                                                    music.setCd(music1.getCd());
+                                                    music.setTrack(music1.getTrack());
+                                                    music.setTags(music1.getTags());
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                    }
+                } catch (Exception e) {
+                    log.error("第三方音频标签修改失败{}", e.getMessage(), e);
+                }
+
+                MusicUtils.setMediaFileInfo(onSuccess, music.getMusicName(), music.getMusicAlbum(), String.join(";", music.getMusicArtists()), "", music.getMusicLyric(), albumfile,music.getMusicArtists().get(0),albumYear,music.getCd(),music.getTrack(),String.join(";", music.getTags()));
                 log.info("标签写入成功{}", music.getMusicName());
             }
-
         } catch (Exception e) {
             log.error("下载错误（标签写入错误）{}  ----------> {}", music.getMusicName(), e.getMessage());
             log.error(e.getMessage());

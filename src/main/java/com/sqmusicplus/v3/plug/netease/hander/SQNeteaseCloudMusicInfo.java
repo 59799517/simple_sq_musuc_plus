@@ -115,14 +115,12 @@ public class SQNeteaseCloudMusicInfo {
     }
 
     public JSONObject songMusicDetail(JSONObject parameter) {
-        // 加时间戳绕过代理缓存，确保每次拿到真实数据（与 songDetail 一致）
         String url = "/song/music/detail?_t=" + System.currentTimeMillis();
         return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
     }
 
 
     public JSONObject songDownloadUrl(JSONObject parameter) {
-        // 加时间戳绕过代理缓存，确保每次拿到真实数据（与 songDetail 一致）
         String url = "/song/download/url?_t=" + System.currentTimeMillis();
         return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
 
@@ -130,7 +128,6 @@ public class SQNeteaseCloudMusicInfo {
 
 
     public JSONObject searchSuggest(JSONObject parameter) {
-        // 加时间戳绕过代理缓存，确保每次拿到真实数据（与 songDetail 一致）
         String url = "/search/suggest?_t=" + System.currentTimeMillis();
         return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
     }
@@ -138,7 +135,6 @@ public class SQNeteaseCloudMusicInfo {
 
 
     public JSONObject cloudsearch(JSONObject parameter) {
-        // 加时间戳绕过代理缓存，确保每次拿到真实数据（与 songDetail 一致）
         String url = "/cloudsearch?_t=" + System.currentTimeMillis();
         return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
     }
@@ -146,20 +142,17 @@ public class SQNeteaseCloudMusicInfo {
 
 
     public JSONObject songDetail(JSONObject parameter) {
-        // 加时间戳绕过代理缓存，确保每次拿到真实数据
         String url = "/song/detail?_t=" + System.currentTimeMillis();
         return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
     }
 
     public JSONObject artistDetail(JSONObject parameter) {
-        // 加时间戳绕过代理缓存，确保每次拿到真实数据（与 songDetail 一致）
         String url = "/artist/detail?_t=" + System.currentTimeMillis();
         return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
     }
 
 
     public JSONObject album(JSONObject parameter) {
-        // 加时间戳绕过代理缓存，确保每次拿到真实数据（与 songDetail 一致）
         String url = "/album?_t=" + System.currentTimeMillis();
         return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
     }
@@ -167,32 +160,32 @@ public class SQNeteaseCloudMusicInfo {
 
 
     public JSONObject lyric(JSONObject parameter) {
-        // 加时间戳绕过代理缓存，确保每次拿到真实数据（与 songDetail 一致）
         String url = "/lyric?_t=" + System.currentTimeMillis();
         return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
     }
 
 
     public JSONObject artistAlbum(JSONObject parameter) {
-        // 加时间戳绕过代理缓存，确保每次拿到真实数据（与 songDetail 一致）
         String url = "/artist/album?_t=" + System.currentTimeMillis();
         return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
     }
 
     public JSONObject playlistDetail(JSONObject parameter) {
-        // 加时间戳绕过代理缓存，确保每次拿到真实数据（与 songDetail 一致）
         String url = "/playlist/detail?_t=" + System.currentTimeMillis();
         return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
     }
 
     public JSONObject playlistTrackAll(JSONObject parameter) {
-        // 加时间戳绕过代理缓存，确保每次拿到真实数据（与 songDetail 一致）
         String url = "/playlist/track/all?_t=" + System.currentTimeMillis();
         return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
     }
     public JSONObject innerVersion(){
         String url = "/inner/version";
         return DownloadUtils.getToJsonObject(baseUrl + url);
+    }
+    public JSONObject songWikiSummary(JSONObject parameter){
+        String url = "/song/wiki/summary";
+        return DownloadUtils.postCookieToJsonObject(baseUrl + url, parameter, cookie,header);
     }
 
 

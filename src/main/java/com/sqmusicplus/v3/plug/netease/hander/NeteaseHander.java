@@ -282,6 +282,24 @@ public class NeteaseHander extends SearchHanderAbstract {
             MusicInfoNeteaseResult.SongsDTO.LDTO l = songsDTO.getL();
             MusicInfoNeteaseResult.SongsDTO.SqDTO sq = songsDTO.getSq();
             MusicInfoNeteaseResult.SongsDTO.HDTO hr = songsDTO.getHr();
+            int cd =0;
+            int track = 0;
+            List<String> tags = getSongWikiSummary(SongId);
+            try {
+                String scd = songsDTO.getCd();
+                if (scd!=null){
+                    cd = Integer.parseInt(scd);
+                }
+            } catch (Exception ignored) {
+            }
+            try {
+                Long sno = songsDTO.getNo();
+                if (sno!=null){
+                    track = sno.intValue();
+                }
+            } catch (Exception ignored) {}
+
+
             ArrayList<PlugBrType> plugBrTypes = new ArrayList<>();
             if (h!=null&&h.getBr()!=null){
                 plugBrTypes.add(PlugBrType.NETEASE_MP3_320);
@@ -310,6 +328,9 @@ public class NeteaseHander extends SearchHanderAbstract {
                     .setMusicDuration(songsDTO.getDt())
                     .setAlbumId(songsDTO.getAl().getId().toString())
                     .setBits(plugBrTypes)
+                    .setTags(tags)
+                    .setCd(cd)
+                    .setTrack(track)
                     .setDataInfo(JSONObject.parseObject(JSONObject.toJSONString(songsDTO)))
                     .setArtistsIds(artistsIds);
         }
@@ -673,7 +694,6 @@ public class NeteaseHander extends SearchHanderAbstract {
 
 
 
-
     public ArrayList<Music>  getPlayList(String playlistId){
         JSONObject playlistDetailParameter = new JSONObject();
         playlistDetailParameter.put("id", playlistId);
@@ -870,6 +890,72 @@ public class NeteaseHander extends SearchHanderAbstract {
                 .setArtistsIds(songsInfoDTO.getAr().stream().map(e -> e.getId().toString()).collect(Collectors.toList()))
                 .setBits(plugBrTypes);
         return music;
+    }
+
+    /**
+     * 获取歌曲 songWikiSummary 中的tags 信息
+     */
+    public List<String> getSongWikiSummary(String songId) {
+        ArrayList<String> tags = new ArrayList<>();
+        try {
+            JSONObject parameter = new JSONObject();
+            parameter.put("id", songId);
+            JSONObject jsonObject1 = neteaseCloudMusicInfo.songWikiSummary(parameter);
+            Integer code = jsonObject1.getInteger("code");
+            if (code == null || code != 200) {
+                return tags; // 失败返回空数组
+            }
+            JSONObject data = jsonObject1.getJSONObject("data");
+            if (data == null) {
+                return tags;
+            }
+            JSONArray blocks = data.getJSONArray("blocks");
+            if (blocks == null || blocks.isEmpty()) {
+                return tags;
+            }
+            for (int i = 0; i < blocks.size(); i++) {
+                JSONObject block = blocks.getJSONObject(i);
+                String blockCode = block.getString("code");
+                if (!"SONG_PLAY_ABOUT_SONG_BASIC".equals(blockCode)) {
+                    continue;
+                }
+                JSONArray creatives = block.getJSONArray("creatives");
+                if (creatives == null || creatives.isEmpty()) {
+                    continue;
+                }
+                for (int j = 0; j < creatives.size(); j++) {
+                    JSONObject creative = creatives.getJSONObject(j);
+                    String creativeType = creative.getString("creativeType");
+                    if (!"songTag".equals(creativeType)) {
+                        continue;
+                    }
+                    // 重点：单独循环resources，不能复用j
+                    JSONArray resources = creative.getJSONArray("resources");
+                    if (resources == null || resources.isEmpty()) {
+                        continue;
+                    }
+                    for (int k = 0; k < resources.size(); k++) {
+                        JSONObject resource = resources.getJSONObject(k);
+                        JSONObject uiElement = resource.getJSONObject("uiElement");
+                        if (uiElement == null) {
+                            continue;
+                        }
+                        JSONObject mainTitle = uiElement.getJSONObject("mainTitle");
+                        if (mainTitle == null) {
+                            continue;
+                        }
+                        String title = mainTitle.getString("title");
+                        if (title != null && !title.isBlank()) {
+                            tags.add(title);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // 任何解析异常，直接返回空list，不抛给上层
+            // log.error("解析songWikiSummary标签异常", e);
+        }
+        return tags;
     }
 
 

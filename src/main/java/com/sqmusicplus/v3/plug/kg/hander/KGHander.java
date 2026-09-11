@@ -322,6 +322,9 @@ public class KGHander extends SearchHanderAbstract {
                 String musicAlbum = dataDTO.getAlbumname();
                 String musicName = dataDTO.getName().replaceAll(dataDTO.getSingername(), "").replaceAll("-", "").trim();
                 String albumId = dataDTO.getAlbumId();
+                int cd =0;
+                int track = 0;
+                List<String> tags = new ArrayList<>();
 
                 SongInfoResult.DataDTO.InfoDTO info = dataDTO.getInfo();
                 Long duration = info.getDuration();
@@ -335,7 +338,7 @@ public class KGHander extends SearchHanderAbstract {
                 String lyric = queryLyric(id);
                 HashMap<String, String> audiopara = new HashMap<>();
                 audiopara.put("album_audio_id", dataDTO.getAlbumAudioId().toString());
-                audiopara.put("fields","base,audio_info,authors.ip,extra,authors.base");
+                audiopara.put("fields","base,audio_info,authors.ip,extra,authors.base,tags");
                 String syncSonginfoAdd = builder.url(getBaseURL() + getConfig().getSonginfoAddUrl())
                         .addParam(audiopara)
                         .get().sync();
@@ -343,9 +346,7 @@ public class KGHander extends SearchHanderAbstract {
                         if (addsonginfo.getStatus() == 1){
                             List<SongInfoAddResult.DataDTO> data1 = addsonginfo.getData();
                             for (SongInfoAddResult.DataDTO dataDTO1 : data1) {
-
                                 try {
-
                                     List<SongInfoAddResult.DataDTO.AuthorsDTO> authors = dataDTO1.getAuthors();
                                     if (authors != null) {
                                         musicArtists.clear();
@@ -366,6 +367,29 @@ public class KGHander extends SearchHanderAbstract {
                                 }
                                 try {
                                     albumId = dataDTO1.getAlbumInfo().getAlbumId().toString();
+                                } catch (Exception ignored) {
+                                }
+
+                                SongInfoAddResult.DataDTO.ExtraDTO extra = dataDTO1.getExtra();
+
+                                try {
+                                    Long disc = extra.getDisc();
+                                    if (disc!=null){
+                                        cd = disc.intValue();
+                                    }
+                                } catch (Exception ignored) {
+                                }
+                                try {
+                                    Long sort = extra.getSort();
+                                    if (sort!=null){
+                                        track = sort.intValue();
+                                    }
+                                } catch (Exception ignored) {}
+                                try {
+                                    List<SongInfoAddResult.DataDTO.TagsDTO> tags1 = dataDTO1.getTags();
+                                    if (tags1 != null) {
+                                        tags.addAll(tags1.stream().filter(e->e.getPid().equals("3")).map(SongInfoAddResult.DataDTO.TagsDTO::getName).toList());
+                                    }
                                 } catch (Exception ignored) {
                                 }
 
@@ -418,6 +442,9 @@ public class KGHander extends SearchHanderAbstract {
                         .setMusicLyric(lyric)
                         .setMusicDuration(duration)
                         .setBits(plugBrTypes)
+                        .setCd(cd)
+                        .setTrack(track)
+                        .setTags(tags)
                         .setDataInfo(JSONObject.parseObject(JSONObject.toJSONString(dataDTO)))
                         .setMusicImage(dataDTO.getInfo().getImage());
             }
@@ -620,11 +647,13 @@ public class KGHander extends SearchHanderAbstract {
             return downloadUrlResult;
         }
 
-        String sync = builder.url(getBaseURL() + getConfig().getDownloadUrl())
+        String sync = builder.url(getBaseURL() + getConfig().getDownloadUrl2())
                 .addParam(para)
                 .get().sync();
+        JSONObject jsonObject = JSONObject.parseObject(sync);
+        Integer status = jsonObject.getInteger("status");
         DownloadResult bean = JSONObject.parseObject(sync, DownloadResult.class);
-        if (bean.getStatus() != 1){
+        if (status != 1){
             downloadUrlResult.setErrorMsg("下载链接获取失败：未返回下载链接");
             return downloadUrlResult;
         }
@@ -689,8 +718,6 @@ public class KGHander extends SearchHanderAbstract {
         }
         return downloadInfos;
     }
-
-
 
 
 
@@ -857,12 +884,14 @@ public class KGHander extends SearchHanderAbstract {
      * @return
      */
     public boolean signIn(){
-        String date = DateUtils.getDate();
+//        String date = DateUtils.getDate();
+        String receive_day = DateUtils.dateTimeSP();
 
         String token = getCooKie();
         if (StringUtils.isNotEmpty(token)){
             OkHttpUtils builder = OkHttpUtils.builder();
             String sync = builder.url(getBaseURL() + getConfig().getSignUrl())
+                    .addParam("receive_day", receive_day)
                     .addParam("cookie", token)
                     .get().sync();
 //            if (StringUtils.isNotEmpty(sync)){
@@ -871,27 +900,31 @@ public class KGHander extends SearchHanderAbstract {
 //
 //                }
 //            }
-            String receive_day = DateUtils.dateTimeSP();
 
             String signInfoUrl = builder.url(getBaseURL() + getConfig().getSignInfoUrl())
                     .addParam("cookie", token)
-                    .addParam("receive_day", receive_day)
+//                    .addParam("receive_day", receive_day)
                     .get().sync();
-            SignResultInfo signResultInfo = JSONObject.parseObject(signInfoUrl, SignResultInfo.class);
-            Integer status = signResultInfo.getStatus();
+//            SignResultInfo signResultInfo = JSONObject.parseObject(signInfoUrl, SignResultInfo.class);
+            JSONObject jsonObject = JSONObject.parseObject(signInfoUrl);
+            Integer status = jsonObject.getInteger("status");
             if (status == 1){
                 String vipUpgrade = builder.url(getBaseURL() + getConfig().getVipUpgrade())
                         .addParam("cookie", token)
                         .get().sync();
+                JSONArray busi_vip_json = jsonObject.getJSONObject("data").getJSONArray("busi_vip");
 
+                JSONObject busi_vip_json_data = busi_vip_json.getJSONObject(0);
+                String vip_begin_time = busi_vip_json_data.getString("vip_begin_time");
+                String vip_end_time = busi_vip_json_data.getString("vip_end_time");
 
-                List<SignResultInfo.DataDTO.BusiVipDTO> busiVip = signResultInfo.getData().getBusiVip();
-                SignResultInfo.DataDTO.BusiVipDTO busiVipDTO = busiVip.get(0);
-                if (StringUtils.isNoneBlank(busiVipDTO.getVipBeginTime())) {
-                    Integer receiveVip = busiVipDTO.getIsVip();
+                if (StringUtils.isNoneBlank(vip_begin_time)) {
+
+                    Integer receiveVip = busi_vip_json_data.getInteger("is_vip");
                     if (receiveVip ==1) {
-                        SqConfigCache.updateConfigToDb(SetConfigEnum.PLUG_KG_SIGN_LAST_TIME,busiVipDTO.getVipBeginTime());
-                        SqConfigCache.updateConfigToDb(SetConfigEnum.PLUG_KG_SIGN_BEGIN_END_TIME,busiVipDTO.getVipBeginTime()+"-"+busiVipDTO.getVipEndTime());
+                        SqConfigCache.updateConfigToDb(SetConfigEnum.PLUG_KG_SIGN_LAST_TIME,vip_begin_time);
+                        SqConfigCache.updateConfigToDb(SetConfigEnum.PLUG_KG_SIGN_BEGIN_END_TIME,vip_begin_time+"-"+vip_end_time);
+                        return true;
                     }
                 }
             }

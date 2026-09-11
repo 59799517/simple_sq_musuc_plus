@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created with IntelliJ IDEA.
@@ -42,6 +43,9 @@ import java.util.stream.Collectors;
  * Date: 2022/11/22
  * Time: 10:21
  * Description:
+ *
+ * 酷我  无蝶号  musiclist[].track 曲目序号      外层`tag[]`，`type="Genre"风格编号 `   https://search.kuwo.cn/r.s?pn=0&rn=10&albumid=1291&stype=albuminfo&show_copyright_off=1&alflac=1&pcmp4=1&encoding=utf8&plat=pc&vipver=MUSIC_9.1.1.2_BCS2&devid=38668888&newver=1&pcjson=1
+ *
  */
 @Component("nKwSearchHander")
 @Slf4j
@@ -227,7 +231,9 @@ public class NKwSearchHander extends SearchHanderAbstract {
             duration="0";
         }
         String Lrc = queryLyric(SongId);
-        return new Music()
+
+
+        Music music = new Music()
                 .setId(SongId)
                 .setMusicImage(s)
                 .setMusicLyric(Lrc)
@@ -238,6 +244,18 @@ public class NKwSearchHander extends SearchHanderAbstract {
                 .setAlbumId(albumId)
                 .setDataInfo(JSON.parseObject(JSONObject.toJSONString(songinfo)))
                 .setArtistsIds(ListUtil.of(artistId));
+        try {
+            Album album1 = queryAlbumById(albumId);
+            List<Music> musics = album1.getMusics();
+            //找到ID对应上的
+            Music music1 = musics.stream().filter(e -> e.getId().equals(SongId)).findFirst().orElse(null);
+            if (music1!=null){
+                music.setTags(music1.getTags());
+                music.setCd(music1.getCd());
+                music.setTrack(music1.getTrack());
+            }
+        } catch (Exception ignored) {}
+        return music;
     }
 
     @Override
@@ -266,27 +284,45 @@ public class NKwSearchHander extends SearchHanderAbstract {
                 .replaceAll("#\\{pagesize}", "100");
         AlbumInfoResult albumInfoResult = DownloadUtils.get(searchUrl, AlbumInfoResult.class);
         List<AlbumInfoResult.MusiclistDTO> musiclist = albumInfoResult.getMusiclist();
-        List<Music> collect = musiclist.stream().map(abslistDTO -> {
+
+        List<AlbumInfoResult.TagDTO> tag = albumInfoResult.getTag();
+        //type是Genre 的 获取名称cat1 结果去重 转为list
+        List<String> tags = new ArrayList<>();
+        try {
+            Stream<String> genre = tag.stream().filter(tagDTO -> tagDTO.getType().equals("Genre")).map(tagDTO -> tagDTO.getCat1()).distinct();
+            tags = genre.toList();
+            } catch (Exception ignored) {
+
+        }
+
+        int cd =1;
+        List<Music> collect = new ArrayList<>();
+        for (int i = 0; i < musiclist.size(); i++) {
+            AlbumInfoResult.MusiclistDTO musiclistDTO = musiclist.get(i);
             String album = albumInfoResult.getName();
-            String aartist = abslistDTO.getArtist();
-            String allartistid = abslistDTO.getAllartistid();
-            String url = (config.getSongCoverUrl() + abslistDTO.getWebAlbumpicShort()).replaceAll("/120", "/500");
-            String duration = abslistDTO.getDuration();
-            String nMinfo = abslistDTO.getNMinfo();
+            String aartist = musiclistDTO.getArtist();
+            String allartistid = musiclistDTO.getAllartistid();
+            String url = (config.getSongCoverUrl() + musiclistDTO.getWebAlbumpicShort()).replaceAll("/120", "/500");
+            String duration = musiclistDTO.getDuration();
+            String nMinfo = musiclistDTO.getNMinfo();
             List<PlugBrType> plugBrTypes = NMinfoToPlugBrType(nMinfo);
-            return new Music()
-                    .setId(abslistDTO.getId())
+            Music apply = new Music()
+                    .setId(musiclistDTO.getId())
                     .setMusicImage(url)
                     .setMusicAlbum(album)
                     .setMusicArtists(ListUtil.of(aartist.split("&")))
                     .setArtistsIds(ListUtil.of(allartistid.split("&")))
-                    .setMusicName(abslistDTO.getName())
+                    .setMusicName(musiclistDTO.getName())
                     .setMusicDuration(Long.parseLong(duration))
                     .setAlbumId(albumId)
-                    .setDataInfo(JSONObject.parseObject(JSONObject.toJSONString(abslistDTO)))
+                    .setDataInfo(JSONObject.parseObject(JSONObject.toJSONString(musiclistDTO)))
                     .setPlugName(getPlugName())
+                    .setTags(tags)
+                    .setTrack(i+1)
+                    .setCd(cd)
                     .setBits(plugBrTypes);
-        }).collect(Collectors.toList());
+            collect.add(apply);
+        }
         String alubimage = null;
         try {
             alubimage = albumInfoResult.getImg().replaceAll("/240", "/500");
@@ -521,12 +557,6 @@ public class NKwSearchHander extends SearchHanderAbstract {
         collect.forEach(e->downloadInfos.addAll(downloadAlbum(e,brType,null,false,null)));
         return downloadInfos;
     }
-
-
-
-
-
-
 //    @Override
 //    public DownloadEntity downloadSong(String musicid, PlugBrType brType, String musicname, String artistname, String albumname, Boolean isAudioBook, String addSubsonicPlayListName) {
 //        Music music = querySongById(musicid);
@@ -587,9 +617,6 @@ public class NKwSearchHander extends SearchHanderAbstract {
             if (StringUtils.isBlank(abslistDTO.getAlbum().trim())){
                 url = getConfig().getSearheads() + abslistDTO.getWebArtistpicShort();
             }
-
-
-
             return new Music()
                             .setAlbumId(albumid)
                             .setMusicAlbum(album)

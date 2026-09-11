@@ -1038,6 +1038,7 @@ public class TidalSearchHander extends SearchHanderAbstract {
         return downloadInfos;
     }
 
+
     @Override
     public TidalConfig getConfig() {
         return config;

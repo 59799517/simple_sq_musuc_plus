@@ -309,6 +309,29 @@ public class MgHander extends SearchHanderAbstract {
         //获得歌曲时长
 
         Long duration = 0L;
+        //trackNumber
+        String trackNumber = mgSongInfoResult.getResource().get(0).getTrackNumber();
+        String disc = mgSongInfoResult.getResource().get(0).getDisc();
+        ArrayList<String> tags = new ArrayList<>();
+        List<MgSongInfoResult.ResourceDTO.TagListDTO> tagList = mgSongInfoResult.getResource().get(0).getTagList();
+        for (MgSongInfoResult.ResourceDTO.TagListDTO tagListDTO : tagList) {
+            String tagName = tagListDTO.getTagName();
+            tags.add(tagName);
+        }
+        int cd = 0;
+        int track = 0;
+        if (StringUtils.isNotBlank(trackNumber)){
+            try {
+                track = Integer.valueOf(trackNumber);
+            } catch (Exception ignored) {}
+        }
+        if (StringUtils.isNotBlank(disc)){
+            try {
+                String s = disc.replaceAll("Disc ", "").trim();
+                cd = Integer.valueOf(s);
+            } catch (Exception ignored) {}
+        }
+
         //获取年份
         try {
             String url2 = getConfig().getSongInfoUrl2();
@@ -336,9 +359,10 @@ public class MgHander extends SearchHanderAbstract {
                 .setAlbumId(albumId)
                 .setArtistsIds(singerId)
                 .setDataInfo(JSON.parseObject(JSONObject.toJSONString(mgSongInfoResult)))
+                .setCd(cd)
+                .setTrack(track)
+                .setTags(tags)
                 .setMusicDuration(duration);
-
-
     }
 
     @Override
@@ -733,6 +757,7 @@ public class MgHander extends SearchHanderAbstract {
         collect.forEach(e->downloadInfos.addAll(downloadAlbum(e,brType,null,false,null)));
         return downloadInfos;
     }
+
 
 //    /**
 //     * 根据专辑id获取专辑信息（没有歌曲信息）

@@ -446,6 +446,7 @@ public class QQHander extends SearchHanderAbstract {
     }
 
 
+
     /**
      * 获取微信登录二维码
      * @return

@@ -62,7 +62,20 @@ public class MusicUtils {
         }
     }
 
-    public static  synchronized MultimediaInfo setMediaFileInfo(File file, String title, String albumName, String artists, String comment, String lyrics, File image, String mainArtist, String  albumYear) {
+    public static  synchronized MultimediaInfo setMediaFileInfo
+            (File file,
+             String title,
+             String albumName,
+             String artists,
+             String comment,
+             String lyrics,
+             File image,
+             String mainArtist,
+             String  albumYear,
+             Integer cd,
+             Integer track,
+             String tags
+             ) {
         try {
             if (StringUtils.isBlank(mainArtist)){
                 mainArtist="群星";
@@ -120,6 +133,15 @@ public class MusicUtils {
             tag.setField(FieldKey.COMMENT, comment.trim());
             tag.setField(FieldKey.ALBUM_ARTIST, mainArtist.trim());
             tag.setField(FieldKey.YEAR, albumYear);
+            if (StringUtils.isNotBlank(tags)){
+                tag.setField(FieldKey.GENRE,tags);
+            }
+            if (cd!=null&&cd!=0){
+                tag.setField(FieldKey.DISC_NO,cd.toString());
+            }
+            if (track!=null&&track!=0){
+                tag.setField(FieldKey.TRACK,track.toString());
+            }
             if (StringUtils.isNotEmpty(lyrics)) {
                 try {
                     tag.setField(FieldKey.LYRICS, lyrics);

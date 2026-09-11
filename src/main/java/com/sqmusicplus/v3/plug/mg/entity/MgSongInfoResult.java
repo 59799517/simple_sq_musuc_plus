@@ -63,6 +63,8 @@ public class MgSongInfoResult {
         private List<NewRateFormatsDTO> newRateFormats;
         @JsonProperty("lrcUrl")
         private String lrcUrl;
+        @JsonProperty("tagList")
+        private List<TagListDTO> tagList;
         @JsonProperty("digitalColumnId")
         private String digitalColumnId;
         @JsonProperty("copyright")
@@ -87,8 +89,12 @@ public class MgSongInfoResult {
         private String invalidateDate;
         @JsonProperty("dalbumId")
         private String dalbumId;
+        @JsonProperty("trackNumber")
+        private String trackNumber;
         @JsonProperty("trcUrl")
         private String trcUrl;
+        @JsonProperty("disc")
+        private String disc;
         @JsonProperty("vipType")
         private String vipType;
         @JsonProperty("scopeOfcopyright")
@@ -460,7 +466,16 @@ public class MgSongInfoResult {
             @JsonProperty("androidBit")
             private Integer androidBit;
         }
-
+        @NoArgsConstructor
+        @Data
+        public static class TagListDTO{
+            @JsonProperty("resourceType")
+            private String resourceType;
+            @JsonProperty("tagId")
+            private String tagId;
+            @JsonProperty("tagName")
+            private String tagName;
+        }
         @NoArgsConstructor
         @Data
         public static class ArtistsDTO {

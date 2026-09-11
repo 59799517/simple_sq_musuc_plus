@@ -149,7 +149,10 @@ public enum SetConfigEnum {
      * QQ音乐今日下载
      */
     PLUG_QQVIP_DOWNLOAD_TODAY("plug.qqvip.download.today","QQ音乐今日下载","plug"),
-
+    /**
+     * 歌曲tag标签数据来源
+     */
+    PLUG_QQVIP_TAG_SOURCE("plug.qqvip.tag.source","歌曲tag标签数据来源","plug"),
 
 //    -----------------网易云音乐插件配置-----------------
     /**
@@ -179,6 +182,10 @@ public enum SetConfigEnum {
      * 网易云扩展下载地址
      */
     PLUG_NETEASE_EXTEND_DOWNLOAD_URL("plug.netease.extend.download.url","网易云音乐扩展下载地址","plug"),
+    /**
+     * 歌曲tag标签数据来源
+     */
+    PLUG_NETEASE_TAG_SOURCE("plug.netease.tag.source","歌曲tag标签数据来源","plug"),
 
 //    ------------------酷狗概念音乐插件配置-----------------
     /**
@@ -221,12 +228,19 @@ public enum SetConfigEnum {
 
     PLUG_KG_SIGN_BEGIN_END_TIME("plug.kg.sign.begin-end.time","酷狗概念签到到期信息","plug"),
 
+    /**
+     * 歌曲tag标签数据来源
+     */
+    PLUG_KG_TAG_SOURCE("plug.kg.tag.source","歌曲tag标签数据来源","plug"),
 //    ------------------酷我插件配置-----------------
     /**
      * 是否开启酷我插件
      */
     PLUG_KW_OPEN("plug.kw.open","是否开启酷我插件","plug"),
-
+    /**
+     * 歌曲tag标签数据来源
+     */
+    PLUG_KW_TAG_SOURCE("plug.kw.tag.source","歌曲tag标签数据来源","plug"),
 
 
 
@@ -235,6 +249,10 @@ public enum SetConfigEnum {
      * 是否开启酷我插件
      */
     PLUG_MG_OPEN("plug.mg.open","是否开启酷我插件","plug"),
+    /**
+     * 歌曲tag标签数据来源
+     */
+    PLUG_MG_TAG_SOURCE("plug.mg.tag.source","歌曲tag标签数据来源","plug"),
 
 // --------------------------freemp3------------------
     PLUG_FREEMP3_OPEN("plug.freemp3.open","是否开启freemp3插件","plug"),

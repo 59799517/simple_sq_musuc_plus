@@ -6,6 +6,7 @@ import com.sqmusicplus.v3.base.entity.SqConfig;
 import com.sqmusicplus.v3.base.enums.SetConfigEnum;
 import com.sqmusicplus.v3.base.service.SqConfigService;
 import com.sqmusicplus.v3.utils.SpringContextUtil;
+import com.sqmusicplus.v3.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -171,6 +172,30 @@ public class SqConfigCache {
     public static List<SqConfig> getAllConfig() {
         Collection<SqConfig> values = sqConfigMap.values();
         return new ArrayList<>(values);
+    }
+    /**
+     * 根据插件名称获取对应的标签下载设置
+     */
+    public static SetConfigEnum getPlugOptionsByPlugName(String plugName) {
+        if (StringUtils.isBlank(plugName)){
+            return SetConfigEnum.PLUG_QQVIP_TAG_SOURCE;
+        }
+        if ("qq".equalsIgnoreCase(plugName)){
+            return SetConfigEnum.PLUG_QQVIP_TAG_SOURCE;
+        }else if ("qqvip".equalsIgnoreCase(plugName)){
+            return SetConfigEnum.PLUG_QQVIP_TAG_SOURCE;
+        }else if ("kg".equalsIgnoreCase(plugName)){
+            return SetConfigEnum.PLUG_KG_TAG_SOURCE;
+        }else if ("kw".equalsIgnoreCase(plugName)){
+            return SetConfigEnum.PLUG_KW_TAG_SOURCE;
+        }else if ("mg".equalsIgnoreCase(plugName)){
+            return SetConfigEnum.PLUG_MG_TAG_SOURCE;
+        }else if ("netease".equalsIgnoreCase(plugName)){
+            return SetConfigEnum.PLUG_NETEASE_TAG_SOURCE;
+        }else {
+            return SetConfigEnum.PLUG_QQVIP_TAG_SOURCE;
+        }
+
     }
 
 

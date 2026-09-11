@@ -37,6 +37,7 @@ public class KGConfig {
     private  String albumInfoUrl;
     private  String albumSongUrl;
     private  String downloadUrl;
+    private  String downloadUrl2;
     private  String userPlaylist;
     private  String SearchTipUrl;
 }

@@ -61,6 +61,8 @@ public class SongInfoAddResult {
         private Long status;
         @JSONField(name = "extra")
         private ExtraDTO extra;
+        @JSONField(name = "tags")
+        private List<TagsDTO> tags;
         @JSONField(name = "authors")
         private List<AuthorsDTO> authors;
         @JSONField(name = "base")
@@ -71,6 +73,8 @@ public class SongInfoAddResult {
         private AlbumInfoDTO albumInfo;
         @JSONField(name = "class")
         private List<ClassDTO> classX;
+
+
 
         public Long getStatus() {
             return status;
@@ -98,6 +102,14 @@ public class SongInfoAddResult {
 
         public BaseDTO getBase() {
             return base;
+        }
+
+        public List<TagsDTO> getTags() {
+            return tags;
+        }
+
+        public void setTags(List<TagsDTO> tags) {
+            this.tags = tags;
         }
 
         public void setBase(BaseDTO base) {
@@ -388,6 +400,49 @@ public class SongInfoAddResult {
 
             public void setOriName(String oriName) {
                 this.oriName = oriName;
+            }
+        }
+
+        public static class TagsDTO {
+            @JSONField(name = "id")
+            private Long id;
+            @JSONField(name = "name")
+            private String name;
+            @JSONField(name = "pid")
+            private String pid;
+            @JSONField(name = "is_publish")
+            private String isPublish;
+
+            public Long getId() {
+                return id;
+            }
+
+            public void setId(Long id) {
+                this.id = id;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public String getPid() {
+                return pid;
+            }
+
+            public void setPid(String pid) {
+                this.pid = pid;
+            }
+
+            public String getIsPublish() {
+                return isPublish;
+            }
+
+            public void setIsPublish(String isPublish) {
+                this.isPublish = isPublish;
             }
         }
 

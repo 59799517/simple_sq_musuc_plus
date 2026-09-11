@@ -243,7 +243,6 @@ public class QQvipHander extends SearchHanderAbstract {
 
 
 
-
     public GetFollowSingerList likeArtists(int i) {
         return qqHander.likeArtists(i);
     }

@@ -663,6 +663,8 @@ public class MusicBrainzSearchHander extends SearchHanderAbstract {
         return new ArrayList<>();
     }
 
+
+
     @Override
     public MusicBrainzConfig getConfig() {
         return config;

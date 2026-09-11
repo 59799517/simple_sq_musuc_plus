@@ -72,7 +72,7 @@ logging:
     org.springframework: warn
     org.jaudiotagger: warn
 
-version: 3.1.27
+version: 3.1.28
 webversion: 3.1.5
 
 # JWT 配置

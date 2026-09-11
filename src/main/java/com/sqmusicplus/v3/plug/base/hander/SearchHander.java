@@ -222,4 +222,5 @@ public interface SearchHander {
     List<DownloadInfo> musicIgnoreCheck(List<DownloadInfo> downloadInfos);
 
 
+
 }

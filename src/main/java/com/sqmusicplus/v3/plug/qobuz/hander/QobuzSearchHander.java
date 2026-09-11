@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * @Description Qobuz搜索处理器
  * @Version 1.0.0
  * @Date 2026/5/7
- * @Created by Lingma
+ * @Created by SQ
  */
 @Component("qobuzSearchHander")
 @Slf4j
@@ -321,6 +321,7 @@ public class QobuzSearchHander extends SearchHanderAbstract {
         // 简化实现，实际需要获取艺术家所有专辑
         return new ArrayList<>();
     }
+
 
     @Override
     public QobuzConfig getConfig() {
