@@ -18,18 +18,24 @@ RUN java -Djarmode=layertools -jar app.jar extract --destination /extractor/laye
 # 第二阶段：运行环境
 FROM amazoncorretto:21-alpine
 
-# 设置工作目录
-WORKDIR /app
+# 【重要】不要在这里写 WORKDIR /app！
+# WORKDIR 创建 /app 时会把"构建时间"写进该层目录项的 mtime（实测：3.1.27 是 09-07 17:02，
+# 3.1.28 是 09-11 09:14），于是这一层 digest 每次构建都不同 → 其后所有层的 chainID（累积链 ID）
+# 全部变化 → 即使 heavy-native 大层内容逐字节一致，Docker 也认为是"新层"，用户被迫重下 ~1.1GB。
+# 改为用 COPY 的绝对路径创建 /app：目录项 mtime 取源目录（已被 touch 归一化为 2000-01-01），恒定不变。
 
 # 按稳定性从高到低复制（最稳定的放最前面，优化 Docker 缓存）
 # heavy-native 层：jave/javacv/nashorn 重型依赖，版本不变则永远缓存
-COPY --from=extractor /extractor/layers/heavy-native/ ./
+COPY --from=extractor /extractor/layers/heavy-native/ /app/
 # dependencies 层：其余 Maven 依赖
-COPY --from=extractor /extractor/layers/dependencies/ ./
+COPY --from=extractor /extractor/layers/dependencies/ /app/
 # spring-boot-loader 层
-COPY --from=extractor /extractor/layers/spring-boot-loader/ ./
+COPY --from=extractor /extractor/layers/spring-boot-loader/ /app/
 # application 层：业务代码（最常变）
-COPY --from=extractor /extractor/layers/application/ ./
+COPY --from=extractor /extractor/layers/application/ /app/
+
+# 设置工作目录：此时 /app 已存在，只写镜像 config，不再产生带构建时间的层
+WORKDIR /app
 
 # 显示架构信息（便于调试）
 RUN echo "Running on architecture: $(uname -m)" && \
