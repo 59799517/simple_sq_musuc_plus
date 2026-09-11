@@ -43,6 +43,9 @@ import java.util.concurrent.*;
 @Service("qqHander")
 public class QQHander extends SearchHanderAbstract {
 
+    private static final int SEARCH_MAX_ATTEMPTS = 3;
+    private static final long SEARCH_RETRY_DELAY_MS = 300L;
+
     @Autowired
     private QQConfig config;
 
@@ -110,16 +113,8 @@ public class QQHander extends SearchHanderAbstract {
 
     @Override
     public PlugSearchResult<PlugSearchMusicResult> querySongByName(SearchKeyData searchKeyData) {
-        String searchUrl = config.getSearchUrl();
-        String s = getqqSearchEntity().searchRequestParam(searchKeyData.getSearchkey(), QQSearchType.MUSIC.getValue(), searchKeyData.getPageIndex(), searchKeyData.getPageSize());
-        String data = OkHttpUtils.builder()
-                .url(searchUrl)
-                .addHeader("Content-Type", "json/application;charset=utf-8")
-                .addHeader("Referer", "https://y.qq.com")
-                .addHeader("User-Agent","QQ%E9%9F%B3%E4%B9%90/73222 CFNetwork/1406.0.3 Darwin/22.4.0")
-                .post(true,s)
-                .sync();
-        JSONObject jsonObject = JSONObject.parseObject(data);
+        String s = buildSearchRequest(searchKeyData, QQSearchType.MUSIC);
+        JSONObject jsonObject = requestSearch(s, QQSearchType.MUSIC);
         PlugSearchResult<PlugSearchMusicResult> plugSearchResult = getqqSearchEntity().toMusicPlugSearchResult(jsonObject, config);
         plugSearchResult.setSearchIndex(searchKeyData.getPageIndex());
         plugSearchResult.setSearchSize(searchKeyData.getPageSize());
@@ -130,16 +125,8 @@ public class QQHander extends SearchHanderAbstract {
 
     @Override
     public PlugSearchResult<PlugSearchArtistResult> queryArtistByName(SearchKeyData searchKeyData) {
-        String searchUrl = config.getSearchUrl();
-        String s = getqqSearchEntity().searchRequestParam(searchKeyData.getSearchkey(), QQSearchType.ARTIST.getValue(), searchKeyData.getPageIndex(), searchKeyData.getPageSize());
-        String data = OkHttpUtils.builder()
-                .url(searchUrl)
-                .addHeader("Content-Type", "json/application;charset=utf-8")
-                .addHeader("Referer", "https://y.qq.com")
-                .addHeader("User-Agent","QQ%E9%9F%B3%E4%B9%90/73222 CFNetwork/1406.0.3 Darwin/22.4.0")
-                .post(true,s)
-                .sync();
-        JSONObject jsonObject = JSONObject.parseObject(data);
+        String s = buildSearchRequest(searchKeyData, QQSearchType.ARTIST);
+        JSONObject jsonObject = requestSearch(s, QQSearchType.ARTIST);
         PlugSearchResult<PlugSearchArtistResult> artistPlugSearchResult = getqqSearchEntity().toArtistPlugSearchResult(jsonObject);
         artistPlugSearchResult.setSearchIndex(searchKeyData.getPageIndex());
         artistPlugSearchResult.setSearchSize(searchKeyData.getPageSize());
@@ -150,22 +137,111 @@ public class QQHander extends SearchHanderAbstract {
 
     @Override
     public PlugSearchResult<PlugSearchAlbumResult> queryAlbumByName(SearchKeyData searchKeyData) {
-        String searchUrl = config.getSearchUrl();
-        String s = getqqSearchEntity().searchRequestParam(searchKeyData.getSearchkey(), QQSearchType.ALBUM.getValue(), searchKeyData.getPageIndex(), searchKeyData.getPageSize());
-        String data = OkHttpUtils.builder()
-                .url(searchUrl)
-                .addHeader("Content-Type", "json/application;charset=utf-8")
-                .addHeader("Referer", "https://y.qq.com")
-                .addHeader("User-Agent","QQ%E9%9F%B3%E4%B9%90/73222 CFNetwork/1406.0.3 Darwin/22.4.0")
-                .post(true,s)
-                .sync();
-        JSONObject jsonObject = JSONObject.parseObject(data);
+        String s = buildSearchRequest(searchKeyData, QQSearchType.ALBUM);
+        JSONObject jsonObject = requestSearch(s, QQSearchType.ALBUM);
         PlugSearchResult<PlugSearchAlbumResult> albumPlugSearchResult = getqqSearchEntity().toAlbumPlugSearchResult(jsonObject);
         albumPlugSearchResult.setSearchIndex(searchKeyData.getPageIndex());
         albumPlugSearchResult.setSearchSize(searchKeyData.getPageSize());
         albumPlugSearchResult.setSearchTotal(albumPlugSearchResult.getRecords().size());
         albumPlugSearchResult.setSearchKeyWork(searchKeyData.getSearchkey());
         return albumPlugSearchResult;
+    }
+
+    /**
+     * 构造搜索请求，并把已经登录的 QQ 账号信息带入 comm 参数。
+     * QQ 的 musicu.fcg 搜索接口在匿名请求下会间歇性返回 req.code=2001 和空列表。
+     */
+    private String buildSearchRequest(SearchKeyData searchKeyData, QQSearchType searchType) {
+        String request = getqqSearchEntity().searchRequestParam(
+                searchKeyData.getSearchkey(), searchType.getValue(),
+                searchKeyData.getPageIndex(), searchKeyData.getPageSize());
+        String cookieJson = SqConfigCache.getSqConfigValue(SetConfigEnum.PLUG_QQVIP_COOKIE);
+        if (StringUtils.isBlank(cookieJson)) {
+            return request;
+        }
+        try {
+            QQMusicCookieInfo cookie = JSONObject.parseObject(cookieJson, QQMusicCookieInfo.class);
+            if (cookie == null || StringUtils.isBlank(cookie.getMusicid())
+                    || StringUtils.isBlank(cookie.getMusickey())) {
+                return request;
+            }
+            JSONObject body = JSONObject.parseObject(request);
+            JSONObject comm = body.getJSONObject("comm");
+            comm.put("qq", cookie.getMusicid());
+            comm.put("authst", cookie.getMusickey());
+            if (cookie.getLoginType() != null) {
+                comm.put("tmeLoginType", cookie.getLoginType().toString());
+            }
+            return body.toJSONString();
+        } catch (Exception e) {
+            log.warn("读取QQ登录态失败，搜索将使用匿名请求", e);
+            return request;
+        }
+    }
+
+    /**
+     * 请求 QQ 搜索接口。QQ 可能在 HTTP 200 下返回 req.code=2001，不能把这种响应当成正常空结果。
+     */
+    private JSONObject requestSearch(String requestBody, QQSearchType searchType) {
+        JSONObject lastResponse = null;
+        Integer lastCode = null;
+        String lastFeedbackUrl = null;
+        for (int attempt = 1; attempt <= SEARCH_MAX_ATTEMPTS; attempt++) {
+            String data = OkHttpUtils.builder()
+                    .url(config.getSearchUrl())
+                    .addHeader("Content-Type", "application/json; charset=utf-8")
+                    .addHeader("Referer", "https://y.qq.com")
+                    .addHeader("User-Agent", "QQ%E9%9F%B3%E4%B9%90/73222 CFNetwork/1406.0.3 Darwin/22.4.0")
+                    .post(true, requestBody)
+                    .sync();
+            try {
+                lastResponse = JSONObject.parseObject(data);
+                JSONObject req = lastResponse == null ? null : lastResponse.getJSONObject("req");
+                lastCode = req == null ? null : req.getInteger("code");
+                JSONObject reqData = req == null ? null : req.getJSONObject("data");
+                lastFeedbackUrl = reqData == null ? null : reqData.getString("feedbackURL");
+                if (!isRetryableSearchResponse(lastResponse, searchType)) {
+                    return lastResponse;
+                }
+                log.warn("QQ搜索暂时失败，第 {}/{} 次重试，req.code={}，feedbackURL={}",
+                        attempt, SEARCH_MAX_ATTEMPTS, lastCode, lastFeedbackUrl);
+            } catch (Exception e) {
+                log.warn("解析QQ搜索响应失败，第 {}/{} 次重试", attempt, SEARCH_MAX_ATTEMPTS, e);
+            }
+            if (attempt < SEARCH_MAX_ATTEMPTS) {
+                try {
+                    Thread.sleep(SEARCH_RETRY_DELAY_MS * attempt);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+        throw new IllegalStateException("QQ搜索接口暂时不可用，请稍后重试"
+                + (lastCode == null ? "" : "（req.code=" + lastCode + "）"));
+    }
+
+    private boolean isRetryableSearchResponse(JSONObject response, QQSearchType searchType) {
+        if (response == null) {
+            return true;
+        }
+        JSONObject req = response.getJSONObject("req");
+        if (req == null || (req.containsKey("code") && req.getInteger("code") != null
+                && req.getInteger("code") != 0)) {
+            return true;
+        }
+        JSONObject data = req.getJSONObject("data");
+        JSONObject body = data == null ? null : data.getJSONObject("body");
+        if (body == null) {
+            return true;
+        }
+        String resultKey = switch (searchType) {
+            case MUSIC -> "song";
+            case ARTIST -> "singer";
+            case ALBUM -> "album";
+            default -> "song";
+        };
+        return body.getJSONObject(resultKey) == null;
     }
 
     @Override
