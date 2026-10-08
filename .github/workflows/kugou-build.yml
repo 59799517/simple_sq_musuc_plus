@@ -1,0 +1,76 @@
+name: Build KuGouMusicApi
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "KuGouMusicApi 的 Git Tag 或分支名，例如 15.1 / v15.1 / main"
+        required: true
+        default: "15.1"
+        type: string
+
+env:
+  IMAGE: registry.cn-hangzhou.aliyuncs.com/sqdockler/kugoumusicapi
+
+jobs:
+  build:
+    name: Build and Push KuGouMusicApi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout KuGouMusicApi
+        uses: actions/checkout@v4
+        with:
+          repository: MakcRe/KuGouMusicApi
+          ref: ${{ inputs.ref }}
+          fetch-depth: 1
+
+      # 判断输入是 Tag 还是分支，并计算最终镜像 tag
+      - name: Compute image version
+        id: ver
+        run: |
+          set -euo pipefail
+          if git symbolic-ref -q HEAD >/dev/null 2>&1; then
+            # 分支检出：HEAD 指向 refs/heads/xxx
+            RAW="v$(jq -r '.version // empty' package.json)"
+            if [ -z "$RAW" ] || [ "$RAW" = "v" ]; then
+              echo "::error::package.json 中未找到 version 字段"
+              exit 1
+            fi
+            echo "ref_type=branch" >> "$GITHUB_OUTPUT"
+          else
+            # Tag 检出为 detached HEAD，直接使用输入值
+            RAW="${{ inputs.ref }}"
+            echo "ref_type=tag" >> "$GITHUB_OUTPUT"
+          fi
+          # 清洗非法字符，保证能作为合法 Docker tag
+          SAFE=$(printf '%s' "$RAW" | sed 's/[^a-zA-Z0-9._-]/-/g')
+          echo "version=$SAFE" >> "$GITHUB_OUTPUT"
+          echo "构建类型: $(cat "$GITHUB_OUTPUT" >/dev/null; echo) 镜像 tag: $SAFE"
+
+      # 注意：剔除 .git 必须放在版本判断之后
+      - name: Clean unused files
+        run: rm -rf .git .github *.md docs
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Aliyun Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: registry.cn-hangzhou.aliyuncs.com
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.ver.outputs.version }}
+            ${{ env.IMAGE }}:latest
+          build-args: |
+            NPM_REGISTRY=https://registry.npmmirror.com
+          provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
