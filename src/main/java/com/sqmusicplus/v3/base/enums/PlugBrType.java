@@ -1,8 +1,11 @@
 package com.sqmusicplus.v3.base.enums;
 
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.List;
 
+@Slf4j
 public enum PlugBrType {
 
     KW_MP3_128( "128kmp3", "mp3", 128,"kw","nKwSearchHander","kw_mp3_128"),
@@ -68,6 +71,19 @@ public enum PlugBrType {
     QOBUZ_FLAC_LOSSLESS("lossless","flac",1411,"qobuz","qobuzSearchHander","qobuz_flac_lossless"),
     QOBUZ_FLAC_HIRES("hires","flac",2800,"qobuz","qobuzSearchHander","qobuz_flac_hires");
 
+    //汽水音乐（Qishui / 抖音音乐 LunaPC）
+    //档位对齐汽水 track.bit_rates[].quality 实际返回的五种音质：
+    //  medium(标准 约66kbps) / higher(较高 约132kbps) / highest(极高 约260kbps)
+    //  lossless(无损 约806kbps) / spatial(空间音频，暂不单独暴露)
+    //标准 medium
+//    QISHUI_M4A_128("medium","m4a",128,"qishui","qishuiHander","qishui_m4a_128"),
+//    //较高 higher
+//    QISHUI_M4A_192("higher","m4a",192,"qishui","qishuiHander","qishui_m4a_192"),
+//    //极高 highest
+//    QISHUI_M4A_320("highest","m4a",320,"qishui","qishuiHander","qishui_m4a_320"),
+//    //无损 lossless（需登录VIP）
+//    QISHUI_FLAC_2000("lossless","flac",2000,"qishui","qishuiHander","qishui_flac_2000");
+//
 
 
 
@@ -161,5 +177,38 @@ public enum PlugBrType {
     }
 
 
+    /**
+     * 根据 type（文件格式如 flac/mp3）和 plugName 找出该类型中 bit 最大的枚举
+     * @param type
+     * @param plugName
+     * @param bits
+     * @return
+     */
+    public static PlugBrType findMaxByTypeAndPlugNameAndBits(String type, String plugName, List<PlugBrType> bits) {
+        PlugBrType result = null;
+        boolean isAuto = "auto".equals(type);
+        if (isAuto){
+            //如果是自动则获取所有类型中 bits 方法中的所有枚举 最大的枚举
+            for (PlugBrType bit : bits) {
+                if (bit.getPlugName().equals(plugName)) {
+                    if (result == null || bit.getBit() > result.getBit()) {
+                        result = bit;
+                    }
+                }
+            }
+        }
+
+        else{
+            //否则获取 type 类型中 bits 方法中的所有枚举 最大的枚举
+            for (PlugBrType bit : bits) {
+                if (bit.getPlugName().equals(plugName) && bit.getType().equals(type)) {
+                    if (result == null || bit.getBit() > result.getBit()) {
+                        result = bit;
+                    }
+                }
+            }
+        }
+        return result;
+    }
 
 }

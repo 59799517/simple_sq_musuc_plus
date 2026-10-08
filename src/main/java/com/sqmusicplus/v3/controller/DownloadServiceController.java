@@ -75,13 +75,13 @@ public class DownloadServiceController {
         }
         // 优先级2: 参数中指定下载格式
         else if (StringUtils.isNotBlank(downloadSongParam.getDownloadFormat())) {
-            targetBr = PlugBrType.findMaxByTypeAndPlugName(downloadSongParam.getDownloadFormat(), downloadSongParam.getPlugName());
+            targetBr = PlugBrType.findMaxByTypeAndPlugNameAndBits(downloadSongParam.getDownloadFormat(), downloadSongParam.getPlugName(),brTypes);
         }
         // 优先级3: 全局配置的下载格式（含 "auto" 由方法内部处理）
         else {
             String configFormat = SqConfigCache.getSqConfigValue(SetConfigEnum.SYSTEM_DOWNLOAD_FILE_AUDIO_FORMAT);
             if (StringUtils.isNotBlank(configFormat)) {
-                targetBr = PlugBrType.findMaxByTypeAndPlugName(configFormat, downloadSongParam.getPlugName());
+                targetBr = PlugBrType.findMaxByTypeAndPlugNameAndBits(configFormat, downloadSongParam.getPlugName(),brTypes);
             }
         }
 
