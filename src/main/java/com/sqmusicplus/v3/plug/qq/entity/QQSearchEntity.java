@@ -274,7 +274,7 @@ public class QQSearchEntity {
                             "search_type": %s,
                             "query": "%s",
                                "page_num": %s,
-                                    " num_per_page": %s,
+                                    "num_per_page": %s,
                                 "grp": 1  
                             }
                         }
