@@ -1,6 +1,5 @@
 package com.sqmusicplus.v3.config;
 
-import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
@@ -39,8 +38,7 @@ public class MybatisPlusConfig {
      */
     public PaginationInnerInterceptor paginationInnerInterceptor() {
         PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor();
-        // 设置数据库类型
-        paginationInnerInterceptor.setDbType(DbType.SQLITE);
+        // 不指定 DbType，根据连接 URL 自动识别（MySQL / PostgreSQL 等）
         // 设置最大单页限制数量，默认 500 条，-1 不受限制
         paginationInnerInterceptor.setMaxLimit(-1L);
         return paginationInnerInterceptor;

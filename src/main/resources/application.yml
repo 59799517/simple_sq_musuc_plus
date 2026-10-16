@@ -7,8 +7,11 @@ spring:
     virtual:
       enabled: true
   datasource:
-    url: jdbc:mysql://${DB_IP:localhost}:${DB_PORT:3306}/${DB_NAME:sqmusicv3}?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=UTC&rewriteBatchedStatements=true&allowMultiQueries=true
-    driver-class-name: com.mysql.jdbc.Driver
+    # 默认 MySQL；使用 PostgreSQL 时通过环境变量覆盖，例如：
+    #   DB_URL=jdbc:postgresql://postgres:5432/sqmusicv3
+    #   DB_DRIVER=org.postgresql.Driver
+    url: ${DB_URL:jdbc:mysql://${DB_IP:localhost}:${DB_PORT:3306}/${DB_NAME:sqmusicv3}?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=UTC&rewriteBatchedStatements=true&allowMultiQueries=true}
+    driver-class-name: ${DB_DRIVER:com.mysql.jdbc.Driver}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
     type: com.zaxxer.hikari.HikariDataSource

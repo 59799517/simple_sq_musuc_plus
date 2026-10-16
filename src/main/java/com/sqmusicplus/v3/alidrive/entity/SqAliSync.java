@@ -47,7 +47,7 @@ public class SqAliSync {
     /**
      * 文件路径
      */
-    @TableField(value = "`path`")
+    @TableField(value = "path")
     private String path;
 
     /**
@@ -65,7 +65,7 @@ public class SqAliSync {
     /**
      * 文件名称
      */
-    @TableField(value = "`name`")
+    @TableField(value = "name")
     private String name;
 
     /**
@@ -104,7 +104,7 @@ public class SqAliSync {
     /**
      * 结果
      */
-    @TableField(value = "`result`")
+    @TableField(value = "result")
     private String result;
 
     /**

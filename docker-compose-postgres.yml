@@ -1,0 +1,79 @@
+version: '3.8'
+
+# PostgreSQL 版部署配置（默认部署请使用 docker-compose.yml，即 MySQL 版）
+# 通过 DB_URL / DB_DRIVER 环境变量指定数据库类型，应用会自动执行 PostgreSQL 初始化脚本
+
+services:
+  sqmusic_main:
+    image: registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest
+    container_name: sqmusic_main
+    environment:
+      - DB_URL=jdbc:postgresql://postgres:5432/sqmusicv3
+      - DB_DRIVER=org.postgresql.Driver
+      - DB_USERNAME=sqmusic
+      - DB_PASSWORD=sqmusicv3password
+    volumes:
+      - ./music:/music
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sq-app-network
+    expose:
+      - "8099"
+    restart: always
+
+  sqmusic_web:
+    image: registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus_web:latest
+    container_name: sqmusic_web
+    ports:
+      - "8096:80"
+    networks:
+      - sq-app-network
+    depends_on:
+      - sqmusic_main
+    restart: always
+
+  postgres:
+    image: postgres:16
+    container_name: sqmusic_postgres
+    environment:
+      POSTGRES_USER: sqmusic
+      POSTGRES_PASSWORD: sqmusicv3password
+      POSTGRES_DB: sqmusicv3
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - sq-app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sqmusic -d sqmusicv3"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+  kugoumusicapi:
+    build:
+      context: https://github.com/MakcRe/KuGouMusicApi.git
+    container_name: sqmusic_kugou_api
+    ports:
+      - "3000:3000"
+    networks:
+      - sq-app-network
+    restart: unless-stopped
+    environment:
+      PLATFORM: lite
+
+  neteasecloudmusicapi:
+    image: registry.cn-hangzhou.aliyuncs.com/sqdockler/netease_cloud_music_api:v4.32.0
+    container_name: sqmusic_netease_api
+    ports:
+      - "3001:3000"
+    networks:
+      - sq-app-network
+    restart: unless-stopped
+
+networks:
+  sq-app-network:
+    driver: bridge
