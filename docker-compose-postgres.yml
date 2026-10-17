@@ -1,10 +1,22 @@
 version: '3.8'
 
-# PostgreSQL 版部署配置（默认部署请使用 docker-compose.yml，即 MySQL 版）
-# 通过 DB_URL / DB_DRIVER 环境变量指定数据库类型，应用会自动执行 PostgreSQL 初始化脚本
+# ==================== PostgreSQL 版部署配置 ====================
+# 默认部署（MySQL）请使用 docker-compose.yml；本文件仅把数据库换成 PostgreSQL。
+# 共 5 个服务：3 个必需 + 2 个可选——
+#   sqmusic_main           【必需】后端主服务（真正连接数据库的服务，端口 8099 内部）
+#   sqmusic_web            【必需】前端页面，浏览器访问 http://IP:8096
+#   postgres               【必需】PostgreSQL 16 数据库，数据持久化在 ./postgres_data
+#   kugoumusicapi          【可选】酷狗插件的自建 API，不用酷狗插件可整块删除
+#   neteasecloudmusicapi   【可选】网易云插件的自建 API，不部署时自动使用公共 API
+#
+# ⚠️ 镜像版本要求：sqmusic_main 必须是支持双数据库的版本（官方 registry 需本 PR
+#    合并发布后才有）。使用本地自建镜像时，把下方 image 改为本地 tag，例如：
+#      image: simple_sq_music_plus:3.1.33-amd64
+# =============================================================
 
 services:
   sqmusic_main:
+    # 后端主服务；镜像需包含双数据库支持（见上方说明）
     image: registry.cn-hangzhou.aliyuncs.com/sqdockler/simple_sq_music_plus:latest
     container_name: sqmusic_main
     environment:
