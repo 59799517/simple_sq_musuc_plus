@@ -76,6 +76,13 @@
             <scope>runtime</scope>
             <version>5.1.47</version>
         </dependency>
+<!-- PostgreSQL 驱动（通过 DB_URL/DB_DRIVER 切换数据库时使用） -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+            <version>42.7.7</version>
+        </dependency>
 <!--图片处理 -->
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>

@@ -86,7 +86,7 @@ public class ScanNeteasePlayList {
         ArrayList<String> excludeAlbumNames = new ArrayList<>();
         LambdaQueryWrapper<SqMonitor> sqMonitorLambdaQueryWrapper = new LambdaQueryWrapper<SqMonitor>()
                 .eq(SqMonitor::getPlugName, neteaseHander.getPlugName())
-                .eq(SqMonitor::getEnabled, DbBooleanConvert.YES.getValue().intValue())
+                .eq(SqMonitor::getEnabled, DbBooleanConvert.YES.getValue().toString())
                 .eq(SqMonitor::getType, MonitorType.PLAYLIST.getCode());
         List<SqMonitor> list = monitorService.list(sqMonitorLambdaQueryWrapper);
         if (!list.isEmpty()) {
